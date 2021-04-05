@@ -1,7 +1,7 @@
-# MindLogger Administrator Panel
+# MindLogger Applet Library
 
 
-[![GitHub version](https://img.shields.io/github/tag/ChildMindInstitute/mindlogger-admin.svg)](https://github.com/ChildMindInstitute/mindlogger-admin/releases)
+[![GitHub version](https://img.shields.io/github/tag/ChildMindInstitute/mindlogger-applet-library.svg)](https://github.com/ChildMindInstitute/mindlogger-library/releases)
 
 ## Project setup
 ```
