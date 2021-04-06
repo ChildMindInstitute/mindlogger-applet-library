@@ -109,6 +109,15 @@ const getUsersData = ({ apiHost, token, appletId, options }) =>
     params: options,
   });
 
+const getAppletContributions = ({ apiHost, token, libraryId }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/library/contribution/updates?libraryId=${libraryId}`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 export default {
   signIn,
   signUp,
@@ -122,5 +131,6 @@ export default {
   getAppletContent,
   getBasketContent,
   getUsersData,
+  getAppletContributions,
 }
 </script>

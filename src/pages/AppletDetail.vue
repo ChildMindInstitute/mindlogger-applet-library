@@ -61,12 +61,36 @@
           </v-card-actions>
 
           <v-expand-transition>
-            <div 
-              class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-contribution"
-              @click="onViewContribution"
+            <v-menu
+              v-if="!isAppletOriginal"
+              offset-y
             >
-              View All Contributions
-            </div>
+              <template v-slot:activator="{ on }">
+                <div
+                  class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-contribution"
+                  v-on="on"
+                >
+                  View All Contributions
+                </div>
+              </template>
+
+              <v-list>
+                <v-list-item
+                  @click="onExportContributions"
+                >
+                  <v-list-item-title>
+                    {{ 'Export' }}
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  @click="onViewContributions"
+                >
+                  <v-list-item-title>
+                    {{ 'View' }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-expand-transition>
         </div>
       </v-card>
@@ -185,6 +209,12 @@
           mdi-basket-plus-outline
         </v-icon>
       </v-btn>
+    <ViewContributionsDialog
+        v-if="!isAppletOriginal"
+        v-model="viewContributionsDialog"
+        :contributionsData="contributionsData"
+        @close="viewContributionsDialog = false"
+    />
     </div>
   </div>
 </template>
@@ -253,11 +283,14 @@
 
 <script>
 import api from "../services/Api/api.vue";
+import { AppletMixin } from "../services/mixins/AppletMixin";
+import ViewContributionsDialog from '../components/dialogs/ViewContributionsDialog.vue';
 
 export default {
   name: 'AppletDetail',
+  mixins: [AppletMixin],
   components: {
-
+    ViewContributionsDialog,
   },
   data() {
     return {
@@ -271,7 +304,14 @@ export default {
       selectable: false,
       selectedActivities: 0,
       selectedItems: 0,
+      viewContributionsDialog: false,
+      contributionsData: [],
     };
+  },
+  computed: {
+    isAppletOriginal() {
+      return this.contributionsData.length <= 1;
+    },
   },
   async beforeMount() {
     const { appletId } = this.$route.params;
@@ -294,6 +334,9 @@ export default {
 
       this.buildAppletTree(response.data);
       this.applet.version = response.data.applet.version;
+
+      this.contributionsData = await this.getAppletContributions(appletId);
+
       this.isLoading = false;
     } catch (error) {
       console.log(error)
@@ -460,6 +503,13 @@ export default {
       });
 
       this.selectedActs = selectedActs;
+    },
+
+    onViewContributions () {
+      this.viewContributionsDialog = true;
+    },
+    onExportContributions () {
+      this.exportContributions(this.contributionsData);
     },
   },
 };
