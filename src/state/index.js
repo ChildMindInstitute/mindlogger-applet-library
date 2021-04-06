@@ -9,7 +9,7 @@ import createPersistedState from 'vuex-persistedstate';
 
 const getDefaultState = () => {
   return {
-    backend: process.env.VUE_APP_SERVER_URL,
+    backend: "https://api-new.mindlogger.org/api/v1",
     auth: {},
     currentLanguage: 'en_US',
     currentRetentions: null,
@@ -28,7 +28,7 @@ const mutations = {
   },
   setBackend(state, backend) {
     // const backendServers = [
-    //   { url: "https://api-prod.mindlogger.org/api/v1", env: "production" },
+    //   { url: "https://api-prod.mindlogger.org/api/v1", env: "production" }, process.env.VUE_APP_SERVER_URL
     //   { url: "https://api-staging.mindlogger.org/api/v1", env: "development" },
     //   { url: "https://api-test.mindlogger.org/api/v1", env: "staging" },
     //   { url: "http://localhost:8080/api/v1", env: "local" },
@@ -40,7 +40,7 @@ const mutations = {
     //   _.find(backendServers, { env: process.env.NODE_ENV }).url ||
     //   backendServers[0].url;
 
-    state.backend = backend || process.env.VUE_APP_SERVER_URL;
+    state.backend = backend || "https://api-new.mindlogger.org/api/v1";
   },
   setPublishedApplets(state, publishedApplets) {
     state.publishedApplets = publishedApplets;

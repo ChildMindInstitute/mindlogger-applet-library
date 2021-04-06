@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../src/ts/interfaces/iAfterGuiAttachedParams.ts"],"names":[],"mappings":";;;;;;AAAA;AACA;AACA","file":"iAfterGuiAttachedParams.js","sourcesContent":["export interface IAfterGuiAttachedParams {\n    hidePopup?: () => void;\n}"]}

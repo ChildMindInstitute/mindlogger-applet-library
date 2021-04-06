@@ -96,16 +96,13 @@
               v-model="selection"
               :items="appletsTree"
               selection-type="leaf"
-              color="primary"
-              selected-color="primary"
-              on-icon="mdi-bookmark"
-              off-icon="mdi-bookmark-outline"
-              indeterminate-icon="mdi-bookmark-minus"
+              selected-color="darkgrey"
+              on-icon="mdi-checkbox-marked-circle-outline"
+              off-icon="mdi-checkbox-blank-circle-outline"
+              indeterminate-icon="mdi-minus-circle-outline"
               @input="onAppletSelection"
               open-on-click
-              activatable
               selectable
-              hoverable
               return-object
             >
             </v-treeview>
@@ -128,6 +125,7 @@
             class="ml-2 mt-2 mr-6"
             fab
             small
+            @click="onAppletDetail(applet)"
           >
             <v-icon color="grey darken-3">
               mdi-information-outline
@@ -177,24 +175,6 @@ export default {
     return {
       searchText: "",
       isLoading: true,
-      items: [
-        {
-          id: 1,
-          name: 'Root',
-          children: [
-            { id: 2, name: 'Child #1' },
-            { id: 3, name: 'Child #2' },
-            {
-              id: 4,
-              name: 'Child #3',
-              children: [
-                { id: 5, name: 'Grandchild #1' },
-                { id: 6, name: 'Grandchild #2' },
-              ],
-            },
-          ],
-        },
-      ],
       selectedApplets: {},
       appletsTree: [],
       baskets: [],
@@ -223,7 +203,6 @@ export default {
       }));
 
       this.$store.commit("setPublishedApplets", publishedApplets);
-      this.publishedApplets();
       this.isLoading = false;
     } catch(err) {
       console.log(err);
@@ -232,7 +211,7 @@ export default {
   methods: {
     publishedApplets() {
       if (this.searchText) {
-        return this.$store.state.publishedApplets.forEach(applet => {
+        return this.$store.state.publishedApplets.filter(applet => {
           applet.keywords.forEach(keyword => {
             if (keyword.startsWith(this.searchText)) {
               return true;
@@ -256,6 +235,12 @@ export default {
         if (!this.baskets.includes(appletId)) {
           this.baskets.push(appletId);
         }
+      });
+    },
+    onAppletDetail(applet) {
+      this.$router.push({
+        name: 'AppletDetail',
+        params: { appletId: applet.id },
       });
     },
     buildAppletTree (appletData) {

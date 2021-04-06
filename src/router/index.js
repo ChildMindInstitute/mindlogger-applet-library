@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import LibrarySearch from "../pages/LibrarySearch";
+import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
 import { getLanguageCode } from '../plugins/language';
 import _ from "lodash";
@@ -23,6 +24,11 @@ let router = new Router({
       path: "/librarySearch",
       name: "LibrarySearch",
       component: LibrarySearch,
+    },
+    {
+      path: "/appletDetail",
+      name: "AppletDetail",
+      component: AppletDetail,
     },
     {
       path: "/dashboard",
