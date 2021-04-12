@@ -18,12 +18,7 @@
         offset-x="35"
         offset-y="37"
       >
-        <v-icon 
-          color="blue-grey darken-3" 
-          class="mx-4 mb-6 ds-cursor"
-          large 
-          @click="onViewBasket"
-        >
+        <v-icon color="blue-grey darken-3" large class="mx-4 mb-6">
           mdi-basket-outline 
         </v-icon>
       </v-badge>
@@ -35,12 +30,7 @@
         offset-x="35"
         offset-y="37"
       >
-        <v-icon 
-          color="blue-grey darken-3" 
-          class="mx-4 mb-6 ds-cursor"
-          large 
-          @click="onViewBasket"
-        >
+        <v-icon color="blue-grey darken-3" large class="mx-4 mb-6">
           mdi-basket-outline 
         </v-icon>
       </v-badge>
@@ -165,10 +155,6 @@
   width: 100%
 }
 
-.ds-cursor{
-  cursor: pointer;
-}
-
 .v-treeview-node {
   width: 100%;
   display: flex;
@@ -181,7 +167,7 @@
 import api from "../services/Api/api.vue";
 
 export default {
-  name: 'LibrarySearch',
+  name: 'ViewBasket',
   components: {
 
   },
@@ -344,13 +330,7 @@ export default {
     },
     onSearchText () {
 
-    },
-    onViewBasket () {
-      // console.log('router', this.$router.history)
-      this.$router.push({
-        name: 'ViewBasket',
-      });
-    },
+    }
   },
 };
 </script>

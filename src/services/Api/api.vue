@@ -56,6 +56,13 @@ const addAppletsToBasket = ({ apiHost, data }) =>
     data,
   });
 
+const updateAppletBasket = ({ apiHost, appletId, selection }) =>
+  axios({
+    method: "put",
+    url: `${apiHost}/library/basket/selection?appletId=${appletId}`,
+    selection,
+  });
+
 const getAppletContent = ({ apiHost, libraryId }) =>
   axios({
     method: "get",
@@ -88,6 +95,7 @@ export default {
   getUserDetails,
   resetPassword,
   updateRegistration,
+  updateAppletBasket,
   getPublishedApplets,
   getAppletContent,
   getUsersData,

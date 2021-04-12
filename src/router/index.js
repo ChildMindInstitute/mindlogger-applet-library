@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import LibrarySearch from "../pages/LibrarySearch";
+import ViewBasket from "../pages/ViewBasket";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
 import { getLanguageCode } from '../plugins/language';
@@ -19,6 +20,11 @@ let router = new Router({
       meta: {
         guest: true,
       },
+    },
+    {
+      path: "/viewBasket",
+      name: "ViewBasket",
+      component: ViewBasket,
     },
     {
       path: "/librarySearch",
