@@ -22,6 +22,7 @@
           color="blue-grey darken-3" 
           class="mx-4 mb-6 ds-cursor"
           large 
+          :disabled="!isLoggedIn"
           @click="onViewBasket"
         >
           mdi-basket-outline 
@@ -39,6 +40,7 @@
           color="blue-grey darken-3" 
           class="mx-4 mb-6 ds-cursor"
           large 
+          :disabled="!isLoggedIn"
           @click="onViewBasket"
         >
           mdi-basket-outline 
@@ -100,23 +102,70 @@
             </v-btn>
           </v-card-actions>
 
-          <v-expand-transition>
+          <div class="ds-tree-layout ml-2">
             <v-treeview
-              class="d-flex justify-start ds-tree-view"
-              v-model="selection"
-              :items="appletsTree"
+              class="ds-tree-view"
+              v-model="selection[applet.appletId]"
+              :items="appletsTree.filter(({ appletId }) => appletId === applet.appletId)"
               selection-type="leaf"
               selected-color="darkgrey"
               on-icon="mdi-checkbox-marked-circle-outline"
               off-icon="mdi-checkbox-blank-circle-outline"
               indeterminate-icon="mdi-minus-circle-outline"
-              @input="onAppletSelection"
+              @input="onAppletSelection(applet.appletId)"
               open-on-click
               selectable
               return-object
             >
+              <template v-slot:prepend="{ item }">
+                  <v-icon 
+                    v-if="item.selected === true && item.options"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                  <v-icon 
+                    v-if="item.selected === false && item.options"
+                    class="mr-1"
+                    color="dark-grey" 
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-right
+                  </v-icon>
+              </template>
+              <template v-slot:append="{ item }">
+                <div 
+                  v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')" 
+                  v-for="option in item.options"
+                  class="d-flex align-center pt-2"
+                >
+                  <v-icon 
+                    v-if="item.inputType === 'checkbox'"
+                    class="mr-1"
+                    color="dark-grey" 
+                  >
+                    mdi-checkbox-marked-outline
+                  </v-icon>
+                  <v-icon 
+                    v-else 
+                    class="mr-1"
+                    color="dark-grey" 
+                  >
+                    mdi-checkbox-intermediate
+                  </v-icon>
+                  <v-img
+                    class="ds-avatar mr-2"
+                    src="https://raw.githubusercontent.com/ChildMindInstitute/NIMH_EMA_applet/master/images/1F969.png"
+                    max-width="27px"
+                    height="27px"
+                  />
+                  {{ option.name }}
+                </div>
+              </template>
             </v-treeview>
-          </v-expand-transition>
+          </div>
         </div>
         <div class="d-flex align-baseline">
           <v-btn
@@ -124,7 +173,7 @@
             fab
             small
             @click="onAddBasket(applet.appletId)"
-            :disabled="!selectedApplets[applet.appletId]"
+            :disabled="!selectedApplets[applet.appletId] || !isLoggedIn"
           >
             <v-icon color="grey darken-3" >
               mdi-basket-plus-outline
@@ -157,10 +206,6 @@
   margin-top: 0 !important;
 }
 
-.v-treeview-node__content {
-  flex-direction: column;
-}
-
 .ds-tree-view, .ds-tree-layout {
   width: 100%
 }
@@ -169,12 +214,6 @@
   cursor: pointer;
 }
 
-.v-treeview-node {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
 </style>
 
 <script>
@@ -193,7 +232,7 @@ export default {
       appletsTree: [],
       baskets: [],
       selection: [],
-      
+      treeIndex: 1,
     };
   },
   async beforeMount() {
@@ -215,17 +254,24 @@ export default {
           console.log(error)
         }
       }));
-
       this.$store.commit("setPublishedApplets", publishedApplets);
       this.isLoading = false;
     } catch(err) {
       console.log(err);
     }
   },
+  /**
+   * Define here all computed properties.
+   */
+  computed: {
+    isLoggedIn() {
+      return !_.isEmpty(this.$store.state.auth);
+    },
+  },
   methods: {
     publishedApplets() {
       if (this.searchText) {
-        return this.$store.state.publishedApplets.filter(applet => {
+        return this.$store.state.publishedApplets.filter((applet) => {
           applet.keywords.forEach(keyword => {
             if (keyword.startsWith(this.searchText)) {
               return true;
@@ -241,10 +287,12 @@ export default {
     onAddBasket (appletId) {
       const form = new FormData();
 
-      form.set("basket", JSON.stringify(this.selectedApplets[appletId]));
-      api.addAppletsToBasket({
+      form.set("selection", JSON.stringify(this.selectedApplets[appletId]));
+      api.updateAppletBasket({
         apiHost: this.$store.state.backend,
-        data: form,
+        token: this.$store.state.auth.authToken.token,
+        appletId,
+        selection: form,
       }).then(() => {
         if (!this.baskets.includes(appletId)) {
           this.baskets.push(appletId);
@@ -260,35 +308,51 @@ export default {
     buildAppletTree (appletData) {
       const { items, activities, applet } = appletData;
       const treeItem = {
-        id: 1,
+        id: this.treeIndex,
         appletId: applet._id.substring(7),
-        name: appletData.applet["@id"],
+        name: applet.displayName,
         children: [],
       };
 
-      let index = 2;
+      this.treeIndex += 1;
 
       for (const activityId in activities) {
         const activityItem = {
-          id: index,
+          id: this.treeIndex,
           activityId,
           name: activities[activityId]["@id"],
           children: [],
         };
 
-        index += 1;
+        this.treeIndex += 1;
         for (const itemId in items) {
           const values = itemId.split('/');
 
           if (activityId === values[0]) {
             const item = {
-              id: index,
+              id: this.treeIndex,
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
+              selected: false,
               name: items[itemId]["@id"]
             };
 
-            index += 1;
+            if (item.inputType === "radio") {
+              const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+              const multiple = items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"][0]["@value"];
+
+              item.options = options.map((option) => {
+                return {
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"] ? option["schema:image"][0]["@value"] : "",
+                }
+              });
+              if (multiple) {
+                item.inputType = "checkbox";
+              }
+            }
+
+            this.treeIndex += 1;
             activityItem.children.push(item);
           }
         }
@@ -301,20 +365,16 @@ export default {
     /*
      * Change appletTreeData format to basket data 
      */
-    onAppletSelection() {
-      const selectedApplets = {};
+    onAppletSelection(appletId) {
+      const selectedApplet = [];
 
-      this.selection.forEach(({ id }) => {
+      this.selection[appletId].forEach(({ id }) => {
         this.appletsTree.forEach(applet => {
           applet.children.forEach(activity => {
             const selectedItem = activity.children.find(item => item.id === id);
 
             if (selectedItem) {
-              if (!selectedApplets[applet.appletId]) {
-                selectedApplets[applet.appletId] = [];
-              }
-
-              const actIndex = selectedApplets[applet.appletId].findIndex(({ activityId }) => activity.activityId);
+              const actIndex = selectedApplet.findIndex(({ activityId }) => activityId === activity.activityId);
 
               if (actIndex === -1) {
                 const act = {
@@ -327,12 +387,12 @@ export default {
                   act.items = [];
                   act.items.push(selectedItem.itemId);
                 }
-                selectedApplets[applet.appletId].push(act);
-              } else if (selectedApplets[applet.appletId][actIndex].items) {
-                selectedApplets[applet.appletId][actIndex].items.push(selectedItem.itemId);
+                selectedApplet.push(act);
+              } else if (selectedApplet[actIndex].items) {
+                selectedApplet[actIndex].items.push(selectedItem.itemId);
 
-                if (selectedApplets[applet.appletId][actIndex].items.length === activity.children.length) {
-                  selectedApplets[applet.appletId][actIndex].items = null;
+                if (selectedApplet[actIndex].items.length === activity.children.length) {
+                  selectedApplet[actIndex].items = null;
                 }
               }
             }
@@ -340,7 +400,10 @@ export default {
         });
       });
 
-      this.selectedApplets = { ...selectedApplets };
+      this.selectedApplets = { 
+        ...this.selectedApplets,
+        [appletId]: [...selectedApplet]
+      };
     },
     onSearchText () {
 

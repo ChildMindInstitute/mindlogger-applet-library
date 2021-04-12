@@ -52,14 +52,26 @@ const getPublishedApplets = ({ apiHost }) =>
 const addAppletsToBasket = ({ apiHost, data }) =>
   axios({
     method: "post",
-    url: `${apiHost}/user`,
+    url: `${apiHost}/library/basket`,
     data,
   });
 
-const updateAppletBasket = ({ apiHost, appletId, selection }) =>
+const deleteBasketApplet = ({ apiHost, appletId, token }) =>
+  axios({
+    method: "delete",
+    url: `${apiHost}/library/basket/applet?appletId=${appletId}`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
+const updateAppletBasket = ({ apiHost, appletId, selection, token }) =>
   axios({
     method: "put",
     url: `${apiHost}/library/basket/selection?appletId=${appletId}`,
+    headers: {
+      "Girder-Token": token,
+    },
     selection,
   });
 
@@ -67,6 +79,15 @@ const getAppletContent = ({ apiHost, libraryId }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/applet/content?libraryId=${libraryId}`,
+  });
+
+const getBasketContent = ({ apiHost, libraryId, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/library/basket/content`,
+    headers: {
+      "Girder-Token": token,
+    },
   });
 
 const updateRegistration = ({ apiHost, token, groupId, open }) =>
@@ -96,8 +117,10 @@ export default {
   resetPassword,
   updateRegistration,
   updateAppletBasket,
+  deleteBasketApplet,
   getPublishedApplets,
   getAppletContent,
+  getBasketContent,
   getUsersData,
 }
 </script>

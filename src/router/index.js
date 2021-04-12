@@ -25,6 +25,9 @@ let router = new Router({
       path: "/viewBasket",
       name: "ViewBasket",
       component: ViewBasket,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: "/librarySearch",

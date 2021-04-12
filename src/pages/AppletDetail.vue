@@ -123,7 +123,7 @@
           >
             <template v-slot:prepend="{ item }">
                 <v-icon 
-                  v-if="item.selected === true"
+                  v-if="item.selected === true && item.options"
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -131,7 +131,7 @@
                   mdi-menu-down
                 </v-icon>
                 <v-icon 
-                  v-if="item.selected === false"
+                  v-if="item.selected === false && item.options"
                   class="mr-1"
                   color="dark-grey" 
                   @click="item.selected = !item.selected"
@@ -233,7 +233,7 @@
 
 .v-treeview-node__prepend {
   position: absolute;
-  left: 30px;
+  left: 41px;
   margin-top: -1px;
 }
 
