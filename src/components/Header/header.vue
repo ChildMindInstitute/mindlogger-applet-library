@@ -107,10 +107,12 @@ export default {
    */
   methods: {
     onDashboard() {
+      this.$router.go('admin-staging.mindlogger.org');
+      console.log('onDashboard');
       if (this.isLoggedIn) {
-        this.$router.push('/dashboard').catch(err => {
-          console.log(err);
-        });
+        // this.$router.push('/dashboard').catch(err => {
+        //   console.log(err);
+        // });
       }
     },
     onLibrarySearch() {
