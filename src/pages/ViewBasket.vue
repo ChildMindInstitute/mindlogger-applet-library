@@ -367,7 +367,6 @@ export default {
 
     },
     onViewBasket () {
-      // console.log('router', this.$router.history)
       this.$router.push({
         name: 'ViewBasket',
       });

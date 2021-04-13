@@ -244,8 +244,6 @@ export default {
         apiHost: this.$store.state.backend,
       })).data;
 
-      console.log('publishedapplets', publishedApplets);
-
       this.appletsTree = await Promise.all(publishedApplets.map(async (applet) => {
         try {
           const response = await api.getAppletContent({
@@ -274,7 +272,6 @@ export default {
   },
   methods: {
     publishedApplets() {
-      console.log('search text', this.searchText);
       if (this.searchText) {
         return this.$store.state.publishedApplets.filter((applet) => {
           let isValid = false;
@@ -306,7 +303,6 @@ export default {
       });
     },
     onAppletDetail(applet) {
-      console.log('applet', applet)
       this.$router.push({
         name: 'AppletDetail',
         params: { appletId: applet.id },
@@ -416,7 +412,6 @@ export default {
 
     },
     onViewBasket () {
-      // console.log('router', this.$router.history)
       this.$router.push({
         name: 'ViewBasket',
       });
