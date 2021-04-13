@@ -113,7 +113,7 @@
         </div>
         <div 
           class="text-body-2 black--text ds-pointer ml-10"
-          @click="onViewContribution"
+          @click="onViewContributions"
         >
           <div> Status: {{ activities }} / {{ items }} selected </div>
         </div>
@@ -209,13 +209,14 @@
           mdi-basket-plus-outline
         </v-icon>
       </v-btn>
+    </div>
+
     <ViewContributionsDialog
         v-if="!isAppletOriginal"
         v-model="viewContributionsDialog"
         :contributionsData="contributionsData"
         @close="viewContributionsDialog = false"
     />
-    </div>
   </div>
 </template>
 
@@ -335,7 +336,8 @@ export default {
       this.buildAppletTree(response.data);
       this.applet.version = response.data.applet.version;
 
-      this.contributionsData = await this.getAppletContributions(appletId);
+      const appletContent = response.data;
+      this.contributionsData = await this.getAppletContributions(appletId, appletContent);
 
       this.isLoading = false;
     } catch (error) {
@@ -406,9 +408,6 @@ export default {
     onCloseBasketStatus () {
       this.selectBasket = true;
       this.selectable = true;
-    },
-    onViewContribution () {
-      console.log('000000');
     },
     buildAppletTree (appletData) {
       let index = 1;

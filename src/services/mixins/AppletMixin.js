@@ -1,4 +1,5 @@
 import api from "../Api/api.vue";
+import Item from 'applet-schema-builder/src/models/Item';
 import ObjectToCSV from 'object-to-csv';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -6,7 +7,7 @@ import fr from 'javascript-time-ago/locale/fr';
 TimeAgo.addLocale(en);
 TimeAgo.addLocale(fr);
 
-export const AppletMixin = { 
+export const AppletMixin = {
   computed: {
     apiHost() {
       return this.$store.state.backend;
@@ -16,20 +17,57 @@ export const AppletMixin = {
     },
   },
   methods: {
-    getAppletContributions(libraryId) {
-      return api.getAppletContributions({
+    async getAppletContributions(libraryId, appletContent) {
+      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
         apiHost: this.apiHost,
         token: this.token,
         libraryId,
       })
-        .then(res => {
-          return Object.entries(res.data).map(([key, value]) => ({
-            key,
-            ...value,
-            created: this.formatTimeAgo(value.created),
-            updated: this.formatTimeAgo(value.updated),
-          }));
-        })
+      if (Object.keys(contributionUpdatesData).length <= 1) {
+        return [];
+      }
+      const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
+        apiHost: this.apiHost,
+        token: this.token,
+        libraryId,
+      })
+
+      const itemModel = new Item();
+      let currentItem = null;
+      const appletContributionUpdates = Object.entries(contributionUpdatesData).map(([identifier, updates]) => {
+        const key = identifier.split("/").pop()
+        let changes = '';
+        if (!appletContributionOrigins[key]) {
+          const item = itemModel.getItemBuilderData(Item.parseJSONLD(
+            appletContent['items'][identifier]
+          ));
+          itemModel.updateReferenceObject(item);
+          currentItem = itemModel.getItemData();
+          changes = 'created';
+        }
+        return {
+          identifier,
+          key: identifier.split("/").pop(),
+          ...updates,
+          created: this.formatTimeAgo(updates.created),
+          updated: this.formatTimeAgo(updates.updated),
+          changes,
+        }
+      })
+
+      appletContributionUpdates.map(c => {
+        if (c.changes == '') {
+          const item = itemModel.getItemBuilderData(Item.parseJSONLD(
+            appletContributionOrigins[c.key]['content']
+          ));
+          itemModel.updateReferenceObject(item);
+          const originItem = itemModel.getItemData();
+          const changeInfo = Item.getChangeInfo(currentItem, originItem);
+          c.changes = changeInfo.log.reduce((c, l) => c += l['name'] + "\n", '');
+        }
+      });
+
+      return appletContributionUpdates;
     },
     exportContributions(contributionsData) {
       let otc = new ObjectToCSV({
