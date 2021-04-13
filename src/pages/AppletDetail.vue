@@ -93,11 +93,13 @@
         >
           <div> Status: {{ activities }} / {{ items }} selected </div>
         </div>
-        <div 
-          class="text-body-1 primary--text font-weight-medium ds-pointer ml-4"
-          @click="onUpdateBasket"
-        >
-          <v-icon color="primary" large>
+        <div class="text-body-1 primary--text font-weight-medium ds-pointer ml-4">
+          <v-icon
+            color="primary" 
+            :disabled="!isLoggedIn" 
+            large
+            @click="onUpdateBasket"
+          >
             mdi-basket-fill
           </v-icon>
         </div>
@@ -305,13 +307,16 @@ export default {
         return this.selectedActivities + ' activities';
       }
     },
+    isLoggedIn () {
+      return !_.isEmpty(this.$store.state.auth);
+    },
     items () {
       if (this.selectedItems === 1) {
         return this.selectedItems + ' item';
       } else {
         return this.selectedItems + ' items';
       }
-    }
+    },
   },
   methods: {
     publishedApplets () {
@@ -348,8 +353,9 @@ export default {
       form.set("selection", JSON.stringify(this.selectedActs));
       api.updateAppletBasket({
         apiHost: this.$store.state.backend,
-        appletId,
+        appletId: this.applet.appletId,
         selection: form,
+        token: this.$store.state.auth.authToken.token,
       }).then((response) => {
         console.log(response);
       });
@@ -364,7 +370,6 @@ export default {
     buildAppletTree (appletData) {
       let index = 1;
       const { items, activities, applet } = appletData;
-      console.log('appletdata', appletData)
       const treeItem = [];
 
       for (const activityId in activities) {
@@ -380,7 +385,6 @@ export default {
           const values = itemId.split('/');
 
           if (activityId === values[0]) {
-            console.log('items[itemId]', items[itemId]);
             const item = {
               id: index,
               itemId: values[1],
@@ -411,7 +415,6 @@ export default {
         treeItem.push(activityItem);
       }
       this.appletTree = [ ...treeItem ];
-      console.log('this.appletTree', this.appletTree);
     },
     /*
      * Change appletTreeData format to basket data 

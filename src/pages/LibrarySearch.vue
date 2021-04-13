@@ -97,6 +97,8 @@
               v-for="keyword in applet.keywords"
               color="orange lighten-2"
               text
+              :class="searchText === keyword ? 'font-weight-bold' : ''"
+              @click="searchText = keyword"
             >
               {{ keyword }}
             </v-btn>
@@ -242,6 +244,8 @@ export default {
         apiHost: this.$store.state.backend,
       })).data;
 
+      console.log('publishedapplets', publishedApplets);
+
       this.appletsTree = await Promise.all(publishedApplets.map(async (applet) => {
         try {
           const response = await api.getAppletContent({
@@ -270,15 +274,17 @@ export default {
   },
   methods: {
     publishedApplets() {
+      console.log('search text', this.searchText);
       if (this.searchText) {
         return this.$store.state.publishedApplets.filter((applet) => {
+          let isValid = false;
           applet.keywords.forEach(keyword => {
-            if (keyword.startsWith(this.searchText)) {
-              return true;
+            if (keyword.toLowerCase() === this.searchText.toLowerCase()) {
+              isValid = true;
             }
           });
 
-          return false;
+          return isValid;
         });
       } else {
         return this.$store.state.publishedApplets;
@@ -300,6 +306,7 @@ export default {
       });
     },
     onAppletDetail(applet) {
+      console.log('applet', applet)
       this.$router.push({
         name: 'AppletDetail',
         params: { appletId: applet.id },

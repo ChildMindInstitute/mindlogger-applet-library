@@ -77,6 +77,8 @@
               v-for="keyword in applet.keywords"
               color="orange lighten-2"
               text
+              :class="searchText === keyword ? 'font-weight-bold' : ''"
+              @click="searchText = keyword"
             >
               {{ keyword }}
             </v-btn>
@@ -232,13 +234,14 @@ export default {
     publishedApplets() {
       if (this.searchText) {
         return this.basketContents.filter((applet, index, self) => {
+          let isValid = false;
           applet.keywords.forEach(keyword => {
-            if (keyword.startsWith(this.searchText)) {
-              return true;
+            if (keyword.toLowerCase() === this.searchText.toLowerCase()) {
+              isValid = true;
             }
           });
 
-          return false;
+          return isValid;
         });
       } else {
         return this.basketContents;

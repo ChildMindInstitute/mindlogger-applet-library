@@ -152,7 +152,8 @@ export default {
         })
         .then((resp) => {
           this.$store.commit("setAuth", { auth: resp.data, email: this.email });
-         
+          this.$router.push('/librarySearch').catch(err => {});
+
           this.setAccounts();
           this.setUserDetails();
         })
