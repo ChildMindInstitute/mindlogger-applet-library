@@ -135,11 +135,12 @@
                     class="mr-1"
                     color="dark-grey" 
                   >
-                    mdi-checkbox-intermediate
+                    mdi-radiobox-marked
                   </v-icon>
                   <v-img
+                    v-if="option.image"
                     class="ds-avatar mr-2"
-                    src="https://raw.githubusercontent.com/ChildMindInstitute/NIMH_EMA_applet/master/images/1F969.png"
+                    :src="option.image"
                     max-width="27px"
                     height="27px"
                   />

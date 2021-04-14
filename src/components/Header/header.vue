@@ -11,14 +11,6 @@
       max-width="130"
       contain
     />
-
-    <v-btn
-      color="primary"
-      class="toolbar-btn"
-      @click="onDashboard"
-    >
-      {{ $t('mindloggerDashboard') }}
-    </v-btn>
     <v-btn
       color="primary"
       class="toolbar-btn"
