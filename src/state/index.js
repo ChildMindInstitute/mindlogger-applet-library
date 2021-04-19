@@ -13,11 +13,25 @@ const getDefaultState = () => {
     auth: {},
     currentLanguage: 'en_US',
     currentRetentions: null,
+    
     publishedApplets: [],
+    appletContents: {},
+    basketContent: {},
+    appletsTree: {},
+    appletSelections: {},
+    cartSelections: {},
+    basketSelections: {},
+    fromBuilder: false,
   };
 };
 
 const state = getDefaultState();
+
+const getters = {
+  isLoggedIn (state) {
+    return !_.isEmpty(state.auth)
+  },
+};
 
 const mutations = {
   setCurrentLanguage(state, lang) {
@@ -32,9 +46,21 @@ const mutations = {
   setPublishedApplets(state, publishedApplets) {
     state.publishedApplets = publishedApplets;
   },
+  setAppletContents(state, appletContents) {
+    state.appletContents = appletContents;
+  },
+  setAppletsTree(state, appletsTree) {
+    state.appletsTree = appletsTree;
+  },
   setAuth(state, userData) {
     state.auth = userData.auth;
   },
+  setCartSelections(state, cartSelections) {
+    state.cartSelections = cartSelections;
+  },
+  setFromBuilder(state, fromBuilder) {
+    state.fromBuilder = fromBuilder;
+  }
 };
 
 const stateCopy = (({ 
@@ -46,6 +72,7 @@ const stateToPersist = Object.keys(stateCopy);
 
 export const storeConfig = {
   state,
+  getters,
   mutations,
   plugins: [
     createPersistedState({

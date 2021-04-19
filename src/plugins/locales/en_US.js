@@ -349,4 +349,5 @@ export default {
   newFolder: 'New Folder',
   appletUrl: 'Applet URL',
   selectAppletToEdit: 'Please select applet to edit',
+  deleteAppletFromCartConfirmation: 'Are you sure you want to delete "{appletName}" from your cart?',
 };

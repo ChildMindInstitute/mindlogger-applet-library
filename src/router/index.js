@@ -1,12 +1,13 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
 import LibrarySearch from "../pages/LibrarySearch";
-import ViewBasket from "../pages/ViewBasket";
+import Cart from "../pages/Cart";
+import CartView from "../components/Cart/CartView";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
 import { getLanguageCode } from '../plugins/language';
+import api from '../services/Api/api.vue';
 import _ from "lodash";
 
 Vue.use(Router);
@@ -22,15 +23,12 @@ let router = new Router({
       },
     },
     {
-      path: "/viewBasket",
-      name: "ViewBasket",
-      component: ViewBasket,
-      meta: {
-        requiresAuth: true,
-      },
+      path: "/cart",
+      name: "Cart",
+      component: Cart,
     },
     {
-      path: "/librarySearch",
+      path: "/",
       name: "LibrarySearch",
       component: LibrarySearch,
     },
@@ -40,22 +38,39 @@ let router = new Router({
       component: AppletDetail,
     },
     {
-      path: "/dashboard",
-      name: "Dashboard",
-      component: Dashboard,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: "/",
       redirect: "/login",
     },
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = !_.isEmpty(store.state.auth);
+router.beforeEach(async (to, from, next) => {
+  let { isLoggedIn } = store.getters;
+
+  if (!isLoggedIn) {
+    const { token } = to.query;
+    if (token) {
+      try {
+        const resp = await api.getUserDetails({
+          apiHost: store.state.backend,
+          token,
+        })
+        if (resp.data) {
+          store.commit("setAuth", { auth: {
+            authToken: {
+              token
+            }
+          }});
+          store.commit("setFromBuilder", true);
+          store.commit("setUserDetails", resp.data);
+          isLoggedIn = true;
+        }
+      } catch (e) {
+        console.log('token error', e.response.data.message)
+      }
+    }
+  }
+
   const isPrivatePage = to.matched.some((record) => record.meta.requiresAuth);
   const isGuestPage = to.matched.some((record) => record.meta.guest);
   const lang = getLanguageCode(

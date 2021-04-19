@@ -83,8 +83,10 @@
 <script>
 import api from '../../services/Api/api.vue';
 import _ from "lodash";
+import { AccountMixin } from '../../services/mixins/AccountMixin';
 
 export default {
+  mixins: [AccountMixin],
   data() {
     return {
       valid: true,
@@ -152,44 +154,14 @@ export default {
         })
         .then((resp) => {
           this.$store.commit("setAuth", { auth: resp.data, email: this.email });
-          this.$router.push('/librarySearch').catch(err => {});
-
-          this.setAccounts();
-          this.setUserDetails();
+          this.onLoginSuccess();
         })
         .catch((e) => {
           this.error = e.response.data.message;
         });
     },
-
-    setAccounts() {
-      api
-        .getAccounts({
-          apiHost: this.apiHost,
-          token: this.$store.state.auth.authToken.token,
-        })
-        .then((resp) => {
-          this.$store.commit("setAccounts", resp.data);
-          this.$router.push("/dashboard").catch(err => {});
-        })
-        .catch((err) => {
-          console.warn(err);
-        });
-    },
-    setUserDetails()
-    {
-      api
-        .getUserDetails({
-          apiHost: this.apiHost,
-          token: this.$store.state.auth.authToken.token,
-        })
-        .then((resp) => {
-          this.$store.commit("setUserDetails", resp.data);
-          this.$router.push("/dashboard").catch(err => {});
-        })
-        .catch((err) => {
-          console.warn(err);
-        });
+    onLoginSuccess() {
+      this.$emit("loginSuccess");
     },
     onSetBackend() {
       this.$emit("setBackend", null);

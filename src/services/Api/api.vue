@@ -15,6 +15,15 @@ const signIn = ({ apiHost, user, password }) =>
     },
   });
 
+const createToken = ({ apiHost, token }) =>
+  axios({
+    method: "post",
+    url: `${apiHost}/user/token`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 const signUp = ({ apiHost, body }) =>
   axios({
     method: "post",
@@ -49,10 +58,13 @@ const getPublishedApplets = ({ apiHost }) =>
     url: `${apiHost}/library/applets`,
   });
 
-const addAppletsToBasket = ({ apiHost, data }) =>
+const addAppletsToBasket = ({ apiHost, token, data }) =>
   axios({
     method: "post",
     url: `${apiHost}/library/basket`,
+    headers: {
+      "Girder-Token": token,
+    },
     data,
   });
 
@@ -122,5 +134,6 @@ export default {
   getAppletContent,
   getBasketContent,
   getUsersData,
+  createToken,
 }
 </script>
