@@ -43,6 +43,15 @@ const resetPassword = ({ apiHost, body }) =>
     },
   });
 
+const getAccounts = ({ apiHost, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/user/accounts`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 const getUserDetails = ({ apiHost, token }) =>
   axios({
     method: "get",
@@ -77,14 +86,14 @@ const deleteBasketApplet = ({ apiHost, appletId, token }) =>
     },
   });
 
-const updateAppletBasket = ({ apiHost, appletId, selection, token }) =>
+const updateAppletBasket = ({ apiHost, token, appletId, data }) =>
   axios({
     method: "put",
     url: `${apiHost}/library/basket/selection?appletId=${appletId}`,
     headers: {
       "Girder-Token": token,
     },
-    selection,
+    data,
   });
 
 const getAppletContent = ({ apiHost, libraryId }) =>
@@ -125,6 +134,7 @@ export default {
   signIn,
   signUp,
   addAppletsToBasket,
+  getAccounts,
   getUserDetails,
   resetPassword,
   updateRegistration,

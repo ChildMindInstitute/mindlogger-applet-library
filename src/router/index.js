@@ -45,31 +45,7 @@ let router = new Router({
 });
 
 router.beforeEach(async (to, from, next) => {
-  let { isLoggedIn } = store.getters;
-
-  if (!isLoggedIn) {
-    const { token } = to.query;
-    if (token) {
-      try {
-        const resp = await api.getUserDetails({
-          apiHost: store.state.backend,
-          token,
-        })
-        if (resp.data) {
-          store.commit("setAuth", { auth: {
-            authToken: {
-              token
-            }
-          }});
-          store.commit("setFromBuilder", true);
-          store.commit("setUserDetails", resp.data);
-          isLoggedIn = true;
-        }
-      } catch (e) {
-        console.log('token error', e.response.data.message)
-      }
-    }
-  }
+  const { isLoggedIn } = store.getters;
 
   const isPrivatePage = to.matched.some((record) => record.meta.requiresAuth);
   const isGuestPage = to.matched.some((record) => record.meta.guest);

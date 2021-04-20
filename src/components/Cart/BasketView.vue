@@ -420,19 +420,16 @@ export default {
     },
 
     onBackToBuilder(sync = false) {
-      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/build/
-        ?from=library
-        &sync=${sync}
-      `;
+      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&sync=${sync}`;
     },
     onAddToBuilder() {
       console.log('onAddToBuilder');
       if (this.fromBuilder) {
-        onBackToBuilder(true);
+        this.onBackToBuilder(true);
       } else {
         const isLoggedIn = !_.isEmpty(this.$store.state.auth);
         if (isLoggedIn) {
-          selectAccount();
+          this.selectAccount();
           // api.createToken({
           //   apiHost: this.$store.state.backend,
           //   token: this.$store.state.auth.authToken.token,
@@ -451,9 +448,10 @@ export default {
     },
     onLoginSuccess() {
       this.showLoginForm = false;
-      selectAccount();
+      this.selectAccount();
     },
     selectAccount() {
+      this.$emit('addToBuilder');
     }
   },
 };

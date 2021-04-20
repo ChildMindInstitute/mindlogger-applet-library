@@ -153,7 +153,7 @@ export default {
           password: this.password,
         })
         .then((resp) => {
-          this.$store.commit("setAuth", { auth: resp.data, email: this.email });
+          this.setAuth({ auth: resp.data, email: this.email });
           this.onLoginSuccess();
         })
         .catch((e) => {

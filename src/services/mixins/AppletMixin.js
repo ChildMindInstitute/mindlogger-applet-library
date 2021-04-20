@@ -63,8 +63,8 @@ export const AppletMixin = {
       const form = new FormData();
       const formData = {};
 
-      Object.entries(cartSelections).map(([appletId, cartSelection]) => {
-        formData[appletId] = parseAppletCartItem(appletId, cartSelection);
+      Object.entries(this.cartSelections).map(([appletId, cartSelection]) => {
+        formData[appletId] = this.parseAppletCartItem(appletId, cartSelection);
       })
 
       form.set("basket", JSON.stringify(formData));
@@ -72,7 +72,7 @@ export const AppletMixin = {
       await api.addAppletsToBasket({
         apiHost: this.apiHost,
         token: this.token,
-        data: formData,
+        data: form,
       });
     },
     buildAppletTree(appletData) {

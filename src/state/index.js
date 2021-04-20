@@ -13,7 +13,7 @@ const getDefaultState = () => {
     auth: {},
     currentLanguage: 'en_US',
     currentRetentions: null,
-    
+
     publishedApplets: [],
     appletContents: {},
     basketContent: {},
@@ -48,6 +48,9 @@ const mutations = {
   },
   setAppletContents(state, appletContents) {
     state.appletContents = appletContents;
+  },
+  setBasketContent(state, basketContent) {
+    state.basketContent = basketContent;
   },
   setAppletsTree(state, appletsTree) {
     state.appletsTree = appletsTree;

@@ -206,10 +206,11 @@
 import api from "../services/Api/api.vue";
 import { mapState, mapGetters } from 'vuex';
 import { AppletMixin } from "../services/mixins/AppletMixin";
+import { AccountMixin } from "../services/mixins/AccountMixin";
 
 export default {
   name: 'LibrarySearch',
-  mixins: [AppletMixin],
+  mixins: [AccountMixin, AppletMixin],
   components: {
 
   },
@@ -219,15 +220,6 @@ export default {
       searchText: "",
       baskets: [],
     };
-  },
-  async beforeMount() {
-    try {
-      this.isLoading = true;
-      await this.fetchPublishedApplets();
-      this.isLoading = false;
-    } catch(err) {
-      console.log(err);
-    }
   },
   /**
    * Define here all computed properties.
@@ -252,18 +244,52 @@ export default {
       );
     },
   },
+  async beforeMount() {
+    const { from, token } = this.$route.query;
+    if (from == 'builder' && token) {
+      if (this.isLoggedIn) {
+        this.$store.commit("setFromBuilder", true);
+      } else {
+        try {
+          const resp = await api.getUserDetails({
+            apiHost: this.$store.state.backend,
+            token,
+          });
+          if (resp.data) {
+            this.setAuth({
+              auth: {
+                authToken: {
+                  token
+                }
+              }
+            });
+            this.$store.commit("setFromBuilder", true);
+          }
+        } catch (e) {
+          console.log('token error', e.response.data.message);
+        }
+      }
+    }
+    try {
+      this.isLoading = true;
+      await this.fetchPublishedApplets();
+      this.isLoading = false;
+    } catch(err) {
+      console.log(err);
+    }
+  },
   methods: {
     onAddBasket (appletId) {
       if (this.isLoggedIn) {  // add to basket
         const form = new FormData();
-        const formData = this.parseAppletCartItem(appletId)
+        const formData = this.parseAppletCartItem(appletId, this.appletSelections[appletId])
 
         form.set("selection", JSON.stringify(formData));
         api.updateAppletBasket({
           apiHost: this.$store.state.backend,
           token: this.$store.state.auth.authToken.token,
           appletId,
-          selection: form,
+          data: form,
         }).then(() => {
           if (!this.baskets.includes(appletId)) {
             this.baskets.push(appletId);

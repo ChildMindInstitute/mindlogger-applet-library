@@ -110,10 +110,7 @@ export default {
   },
   methods: {
     onBackToBuilder(sync = false) {
-      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/build/
-        ?from=library
-        &sync=${sync}
-      `;
+      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&sync=${sync}`;
     },
     onAddToBuilder() {
       console.log('onAddToBuilder');
@@ -151,11 +148,8 @@ export default {
         apiHost: this.apiHost,
         token: this.token,
       }).then((res) => {
-        const { token } = res;
-        window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/build/
-          ?from=library
-          &token=${token}
-        `;
+        const { token } = res.data;
+        window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&token=${token}`;
       });
     },
   },
