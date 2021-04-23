@@ -11,6 +11,11 @@ const getDefaultState = () => {
   return {
     backend: process.env.VUE_APP_SERVER_URL,
     auth: {},
+    currentUser: {},
+    allAccounts: [],
+    currentAccount: {},
+    currentApplets: [],
+
     currentLanguage: 'en_US',
     currentRetentions: null,
 
@@ -42,6 +47,16 @@ const mutations = {
   },
   setBackend(state, backend) {
     state.backend = backend || process.env.VUE_APP_SERVER_URL;
+  },
+  setAccounts(state, accounts) {
+    state.allAccounts = accounts;
+  },
+  setUserDetails(state, user) {
+    state.currentUser = user;
+  },
+  switchAccount(state, account) {
+    state.currentAccount = account;
+    state.currentApplets = account.applets;
   },
   setPublishedApplets(state, publishedApplets) {
     state.publishedApplets = publishedApplets;

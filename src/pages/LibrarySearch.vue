@@ -247,27 +247,23 @@ export default {
   async beforeMount() {
     const { from, token } = this.$route.query;
     if (from == 'builder' && token) {
-      if (this.isLoggedIn) {
-        this.$store.commit("setFromBuilder", true);
-      } else {
-        try {
-          const resp = await api.getUserDetails({
-            apiHost: this.$store.state.backend,
-            token,
-          });
-          if (resp.data) {
-            this.setAuth({
-              auth: {
-                authToken: {
-                  token
-                }
+      try {
+        const resp = await api.getUserDetails({
+          apiHost: this.$store.state.backend,
+          token,
+        });
+        if (resp.data) {
+          this.setAuth({
+            auth: {
+              authToken: {
+                token
               }
-            });
-            this.$store.commit("setFromBuilder", true);
-          }
-        } catch (e) {
-          console.log('token error', e.response.data.message);
+            }
+          });
+          this.$store.commit("setFromBuilder", true);
         }
+      } catch (e) {
+        console.log('token error', e.response.data.message);
       }
     }
     try {

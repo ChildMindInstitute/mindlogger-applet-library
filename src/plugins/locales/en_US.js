@@ -350,4 +350,7 @@ export default {
   appletUrl: 'Applet URL',
   selectAppletToEdit: 'Please select applet to edit',
   deleteAppletFromCartConfirmation: 'Are you sure you want to delete "{appletName}" from your cart?',
+  selectAccountToAddBasket: 'Which account do you want to add this basket to?',
+  addToExistingApplet: 'Add to existing applet',
+  addToNewApplet: 'Add to new applet',
 };

@@ -1,6 +1,5 @@
 <template>
   <div>
-    <p>CartView</p>
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -16,7 +15,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="onAddToBuilder()"
+        @click="$emit('addToBasket')"
       >
         <div class="py-2">
           Add to 
@@ -176,27 +175,6 @@
         :title="$t('deleteApplet')"
         @onOK="deleteAppletFromCart"
     />
-
-    <v-container
-      v-if="showLoginForm"
-      id="login-wrapper"
-      fluid
-    >
-      <v-layout
-        align-center
-        justify-center
-      >
-        <v-flex
-          xs12
-          sm8
-          md4
-        >
-          <LoginForm
-            @loginSuccess="onLoginSuccess"
-          />
-        </v-flex>
-      </v-layout>
-    </v-container>
   </div>
 </template>
 
@@ -286,16 +264,6 @@ export default {
     onAppletSelection(data) {
       console.log('onAppletSelection', JSON.stringify(data));
     },
-    onAddToBuilder() {
-      this.showLoginForm = true;
-    },
-    async onLoginSuccess() {
-      this.showLoginForm = false;
-      await this.addCartItemsToBasket();
-    },
-    addToBuilder() {
-      this.$emit('addToBuilder');
-    }
   },
 };
 </script>

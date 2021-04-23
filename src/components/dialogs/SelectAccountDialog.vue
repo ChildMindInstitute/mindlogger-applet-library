@@ -6,11 +6,18 @@
   >
     <v-card>
       <v-card-title class="headline">
-        {{ title }}
+        {{ $t('selectAccountToAddBasket') }}
       </v-card-title>
 
       <v-card-text>
-        {{ dialogText }}
+        <v-radio-group v-model="selectedAccount">
+          <v-radio
+            v-for="account in allAccounts"
+            :key="account.accountId"
+            :label="account.accountName"
+            :value="account.accountId"
+          />
+        </v-radio-group>
       </v-card-text>
 
       <v-card-actions>
@@ -19,11 +26,11 @@
         <v-btn
           color="primary darken-1"
           text
-          @click="onOK"
+          @click="onAdd"
+          :disabled="!selectedAccount"
         >
-          {{ $t('okay') }}
+          Add
         </v-btn>
-
         <v-btn
           color="primary darken-1"
           text
@@ -37,25 +44,29 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
-  name: 'ConfirmationDialog',
+  name: 'SelectAccountDialog',
   props: {
     value: {
       type: Boolean,
       required: true
     },
-    dialogText: {
-      type: String,
-      required: true
-    },
-    title: {
-      type: String,
-      required: true
-    },
+  },
+  data() {
+    return {
+      selectedAccount: '',
+    };
+  },
+  computed: {
+    ...mapState([
+      'allAccounts'
+    ]),
   },
   methods: {
-    onOK() {
-      this.$emit('onOK');
+    onAdd() {
+      this.$emit('selectAccount', this.selectedAccount);
       this.$emit('input', false);
     },
     onCancel() {

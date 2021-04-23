@@ -61,6 +61,18 @@ const getUserDetails = ({ apiHost, token }) =>
     },
   });
 
+const switchAccount = ({ apiHost, token, accountId }) =>
+  axios({
+    method: "put",
+    url: `${apiHost}/user/switchAccount`,
+    headers: {
+      "Girder-Token": token,
+    },
+    params: {
+      accountId,
+    },
+  });
+
 const getPublishedApplets = ({ apiHost }) =>
   axios({
     method: "get",
@@ -136,6 +148,7 @@ export default {
   addAppletsToBasket,
   getAccounts,
   getUserDetails,
+  switchAccount,
   resetPassword,
   updateRegistration,
   updateAppletBasket,

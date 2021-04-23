@@ -1,6 +1,5 @@
 <template>
   <div v-show="!isLoading">
-    <p>BasketView</p>
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -17,7 +16,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="onAddToBuilder()"
+        @click="$emit('addToBuilder')"
       >
         <div class="py-2">
           Add to 
@@ -35,7 +34,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="onBackToBuilder(false)"
+        @click="$emit('addToBuilder')"
       >
         <div class="py-2">
           <v-icon small>
@@ -418,41 +417,6 @@ export default {
     onSearchText () {
 
     },
-
-    onBackToBuilder(sync = false) {
-      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&sync=${sync}`;
-    },
-    onAddToBuilder() {
-      console.log('onAddToBuilder');
-      if (this.fromBuilder) {
-        this.onBackToBuilder(true);
-      } else {
-        const isLoggedIn = !_.isEmpty(this.$store.state.auth);
-        if (isLoggedIn) {
-          this.selectAccount();
-          // api.createToken({
-          //   apiHost: this.$store.state.backend,
-          //   token: this.$store.state.auth.authToken.token,
-          // }).then((res) => {
-          //   const { token } = res;
-          //   window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/build/
-          //     ?from=library
-          //     &sync=true
-          //     &token=${token}
-          //   `;
-          // });
-        } else {
-          this.showLoginForm = true;
-        }
-      }
-    },
-    onLoginSuccess() {
-      this.showLoginForm = false;
-      this.selectAccount();
-    },
-    selectAccount() {
-      this.$emit('addToBuilder');
-    }
   },
 };
 </script>
