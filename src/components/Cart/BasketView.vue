@@ -181,27 +181,6 @@
         </div>
       </v-card>
     </div>
-
-    <v-container
-      v-if="showLoginForm"
-      id="login-wrapper"
-      fluid
-    >
-      <v-layout
-        align-center
-        justify-center
-      >
-        <v-flex
-          xs12
-          sm8
-          md4
-        >
-          <LoginForm
-            @loginSuccess="onLoginSuccess"
-          />
-        </v-flex>
-      </v-layout>
-    </v-container>
   </div>
 </template>
 
@@ -222,25 +201,15 @@
 .ds-cursor{
   cursor: pointer;
 }
-
-#login-wrapper {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-}
 </style>
 
 <script>
 import api from "../../services/Api/api.vue";
 import { mapState } from 'vuex';
 import _ from "lodash";
-import LoginForm from "../Login/LoginForm.vue";
 
 export default {
   name: 'BasketView',
-  components: {
-    LoginForm,
-  },
   data() {
     return {
       searchText: "",
@@ -251,7 +220,6 @@ export default {
       basketContents: [],
       selection: [],
       treeIndex: 1,
-      showLoginForm: false,
     };
   },
   computed: mapState([
