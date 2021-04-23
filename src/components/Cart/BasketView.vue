@@ -34,7 +34,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="$emit('addToBuilder')"
+        @click="$emit('backToBuilder')"
       >
         <div class="py-2">
           <v-icon small>
