@@ -3,11 +3,10 @@ import Router from "vue-router";
 import Login from "../pages/Login";
 import LibrarySearch from "../pages/LibrarySearch";
 import Cart from "../pages/Cart";
-import CartView from "../components/Cart/CartView";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
+import api from "../services/Api/api.vue";
 import { getLanguageCode } from '../plugins/language';
-import api from '../services/Api/api.vue';
 import _ from "lodash";
 
 Vue.use(Router);
@@ -39,7 +38,7 @@ let router = new Router({
     },
     {
       path: "/",
-      redirect: "/login",
+      redirect: "/librarySearch",
     },
   ],
 });
@@ -52,10 +51,30 @@ router.beforeEach(async (to, from, next) => {
   const lang = getLanguageCode(
     from.query.lang || store.state.currentLanguage || 'en'
   );
-
+  const token = to.query.token || '';
+  
+  if (token) {
+    console.log('token', token)
+    api
+      .signInWithToken({
+        apiHost: store.state.backend,
+        token,
+      })
+      .then((resp) => {
+        store.commit("setAuth", { auth: resp.data, email: resp.data.user.email });
+        return next({
+          path: "/librarySearch",
+          query: { nextUrl: to.fullPath, lang },
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
   // Redirect unauthenticated users to the login page if they are trying to
   // access a page that requires authentication.
-  if ( (isPrivatePage || !to.matched.length) && !isLoggedIn) {
+  if ((isPrivatePage || !to.matched.length) && !isLoggedIn) {
+    console.log('from', from);
     return next({
       path: "/login",
       query: { nextUrl: to.fullPath, lang },

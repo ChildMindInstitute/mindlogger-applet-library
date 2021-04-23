@@ -24,6 +24,16 @@ const createToken = ({ apiHost, token }) =>
     },
   });
 
+const signInWithToken = ({ apiHost, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/user/authentication`,
+    headers: { "Girder-Token": `${token}` },
+    params: {
+      lang: store.state.currentLanguage.substr(0, 2),
+    },
+  });
+
 const signUp = ({ apiHost, body }) =>
   axios({
     method: "post",
@@ -142,9 +152,28 @@ const getUsersData = ({ apiHost, token, appletId, options }) =>
     params: options,
   });
 
+const getAppletContributionOrigin = ({ apiHost, token, libraryId }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/library/contribution/origin?libraryId=${libraryId}`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
+const getAppletContributionUpdates = ({ apiHost, token, libraryId }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/library/contribution/updates?libraryId=${libraryId}`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 export default {
   signIn,
   signUp,
+  signInWithToken,
   addAppletsToBasket,
   getAccounts,
   getUserDetails,
@@ -158,5 +187,7 @@ export default {
   getBasketContent,
   getUsersData,
   createToken,
+  getAppletContributionOrigin,
+  getAppletContributionUpdates,
 }
 </script>

@@ -46,6 +46,10 @@
     </div>
 
     <div class="mt-0">
+      <span v-if="publishedApplets().length === 0">
+        You have not added anything to your basket yet.
+        Start searching above.
+      </span>
       <v-card 
         class="mx-auto mb-4 d-flex pa-md-2"
         v-for="applet in publishedApplets()"
@@ -172,7 +176,7 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="onDeleteApplet(applet.appletId)"
+            @click="deleteApplet = applet; dialog = true"
           >
             <v-icon color="grey darken-3" >
               mdi-trash-can-outline
@@ -181,6 +185,38 @@
         </div>
       </v-card>
     </div>
+    <v-dialog
+      v-if="deleteApplet"
+      v-model="dialog"
+      persistent
+      max-width="480"
+    >
+      <v-card>
+        <v-card-title class="headline">
+          Delete Applet
+        </v-card-title>
+        <v-card-text class="mx-2">
+          Are you sure you want to delete <b>{{ deleteApplet.name }}</b> from your basket?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="onDeleteApplet()"
+          >
+            Yes
+          </v-btn>
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialog = false"
+          >
+            No
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -213,7 +249,9 @@ export default {
   data() {
     return {
       searchText: "",
+      dialog: false,
       isLoading: true,
+      deleteApplet: null,
       selectedApplets: {},
       appletsTree: [],
       baskets: [],
@@ -266,15 +304,14 @@ export default {
         return this.basketContents;
       }
     },
-    onDeleteApplet (appletId) {
-      // const form = new FormData();
+    onDeleteApplet () {
+      const { appletId } = this.deleteApplet;
 
-      // form.set("basket", JSON.stringify(this.selectedApplets[appletId]));
+      this.dialog = false;
       api.deleteBasketApplet({
         apiHost: this.$store.state.backend,
         token: this.$store.state.auth.authToken.token,
         appletId,
-        // data: form,
       }).then(() => {
         this.basketContents = this.basketContents.filter((applet) => applet.appletId !== appletId);
       });
