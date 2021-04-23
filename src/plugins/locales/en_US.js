@@ -11,7 +11,7 @@ export default {
   resetEmailSent: 'Reset email has been sent',
   mindloggersAdmin: 'MindLogger Admin',
   mindloggerDashboard: 'MindLogger',
-  mindloggerLibrary: 'Library',
+  mindloggerLibrary: 'Applet Library',
   logIntoAccount: 'Log into your MindLogger account',
   email: 'Email',
   createAccount: 'Create Account',

@@ -15,6 +15,16 @@ const signIn = ({ apiHost, user, password }) =>
     },
   });
 
+const signInWithToken = ({ apiHost, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/user/authentication`,
+    headers: { "Girder-Token": `${token}` },
+    params: {
+      lang: store.state.currentLanguage.substr(0, 2),
+    },
+  });
+
 const signUp = ({ apiHost, body }) =>
   axios({
     method: "post",
@@ -130,6 +140,7 @@ const getAppletContributionUpdates = ({ apiHost, token, libraryId }) =>
 export default {
   signIn,
   signUp,
+  signInWithToken,
   addAppletsToBasket,
   getUserDetails,
   resetPassword,
