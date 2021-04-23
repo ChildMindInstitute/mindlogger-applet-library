@@ -150,7 +150,6 @@ export default {
     },
     async onLoginSuccess() {
       await this.addCartItemsToBasket();
-      this.step = 'SELECT_ACCOUNT';
       this.onSelectAccount();
     },
 

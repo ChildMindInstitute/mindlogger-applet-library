@@ -16,6 +16,7 @@
         height="50"
         dark
         @click="$emit('addToBasket')"
+        :disabled="this.cartApplets.length == 0"
       >
         <div class="py-2">
           Add to 
