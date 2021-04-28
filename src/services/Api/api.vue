@@ -15,6 +15,15 @@ const signIn = ({ apiHost, user, password }) =>
     },
   });
 
+const createToken = ({ apiHost, token }) =>
+  axios({
+    method: "post",
+    url: `${apiHost}/user/token`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 const signInWithToken = ({ apiHost, token }) =>
   axios({
     method: "get",
@@ -44,6 +53,15 @@ const resetPassword = ({ apiHost, body }) =>
     },
   });
 
+const getAccounts = ({ apiHost, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/user/accounts`,
+    headers: {
+      "Girder-Token": token,
+    },
+  });
+
 const getUserDetails = ({ apiHost, token }) =>
   axios({
     method: "get",
@@ -53,16 +71,31 @@ const getUserDetails = ({ apiHost, token }) =>
     },
   });
 
+const switchAccount = ({ apiHost, token, accountId }) =>
+  axios({
+    method: "put",
+    url: `${apiHost}/user/switchAccount`,
+    headers: {
+      "Girder-Token": token,
+    },
+    params: {
+      accountId,
+    },
+  });
+
 const getPublishedApplets = ({ apiHost }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/applets`,
   });
 
-const addAppletsToBasket = ({ apiHost, data }) =>
+const addAppletsToBasket = ({ apiHost, token, data }) =>
   axios({
     method: "post",
     url: `${apiHost}/library/basket`,
+    headers: {
+      "Girder-Token": token,
+    },
     data,
   });
 
@@ -75,14 +108,14 @@ const deleteBasketApplet = ({ apiHost, appletId, token }) =>
     },
   });
 
-const updateAppletBasket = ({ apiHost, appletId, selection, token }) =>
+const updateAppletBasket = ({ apiHost, token, appletId, data }) =>
   axios({
     method: "put",
     url: `${apiHost}/library/basket/selection?appletId=${appletId}`,
     headers: {
       "Girder-Token": token,
     },
-    selection,
+    data,
   });
 
 const getAppletContent = ({ apiHost, libraryId }) =>
@@ -142,7 +175,9 @@ export default {
   signUp,
   signInWithToken,
   addAppletsToBasket,
+  getAccounts,
   getUserDetails,
+  switchAccount,
   resetPassword,
   updateRegistration,
   updateAppletBasket,
@@ -151,6 +186,7 @@ export default {
   getAppletContent,
   getBasketContent,
   getUsersData,
+  createToken,
   getAppletContributionOrigin,
   getAppletContributionUpdates,
 }

@@ -1,37 +1,38 @@
 <template>
-  <div v-show="!isLoading">
-    <div class="d-flex align-center justify-center align-content-ceneter">
+  <div>
+    <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
-        @input="onSearchText"
         light
         solo
         prepend-inner-icon="search"
         placeholder="Type keyword...">
       </v-text-field>
 
-      <v-badge
+      <v-btn
+        rounded
         color="primary"
-        content="0"
-        bottom
-        offset-x="35"
-        offset-y="37"
+        class="ml-2"
+        height="50"
+        dark
+        @click="$emit('addToBasket')"
+        :disabled="this.cartApplets.length == 0"
       >
-        <v-icon 
-          color="blue-grey darken-3" 
-          class="mx-4 mb-6 ds-cursor"
-          large 
-          @click="onViewBasket"
-        >
-          mdi-basket-outline 
-        </v-icon>
-      </v-badge>
+        <div class="py-2">
+          Add to 
+          <br/> 
+          Applet Builder
+          <v-icon small>
+            mdi-chevron-right
+          </v-icon>
+        </div>
+      </v-btn>
     </div>
 
     <div class="mt-0">
       <v-card 
         class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in filteredApplets"
+        v-for="applet in filteredCartApplets"
         :key="applet.id"
       >
         <div class="text-center">
@@ -89,13 +90,14 @@
           <div class="ds-tree-layout ml-2">
             <v-treeview
               class="ds-tree-view"
-              v-model="appletSelections[applet.appletId]"
+              v-model="cartSelections[applet.appletId]"
               :items="[appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
               on-icon="mdi-checkbox-marked-circle-outline"
               off-icon="mdi-checkbox-blank-circle-outline"
               indeterminate-icon="mdi-minus-circle-outline"
+              @input="onAppletSelection"
               open-on-click
               selectable
               return-object
@@ -155,30 +157,25 @@
         </div>
         <div class="d-flex align-baseline">
           <v-btn
-            class="mx-2 mt-2"
+            class="mx-8 mt-2"
             fab
             small
-            @click="onAddBasket(applet.appletId)"
-            :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
+            @click="onDeleteApplet(applet.appletId)"
           >
             <v-icon color="grey darken-3" >
-              mdi-basket-plus-outline
-            </v-icon>
-          </v-btn>
-
-          <v-btn
-            class="ml-2 mt-2 mr-6"
-            fab
-            small
-            @click="onAppletDetail(applet)"
-          >
-            <v-icon color="grey darken-3">
-              mdi-information-outline
+              mdi-trash-can-outline
             </v-icon>
           </v-btn>
         </div>
       </v-card>
     </div>
+
+    <ConfirmationDialog
+        v-model="deleteCartItemDialog"
+        :dialogText="$t('deleteAppletFromCartConfirmation', { appletName: deleteAppletId ? appletContents[deleteAppletId].applet.displayName : '' })"
+        :title="$t('deleteApplet')"
+        @onOK="deleteAppletFromCart"
+    />
   </div>
 </template>
 
@@ -200,120 +197,73 @@
   cursor: pointer;
 }
 
+#login-wrapper {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+}
 </style>
 
 <script>
-import api from "../services/Api/api.vue";
-import { mapState, mapGetters } from 'vuex';
-import { AppletMixin } from "../services/mixins/AppletMixin";
-import { AccountMixin } from "../services/mixins/AccountMixin";
+import { mapState } from 'vuex';
+import _ from "lodash";
+import LoginForm from "../Login/LoginForm.vue";
+import { AppletMixin } from "../../services/mixins/AppletMixin";
+import ConfirmationDialog from '../dialogs/ConfirmationDialog';
 
 export default {
-  name: 'LibrarySearch',
-  mixins: [AccountMixin, AppletMixin],
+  name: 'CartView',
+  mixins: [AppletMixin],
   components: {
-
+    ConfirmationDialog,
+    LoginForm,
   },
   data() {
     return {
-      isLoading: true,
       searchText: "",
-      baskets: [],
+      selectedApplets: {},
+      selection: [],
+      deleteCartItemDialog: false,
+      deleteAppletId: null,
+      showLoginForm: false,
     };
   },
-  /**
-   * Define here all computed properties.
-   */
   computed: {
     ...mapState([
       'publishedApplets',
-      'appletsTree',
       'appletContents',
-      'appletSelections',
+      'appletsTree',
       'cartSelections',
     ]),
-    ...mapGetters([
-      'isLoggedIn',
-    ]),
-    filteredApplets() {
+    cartApplets() {
+      return this.publishedApplets.filter(applet => this.cartSelections[applet.appletId])
+    },
+    filteredCartApplets() {
       if (!this.searchText) {
-        return this.publishedApplets;
+        return this.cartApplets;
       }
-      return this.publishedApplets.filter((applet) =>
-        applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
+      return this.cartApplets.filter(applet => 
+        applet.keywords.find((keyword) => (keyword.toLowerCase() === this.searchText.toLowerCase()))
       );
     },
   },
-  async beforeMount() {
-    const { from, token } = this.$route.query;
-    if (from == 'builder' && token) {
-      try {
-        const resp = await api.getUserDetails({
-          apiHost: this.$store.state.backend,
-          token,
-        });
-        if (resp.data) {
-          this.setAuth({
-            auth: {
-              authToken: {
-                token
-              }
-            }
-          });
-          this.$store.commit("setFromBuilder", true);
-        }
-      } catch (e) {
-        console.log('token error', e.response.data.message);
-      }
-    }
-    try {
-      this.isLoading = true;
-      await this.fetchPublishedApplets();
-      this.isLoading = false;
-    } catch(err) {
-      console.log(err);
-    }
-  },
   methods: {
-    onAddBasket (appletId) {
-      if (this.isLoggedIn) {  // add to basket
-        const form = new FormData();
-        const formData = this.parseAppletCartItem(appletId, this.appletSelections[appletId])
-
-        form.set("selection", JSON.stringify(formData));
-        api.updateAppletBasket({
-          apiHost: this.$store.state.backend,
-          token: this.$store.state.auth.authToken.token,
-          appletId,
-          data: form,
-        }).then(() => {
-          if (!this.baskets.includes(appletId)) {
-            this.baskets.push(appletId);
-          }
-        });
-      } else {  // add to cart
-        this.$store.commit("setCartSelections", {
-          ...this.cartSelections,
-          [appletId]: this.appletSelections[appletId]
-        });
-      }
+    onDeleteApplet(appletId) {
+      this.deleteAppletId = appletId;
+      this.deleteCartItemDialog = true;
     },
-    onAppletDetail(applet) {
-      this.$router.push({
-        name: 'AppletDetail',
-        params: { appletId: applet.id },
-      });
+    deleteAppletFromCart() {
+      this.deleteCartItemDialog = false;
+      const newCartSelections = {};
+      this.cartApplets.map(applet => {
+        if (applet.appletId != this.deleteAppletId) {
+          newCartSelections[appletId] = this.cartSelections[appletId];
+        }
+      })
+      this.$store.commit("setCartSelections", newCartSelections);
     },
-    /*
-     * Change appletTreeData format to basket data 
-     */
-    onSearchText () {
-
-    },
-    onViewBasket () {
-      this.$router.push({
-        name: 'Cart',
-      });
+    onAppletSelection(data) {
+      console.log('onAppletSelection', JSON.stringify(data));
     },
   },
 };

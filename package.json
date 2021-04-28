@@ -1,5 +1,5 @@
 {
-  "name": "mindlogger-admin",
+  "name": "mindlogger-library",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,22 +11,24 @@
     "build-new": "vue-cli-service build --mode new",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
-    "dev-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://admin-dev.mindlogger.org --region us-east-1",
-    "test-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://admin-test.mindlogger.org --region us-east-1",
-    "staging-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://admin-staging.mindlogger.org --region us-east-1",
-    "new-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://admin-new.mindlogger.org --region us-east-1"
+    "dev-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://library-dev.mindlogger.org --region us-east-1",
+    "test-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://library-test.mindlogger.org --region us-east-1",
+    "staging-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://library-staging.mindlogger.org --region us-east-1",
+    "new-deploy": "aws s3 --profile mindlogger_aws sync ./dist/ s3://library-new.mindlogger.org --region us-east-1"
   },
   "dependencies": {
     "@ag-grid-community/all-modules": "^22.1.1",
     "@ag-grid-community/vue": "^22.1.2",
     "@sentry/browser": "^5.19.0",
     "@sentry/integrations": "^5.19.0",
+    "applet-schema-builder": "^0.6.0",
     "axios": "^0.19.2",
     "babel-loader": "^7.1.5",
     "crypto": "^1.0.1",
     "dayspan-vuetify-2": "^0.2.0",
     "javascript-time-ago": "^2.3.3",
     "lodash": "^4.17.15",
+    "object-to-csv": "^1.0.5",
     "vue": "2.6.10",
     "vue-i18n": "^8.21.1",
     "vue-router": "^3.1.6",

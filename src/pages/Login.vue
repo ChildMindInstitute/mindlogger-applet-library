@@ -12,7 +12,9 @@
         sm8
         md4
       >
-        <LoginForm />
+        <LoginForm
+          @loginSuccess="loginSuccess"
+        />
       </v-flex>
 
       <v-snackbar
@@ -60,7 +62,9 @@ export default {
     this.text = this.$t("resetEmailSent");
   },
   methods: {
-
+    loginSuccess() {
+      this.$router.push('/').catch(err => {});
+    },
   },
 };
 </script>

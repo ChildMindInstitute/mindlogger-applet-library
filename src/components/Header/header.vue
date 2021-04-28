@@ -108,7 +108,7 @@ export default {
       }
     },
     onLibrarySearch() {
-      this.$router.push('/librarySearch').catch(err => {});
+      this.$router.push('/').catch(err => {});
     },
     onLogout() {
       this.$store.commit('resetState');

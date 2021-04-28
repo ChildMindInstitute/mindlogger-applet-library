@@ -16,6 +16,7 @@
         class="ml-2"
         height="50"
         dark
+        @click="$emit('addToBuilder')"
       >
         <div class="py-2">
           Add to 
@@ -24,6 +25,22 @@
           <v-icon small>
             mdi-chevron-right
           </v-icon>
+        </div>
+      </v-btn>
+      <v-btn
+        v-if="fromBuilder"
+        outlined
+        color="secondary"
+        class="ml-2"
+        height="50"
+        dark
+        @click="$emit('backToBuilder')"
+      >
+        <div class="py-2">
+          <v-icon small>
+            mdi-chevron-left
+          </v-icon>
+          Back to Builder
         </div>
       </v-btn>
     </div>
@@ -220,17 +237,15 @@
 .ds-cursor{
   cursor: pointer;
 }
-
 </style>
 
 <script>
-import api from "../services/Api/api.vue";
+import api from "../../services/Api/api.vue";
+import { mapState } from 'vuex';
+import _ from "lodash";
 
 export default {
-  name: 'ViewBasket',
-  components: {
-
-  },
+  name: 'BasketView',
   data() {
     return {
       searchText: "",
@@ -245,6 +260,9 @@ export default {
       treeIndex: 1,
     };
   },
+  computed: mapState([
+    'fromBuilder'
+  ]),
   async beforeMount() {
     try {
       this.isLoading = true;
@@ -403,11 +421,6 @@ export default {
     },
     onSearchText () {
 
-    },
-    onViewBasket () {
-      this.$router.push({
-        name: 'ViewBasket',
-      });
     },
   },
 };

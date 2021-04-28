@@ -1,9 +1,8 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
 import LibrarySearch from "../pages/LibrarySearch";
-import ViewBasket from "../pages/ViewBasket";
+import Cart from "../pages/Cart";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
 import api from "../services/Api/api.vue";
@@ -23,15 +22,12 @@ let router = new Router({
       },
     },
     {
-      path: "/viewBasket",
-      name: "ViewBasket",
-      component: ViewBasket,
-      meta: {
-        requiresAuth: true,
-      },
+      path: "/cart",
+      name: "Cart",
+      component: Cart,
     },
     {
-      path: "/librarySearch",
+      path: "/",
       name: "LibrarySearch",
       component: LibrarySearch,
     },
@@ -41,22 +37,15 @@ let router = new Router({
       component: AppletDetail,
     },
     {
-      path: "/dashboard",
-      name: "Dashboard",
-      component: Dashboard,
-      meta: {
-        requiresAuth: true,
-      },
-    },
-    {
       path: "/",
       redirect: "/librarySearch",
     },
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = !_.isEmpty(store.state.auth);
+router.beforeEach(async (to, from, next) => {
+  const { isLoggedIn } = store.getters;
+
   const isPrivatePage = to.matched.some((record) => record.meta.requiresAuth);
   const isGuestPage = to.matched.some((record) => record.meta.guest);
   const lang = getLanguageCode(
