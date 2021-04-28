@@ -62,7 +62,7 @@
 
           <v-expand-transition>
             <v-menu
-              v-if="!isAppletOriginal"
+              v-if="hasContributions"
               offset-y
             >
               <template v-slot:activator="{ on }">
@@ -212,7 +212,7 @@
     </div>
 
     <ViewContributionsDialog
-        v-if="!isAppletOriginal"
+        v-if="hasContributions"
         v-model="viewContributionsDialog"
         :contributionsData="contributionsData"
         @close="viewContributionsDialog = false"
@@ -310,8 +310,25 @@ export default {
     };
   },
   computed: {
-    isAppletOriginal() {
-      return this.contributionsData.length <= 1;
+    activities () {
+      if (this.selectedActivities === 1) {
+        return this.selectedActivities + ' activity';
+      } else {
+        return this.selectedActivities + ' activities';
+      }
+    },
+    isLoggedIn () {
+      return !_.isEmpty(this.$store.state.auth);
+    },
+    items () {
+      if (this.selectedItems === 1) {
+        return this.selectedItems + ' item';
+      } else {
+        return this.selectedItems + ' items';
+      }
+    },
+    hasContributions() {
+      return this.contributionsData.length > 0;
     },
   },
   async beforeMount() {
@@ -343,25 +360,6 @@ export default {
     } catch (error) {
       console.log(error)
     }
-  },
-  computed: {
-    activities () {
-      if (this.selectedActivities === 1) {
-        return this.selectedActivities + ' activity';
-      } else {
-        return this.selectedActivities + ' activities';
-      }
-    },
-    isLoggedIn () {
-      return !_.isEmpty(this.$store.state.auth);
-    },
-    items () {
-      if (this.selectedItems === 1) {
-        return this.selectedItems + ' item';
-      } else {
-        return this.selectedItems + ' items';
-      }
-    },
   },
   methods: {
     publishedApplets () {

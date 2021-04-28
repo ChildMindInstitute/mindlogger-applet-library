@@ -170,56 +170,60 @@ export const AppletMixin = {
       return cartItem;
     },
     async getAppletContributions(libraryId, appletContent) {
-      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
-        apiHost: this.apiHost,
-        token: this.token,
-        libraryId,
-      })
-      if (Object.keys(contributionUpdatesData).length <= 1) {
-        return [];
-      }
       const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
         apiHost: this.apiHost,
         token: this.token,
         libraryId,
       })
 
-      const itemModel = new Item();
-      let currentItem = null;
-      const appletContributionUpdates = Object.entries(contributionUpdatesData).map(([identifier, updates]) => {
-        const key = identifier.split("/").pop()
-        let changes = '';
-        if (!appletContributionOrigins[key]) {
-          const item = itemModel.getItemBuilderData(Item.parseJSONLD(
-            appletContent['items'][identifier]
-          ));
-          itemModel.updateReferenceObject(item);
-          currentItem = itemModel.getItemData();
-          changes = 'created';
-        }
-        return {
-          identifier,
-          key: identifier.split("/").pop(),
-          ...updates,
-          created: this.formatTimeAgo(updates.created),
-          updated: this.formatTimeAgo(updates.updated),
-          changes,
-        }
+      if (Object.keys(appletContributionOrigins).length == 0) {
+        return [];
+      }
+
+      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
+        apiHost: this.apiHost,
+        token: this.token,
+        libraryId,
       })
 
-      appletContributionUpdates.map(c => {
-        if (c.changes == '') {
-          const item = itemModel.getItemBuilderData(Item.parseJSONLD(
-            appletContributionOrigins[c.key]['content']
-          ));
-          itemModel.updateReferenceObject(item);
-          const originItem = itemModel.getItemData();
-          const changeInfo = Item.getChangeInfo(currentItem, originItem);
-          c.changes = changeInfo.log.reduce((c, l) => c += l['name'] + "\n", '');
-        }
+      const contributionsData = [];
+      const itemModel = new Item();
+      Object.entries(appletContributionOrigins).map(([itemId, itemContributionData]) => {
+        const itemIdentifier = Object.keys(contributionUpdatesData).find(identifier => identifier.split("/").pop() == itemId);
+        const activityId = itemIdentifier.split("/")[0];
+        const itemUpdate = contributionUpdatesData[itemIdentifier];
+
+        const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
+        const updated = this.formatTimeAgo(itemUpdate["updated"]);
+
+        const itemOriginData = itemContributionData["content"];
+        const itemCurrentData = appletContent["items"][itemIdentifier];
+
+        itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemOriginData)));
+        const originItem = itemModel.getItemData();
+
+        itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemCurrentData)));
+        const currentItem = itemModel.getItemData();
+
+        const changeInfo = Item.getChangeInfo(originItem, currentItem);
+
+        changeInfo.log.map(log => {
+          contributionsData.push({
+            creator: itemContributionData["baseItem"]["account"],
+            created: created,
+            appletName: itemContributionData["baseItem"]["applet"],
+            activityName: appletContent["activities"][activityId]["@id"],
+            itemName: itemContributionData["content"]["@id"],
+            itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
+            editor: itemUpdate["lastUpdatedBy"],
+            updated: updated,
+            changes: log.name,
+            version: itemContributionData["content"]["schema:version"][0]["@value"],
+          });
+        });
       });
 
-      return appletContributionUpdates;
+      return contributionsData;
     },
     exportContributions(contributionsData) {
       let otc = new ObjectToCSV({
