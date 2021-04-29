@@ -189,7 +189,7 @@
       v-if="deleteApplet"
       v-model="dialog"
       persistent
-      max-width="480"
+      max-width="800"
     >
       <v-card>
         <v-card-title class="headline">
@@ -201,14 +201,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
+            color="primary darken-1"
             text
             @click="onDeleteApplet()"
           >
             Yes
           </v-btn>
           <v-btn
-            color="green darken-1"
+            color="primary darken-1"
             text
             @click="dialog = false"
           >
