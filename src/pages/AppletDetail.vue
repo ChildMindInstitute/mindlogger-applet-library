@@ -351,7 +351,7 @@ export default {
       });
 
       this.buildAppletTree(response.data);
-      this.applet.version = response.data.applet.version;
+      this.applet.version = response.data.applet["schema:version"][0]["@value"];
 
       const appletContent = response.data;
       this.contributionsData = await this.getAppletContributions(appletId, appletContent);
