@@ -6,7 +6,7 @@
   >
     <v-img
       class="logo"
-      @click="onDashboard"
+      @click="onLibrarySearch"
       src="/images/logo.png"
       max-width="130"
       contain
@@ -98,15 +98,6 @@ export default {
    * Define here all methods that will be available in the scope of the template.
    */
   methods: {
-    onDashboard() {
-      this.$router.go('admin-staging.mindlogger.org');
-      console.log('onDashboard');
-      if (this.isLoggedIn) {
-        // this.$router.push('/dashboard').catch(err => {
-        //   console.log(err);
-        // });
-      }
-    },
     onLibrarySearch() {
       this.$router.push('/').catch(err => {});
     },
