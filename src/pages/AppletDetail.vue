@@ -118,14 +118,21 @@
           <div> Status: {{ activities }} / {{ items }} selected </div>
         </div>
         <div class="text-body-1 primary--text font-weight-medium ds-pointer ml-4">
-          <v-icon
-            color="primary" 
-            :disabled="!isLoggedIn" 
-            large
-            @click="onUpdateBasket"
-          >
-            mdi-basket-fill
-          </v-icon>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                color="primary" 
+                v-bind="attrs"
+                v-on="on"
+                :disabled="!isLoggedIn" 
+                large
+                @click="onUpdateBasket"
+              >
+                mdi-basket-fill
+              </v-icon>
+            </template>
+            <span>Add items to basket</span>
+          </v-tooltip>
         </div>
       </v-card>
 
@@ -393,15 +400,17 @@ export default {
       const { appletId } = this.$route.params;
       const form = new FormData();
 
-      form.set("selection", JSON.stringify(this.selectedActs));
-      api.updateAppletBasket({
-        apiHost: this.$store.state.backend,
-        appletId: this.applet.appletId,
-        selection: form,
-        token: this.$store.state.auth.authToken.token,
-      }).then((response) => {
-        console.log(response);
-      });
+      if (this.isLoggedIn) {
+        form.set("selection", JSON.stringify(this.selectedActs));
+        api.updateAppletBasket({
+          apiHost: this.$store.state.backend,
+          appletId: this.applet.appletId,
+          selection: form,
+          token: this.$store.state.auth.authToken.token,
+        }).then((response) => {
+          console.log(response);
+        });
+      }
     },
     onCloseBasketStatus () {
       this.selectBasket = true;

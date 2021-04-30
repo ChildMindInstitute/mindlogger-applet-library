@@ -11,6 +11,25 @@
       </v-text-field>
 
       <v-badge
+        v-if="baskets.length"
+        color="primary"
+        :content="baskets.length"
+        bottom
+        offset-x="35"
+        offset-y="37"
+      >
+        <v-icon 
+          color="blue-grey darken-3" 
+          class="mx-4 mb-6 ds-cursor"
+          large 
+          :disabled="!isLoggedIn"
+          @click="onViewBasket"
+        >
+          mdi-basket-outline 
+        </v-icon>
+      </v-badge>
+      <v-badge
+        v-else
         color="primary"
         content="0"
         bottom
@@ -21,6 +40,7 @@
           color="blue-grey darken-3" 
           class="mx-4 mb-6 ds-cursor"
           large 
+          :disabled="!isLoggedIn"
           @click="onViewBasket"
         >
           mdi-basket-outline 
@@ -154,28 +174,42 @@
           </div>
         </div>
         <div class="d-flex align-baseline">
-          <v-btn
-            class="mx-2 mt-2"
-            fab
-            small
-            @click="onAddBasket(applet.appletId)"
-            :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
-          >
-            <v-icon color="grey darken-3" >
-              mdi-basket-plus-outline
-            </v-icon>
-          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                class="mx-2 mt-2"
+                v-bind="attrs"
+                v-on="on"
+                fab
+                small
+                @click="onAddBasket(applet.appletId)"
+                :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
+              >
+                <v-icon color="grey darken-3" >
+                  mdi-basket-plus-outline
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Add items to basket</span>
+          </v-tooltip>
 
-          <v-btn
-            class="ml-2 mt-2 mr-6"
-            fab
-            small
-            @click="onAppletDetail(applet)"
-          >
-            <v-icon color="grey darken-3">
-              mdi-information-outline
-            </v-icon>
-          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                class="ml-2 mt-2 mr-6"
+                v-bind="attrs"
+                v-on="on"
+                fab
+                small
+                @click="onAppletDetail(applet)"
+              >
+                <v-icon color="grey darken-3">
+                  mdi-information-outline
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>See applet detail</span>
+          </v-tooltip>
         </div>
       </v-card>
     </div>
@@ -266,6 +300,7 @@ export default {
         console.log('token error', e.response.data.message);
       }
     }
+    console.log('auth', this.auth);
     try {
       this.isLoading = true;
       await this.fetchPublishedApplets();
