@@ -124,7 +124,7 @@
                 color="primary" 
                 v-bind="attrs"
                 v-on="on"
-                :disabled="!isLoggedIn" 
+                :disabled="!isLoggedIn || (!selectedActivities && !selectedItems)" 
                 large
                 @click="onUpdateBasket"
               >
