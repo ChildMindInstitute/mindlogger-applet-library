@@ -300,10 +300,18 @@ export default {
         console.log('token error', e.response.data.message);
       }
     }
-    console.log('auth', this.auth);
+
     try {
       this.isLoading = true;
       await this.fetchPublishedApplets();
+      if (this.isLoggedIn) {
+        const basketApplets = (await api.getBasketContent({
+          apiHost: this.$store.state.backend,
+          token: this.$store.state.auth.authToken.token,
+        })).data;
+
+        this.baskets = Object.keys(basketApplets);
+      }
       this.isLoading = false;
     } catch(err) {
       console.log(err);
