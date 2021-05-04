@@ -122,7 +122,7 @@
             >
               <template v-slot:prepend="{ item }">
                   <v-icon 
-                    v-if="item.selected === true && item.options"
+                    v-if="item.selected === true"
                     class="mr-1"
                     color="dark-grey"
                     @click="item.selected = !item.selected"
@@ -130,7 +130,7 @@
                     mdi-menu-down
                   </v-icon>
                   <v-icon 
-                    v-if="item.selected === false && item.options"
+                    v-if="item.selected === false"
                     class="mr-1"
                     color="dark-grey" 
                     @click="item.selected = !item.selected"
@@ -139,26 +139,18 @@
                   </v-icon>
               </template>
               <template v-slot:append="{ item }">
-                <template v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')">
-                  <div
+                <div v-if="item.selected === true">
+                  <div 
+                    v-if="item.inputType === 'radio' || item.inputType === 'checkbox'"
                     v-for="option in item.options"
                     :key="option"
                     class="d-flex align-center pt-2"
                   >
-                    <v-icon 
-                      v-if="item.inputType === 'checkbox'"
-                      class="mr-1"
-                      color="dark-grey" 
-                    >
-                      mdi-checkbox-marked-outline
-                    </v-icon>
-                    <v-icon 
-                      v-else 
-                      class="mr-1"
-                      color="dark-grey" 
-                    >
-                      mdi-radiobox-marked
-                    </v-icon>
+                    <img
+                      class="mr-2"
+                      width="15"
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                    />
                     <v-img
                       v-if="option.image"
                       class="ds-avatar mr-2"
@@ -168,7 +160,18 @@
                     />
                     {{ option.name }}
                   </div>
-                </template>
+                  <div 
+                    v-if="item.inputType !== 'radio' || item.inputType !== 'checkbox'"
+                    class="d-flex align-center pt-2"
+                  >
+                    <img
+                      class="mr-2"
+                      width="15"
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                    />
+                    {{ item.inputType }}
+                  </div>
+                </div>
               </template>
             </v-treeview>
           </div>
@@ -268,14 +271,15 @@ export default {
     ]),
     ...mapGetters([
       'isLoggedIn',
+      'itemTypes',
     ]),
     filteredApplets() {
       if (!this.searchText) {
         return this.publishedApplets;
       }
-      return this.publishedApplets.filter((applet) =>
-        applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
-      );
+      return this.publishedApplets.filter((applet) => {
+        return applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
+      });
     },
   },
   async beforeMount() {

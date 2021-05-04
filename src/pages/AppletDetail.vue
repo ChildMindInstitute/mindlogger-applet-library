@@ -93,6 +93,19 @@
             </v-menu>
           </v-expand-transition>
         </div>
+        <div class="v-basket-position">
+          <v-btn
+            class="ds-basket"
+            color="primary"
+            fab
+            :disabled="selectBasket"
+            @click="onCloseBasketStatus"
+          >
+            <v-icon color="white" medium>
+              mdi-basket-plus-outline
+            </v-icon>
+          </v-btn>
+        </div>
       </v-card>
 
       <v-card 
@@ -156,7 +169,7 @@
           >
             <template v-slot:prepend="{ item }">
                 <v-icon 
-                  v-if="item.selected === true && item.options"
+                  v-if="item.selected === true"
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -164,7 +177,7 @@
                   mdi-menu-down
                 </v-icon>
                 <v-icon 
-                  v-if="item.selected === false && item.options"
+                  v-else-if="item.selected === false"
                   class="mr-1"
                   color="dark-grey" 
                   @click="item.selected = !item.selected"
@@ -173,49 +186,42 @@
                 </v-icon>
             </template>
             <template v-slot:append="{ item }">
-              <div 
-                v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')" 
-                v-for="option in item.options"
-                class="d-flex align-center pt-2"
-              >
-                <v-icon 
-                  v-if="item.inputType === 'checkbox'"
-                  class="mr-1"
-                  color="dark-grey" 
+              <div v-if="item.selected === true">
+                <div 
+                  v-if="item.inputType === 'radio' || item.inputType === 'checkbox'" 
+                  v-for="option in item.options"
+                  :key="option"
+                  class="d-flex align-center pt-2"
                 >
-                  mdi-checkbox-marked-outline
-                </v-icon>
-                <v-icon 
-                  v-else 
-                  class="mr-1"
-                  color="dark-grey" 
+                  <img
+                    class="mr-2"
+                    width="15"
+                    :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                  />
+                  <v-img
+                    class="ds-avatar mr-2"
+                    src="https://raw.githubusercontent.com/ChildMindInstitute/NIMH_EMA_applet/master/images/1F969.png"
+                    max-width="27px"
+                    height="27px"
+                  />
+                  {{ option.name }}
+                </div>
+                <div 
+                  v-if="item.inputType !== 'radio' || item.inputType !== 'checkbox'"
+                  class="d-flex align-center pt-2"
                 >
-                  mdi-checkbox-intermediate
-                </v-icon>
-                <v-img
-                  class="ds-avatar mr-2"
-                  src="https://raw.githubusercontent.com/ChildMindInstitute/NIMH_EMA_applet/master/images/1F969.png"
-                  max-width="27px"
-                  height="27px"
-                />
-                {{ option.name }}
+                  <img
+                    class="mr-2"
+                    width="15"
+                    :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                  />
+                  {{ item.inputType }}
+                </div>
               </div>
             </template>
           </v-treeview>
         </div>
       </v-card>
-
-      <v-btn
-        class="ds-basket"
-        color="primary"
-        fab
-        :disabled="selectBasket"
-        @click="onCloseBasketStatus"
-      >
-        <v-icon color="white" medium>
-          mdi-basket-plus-outline
-        </v-icon>
-      </v-btn>
     </div>
 
     <ViewContributionsDialog
@@ -287,11 +293,18 @@
 .v-treeview-node__content {
   align-items: baseline !important;
 }
+
+.v-basket-position {
+  position: absolute;
+  top: 135px;
+  right: 0px;
+}
 </style>
 
 <script>
 import api from "../services/Api/api.vue";
 import { AppletMixin } from "../services/mixins/AppletMixin";
+import { mapGetters } from 'vuex';
 import ViewContributionsDialog from '../components/dialogs/ViewContributionsDialog.vue';
 
 export default {
@@ -317,15 +330,16 @@ export default {
     };
   },
   computed: {
+    ...mapGetters([
+      'isLoggedIn',
+      'itemTypes',
+    ]),
     activities () {
       if (this.selectedActivities === 1) {
         return this.selectedActivities + ' activity';
       } else {
         return this.selectedActivities + ' activities';
       }
-    },
-    isLoggedIn () {
-      return !_.isEmpty(this.$store.state.auth);
     },
     items () {
       if (this.selectedItems === 1) {
