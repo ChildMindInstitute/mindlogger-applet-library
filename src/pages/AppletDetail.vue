@@ -351,7 +351,7 @@ export default {
       });
 
       this.buildAppletTree(appletContent);
-      this.applet.version = appletContent.applet.version;
+      this.applet.version = appletContent.applet["schema:version"][0]["@value"];
 
       if (this.isLoggedIn) {
         this.contributionsData = await this.getAppletContributions(appletId, appletContent);
