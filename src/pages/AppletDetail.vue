@@ -345,16 +345,17 @@ export default {
     }
 
     try {
-      const response = await api.getAppletContent({
+      const { data: appletContent } = await api.getAppletContent({
         apiHost: this.$store.state.backend,
         libraryId: this.$route.params.appletId,
       });
 
-      this.buildAppletTree(response.data);
-      this.applet.version = response.data.applet["schema:version"][0]["@value"];
+      this.buildAppletTree(appletContent);
+      this.applet.version = appletContent.applet["schema:version"][0]["@value"];
 
-      const appletContent = response.data;
-      this.contributionsData = await this.getAppletContributions(appletId, appletContent);
+      if (this.isLoggedIn) {
+        this.contributionsData = await this.getAppletContributions(appletId, appletContent);
+      }
 
       this.isLoading = false;
     } catch (error) {
