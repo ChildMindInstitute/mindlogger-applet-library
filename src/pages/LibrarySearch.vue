@@ -76,16 +76,12 @@
           </v-avatar>
         </div>
         <div class="ds-tree-layout ml-2">
-          <v-card-title class="text-decoration-underline text-h6">
-            {{ applet.name }}
-          </v-card-title>
-
+          <v-card-title class="text-decoration-underline text-h6" v-html="highlight(applet.name)" />
           <v-card-subtitle 
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
-          >
-            Description: {{ applet.description }}
-          </v-card-subtitle>
+            v-html="highlight(applet.description)"
+          />
 
           <v-card-actions class="mx-5 px-2 py-0">
             <span 
@@ -99,10 +95,9 @@
               :key="keyword"
               color="orange lighten-2"
               text
-              :class="searchText === keyword ? 'font-weight-bold' : ''"
               @click="searchText = keyword"
             >
-              {{ keyword }}
+              <span v-html="highlight(keyword)" />
             </v-btn>
           </v-card-actions>
 
@@ -275,10 +270,31 @@ export default {
     ]),
     filteredApplets() {
       if (!this.searchText) {
-        return this.publishedApplets;
+        return this.publishedApplets.filter(applet => applet);;
       }
       return this.publishedApplets.filter((applet) => {
-        return applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
+        const regex = new RegExp(this.searchText, 'ig');
+        const appletData = this.appletsTree[applet.appletId];
+
+        if (applet.name.match(regex)
+          || applet.description.match(regex)
+          || appletData.name.match(regex)) {
+          return true;
+        }
+
+        for (const keyword of applet.keywords) {
+          if (keyword.match(regex)) {
+            return true;
+          }
+        }
+
+        for (const activityData of appletData.children) {
+          if (activityData.name.match(regex)) {
+            return true;
+          }
+        }
+
+        return false;
       });
     },
   },
@@ -322,6 +338,17 @@ export default {
     }
   },
   methods: {
+    highlight (rawString) {
+      if (this.searchText) {
+        const searchRegex = new RegExp('(' + this.searchText + ')' , 'ig');
+
+        return rawString
+          .replace(searchRegex, '<b>$1</b>')
+          .replaceAll(" ", "&nbsp;");
+      } else {
+        return rawString;
+      }
+    },
     onAddBasket (appletId) {
       if (this.isLoggedIn) {  // add to basket
         const form = new FormData();
