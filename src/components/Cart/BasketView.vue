@@ -231,10 +231,6 @@
   margin-top: 0 !important;
 }
 
-.ds-tree-view, .ds-tree-layout {
-  width: 100%
-}
-
 .ds-cursor{
   cursor: pointer;
 }
@@ -280,8 +276,12 @@ export default {
         token: this.$store.state.auth.authToken.token,
       })).data;
 
-      this.basketContents = Object.keys(basketApplets).map((appletId) => {
-        return publishedApplets.find((applet) => appletId === applet.appletId);
+      Object.keys(basketApplets).forEach((appletId) => {
+        const applet = publishedApplets.find((applet) => appletId === applet.appletId);
+
+        if (applet) {
+          this.basketContents.push(applet);
+        }
       });
       this.appletsTree = Object.keys(basketApplets).map((appletId) => {
         return this.buildAppletTree(basketApplets[appletId]);
@@ -306,10 +306,8 @@ export default {
       }
     },
     publishedApplets() {
-      const filteredApplets = this.basketContents.filter(applet => applet);
-
       if (this.searchText) {
-        return filteredApplets.filter((applet) => {
+        return this.basketContents.filter((applet) => {
 
           const regex = new RegExp(this.searchText, 'ig');
           const appletData = this.appletsTree.find(({ appletId }) => appletId === applet.appletId);
@@ -335,7 +333,7 @@ export default {
           return false;
         });
       } else {
-        return filteredApplets;
+        return this.basketContents;
       }
     },
     onDeleteApplet () {
@@ -348,6 +346,7 @@ export default {
         appletId,
       }).then(() => {
         this.basketContents = this.basketContents.filter((applet) => applet.appletId !== appletId);
+        this.$store.commit("setBasketContent", [...this.basketContents]);
       });
     },
     onAppletDetail(applet) {

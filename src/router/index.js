@@ -54,7 +54,6 @@ router.beforeEach(async (to, from, next) => {
   const token = to.query.token || '';
   
   if (token) {
-    console.log('token', token)
     api
       .signInWithToken({
         apiHost: store.state.backend,
@@ -74,7 +73,6 @@ router.beforeEach(async (to, from, next) => {
   // Redirect unauthenticated users to the login page if they are trying to
   // access a page that requires authentication.
   if ((isPrivatePage || !to.matched.length) && !isLoggedIn) {
-    console.log('from', from);
     return next({
       path: "/login",
       query: { nextUrl: to.fullPath, lang },
