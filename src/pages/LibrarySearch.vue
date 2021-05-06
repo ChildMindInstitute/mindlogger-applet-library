@@ -11,9 +11,8 @@
       </v-text-field>
 
       <v-badge
-        v-if="baskets.length"
         color="primary"
-        :content="baskets.length"
+        :content="numberOfCartItems"
         bottom
         offset-x="35"
         offset-y="37"
@@ -22,25 +21,6 @@
           color="blue-grey darken-3" 
           class="mx-4 mb-6 ds-cursor"
           large 
-          :disabled="!isLoggedIn"
-          @click="onViewBasket"
-        >
-          mdi-basket-outline 
-        </v-icon>
-      </v-badge>
-      <v-badge
-        v-else
-        color="primary"
-        content="0"
-        bottom
-        offset-x="35"
-        offset-y="37"
-      >
-        <v-icon 
-          color="blue-grey darken-3" 
-          class="mx-4 mb-6 ds-cursor"
-          large 
-          :disabled="!isLoggedIn"
           @click="onViewBasket"
         >
           mdi-basket-outline 
@@ -281,6 +261,13 @@ export default {
         return applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
       });
     },
+    numberOfCartItems() {
+      if (this.isLoggedIn) {  // basket
+        return this.baskets.length.toString();
+      } else {  // cart
+        return Object.keys(this.cartSelections).length.toString();
+      }
+    }
   },
   async beforeMount() {
     const { from, token } = this.$route.query;
