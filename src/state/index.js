@@ -94,7 +94,7 @@ const getDefaultState = () => {
     ],
     publishedApplets: [],
     appletContents: {},
-    basketContent: {},
+    basketContent: [],
     appletsTree: {},
     appletSelections: {},
     cartSelections: {},
@@ -112,6 +112,9 @@ const getters = {
   itemTypes(state) {
     return state.itemTypes;
   },
+  basketContent(state) {
+    return state.basketContent;
+  }
 };
 
 const mutations = {
