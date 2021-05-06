@@ -101,9 +101,15 @@
             :disabled="selectBasket"
             @click="onCloseBasketStatus"
           >
-            <v-icon color="white" medium>
-              mdi-basket-plus-outline
-            </v-icon>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon color="white" v-on="on" v-bind="attrs" medium>
+                  mdi-basket-plus-outline
+                </v-icon>
+              </template>
+              <span>Open status bar</span>
+            </v-tooltip>
+
           </v-btn>
         </div>
       </v-card>
@@ -190,7 +196,7 @@
                 <div 
                   v-if="item.inputType === 'radio' || item.inputType === 'checkbox'" 
                   v-for="option in item.options"
-                  :key="option"
+                  :key="option.name"
                   class="d-flex align-center pt-2"
                 >
                   <img
@@ -199,15 +205,16 @@
                     :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                   />
                   <v-img
+                    v-if="option.image"
                     class="ds-avatar mr-2"
-                    src="https://raw.githubusercontent.com/ChildMindInstitute/NIMH_EMA_applet/master/images/1F969.png"
+                    :src="option.image"
                     max-width="27px"
                     height="27px"
                   />
                   {{ option.name }}
                 </div>
                 <div 
-                  v-if="item.inputType !== 'radio' || item.inputType !== 'checkbox'"
+                  v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
                   class="d-flex align-center pt-2"
                 >
                   <img
@@ -245,10 +252,6 @@
 
 .v-treeview-node__content {
   flex-direction: column;
-}
-
-.ds-tree-view, .ds-tree-layout {
-  width: 100%
 }
 
 .ds-contribution {
@@ -304,7 +307,7 @@
 <script>
 import api from "../services/Api/api.vue";
 import { AppletMixin } from "../services/mixins/AppletMixin";
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import ViewContributionsDialog from '../components/dialogs/ViewContributionsDialog.vue';
 
 export default {
@@ -330,9 +333,13 @@ export default {
     };
   },
   computed: {
+    ...mapState([
+      'publishedApplets',
+    ]),
     ...mapGetters([
       'isLoggedIn',
       'itemTypes',
+      'basketContent',
     ]),
     activities () {
       if (this.selectedActivities === 1) {
@@ -356,11 +363,7 @@ export default {
     const { appletId } = this.$route.params;
 
     try {
-      const publishedApplets = (await api.getPublishedApplets({
-        apiHost: this.$store.state.backend,
-      })).data;
-
-      this.applet = publishedApplets.find(({ id }) => id === appletId);
+      this.applet = this.publishedApplets.find(({ id }) => id === appletId);
     } catch (error) {
       console.log(error);
     }
@@ -383,21 +386,6 @@ export default {
     }
   },
   methods: {
-    publishedApplets () {
-      if (this.searchText) {
-        return this.$store.state.publishedApplets.forEach(applet => {
-          applet.keywords.forEach(keyword => {
-            if (keyword.startsWith(this.searchText)) {
-              return true;
-            }
-          });
-
-          return false;
-        });
-      } else {
-        return this.$store.state.publishedApplets;
-      }
-    },
     onSelectAll () {
       this.selection = [];
 
@@ -411,10 +399,20 @@ export default {
       this.selectable = false;
     },
     onUpdateBasket () {
-      const { appletId } = this.$route.params;
+      const { appletId } = this.applet;
       const form = new FormData();
 
       if (this.isLoggedIn) {
+        const currentApplet = this.publishedApplets.find(applet => applet.appletId === appletId);
+        const currentId = this.basketContent.findIndex(applet => applet.appletId === appletId);
+
+        if (currentId !== -1) {
+          this.basketContent[currentId] = currentApplet;
+        } else {
+          this.basketContent.push(currentApplet);
+        }
+
+        this.$store.commit("setBasketContent", [...this.basketContent]);
         form.set("selection", JSON.stringify(this.selectedActs));
         api.updateAppletBasket({
           apiHost: this.$store.state.backend,
@@ -448,12 +446,13 @@ export default {
           const values = itemId.split('/');
 
           if (activityId === values[0]) {
+            const nodes = items[itemId]["schema:question"][0]["@value"].split("250)");
             const item = {
               id: index,
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: items[itemId]["@id"]
+              name: nodes[nodes.length - 1] || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {
@@ -463,7 +462,7 @@ export default {
               item.options = options.map((option) => {
                 return {
                   name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"] ? option["schema:image"][0]["@value"] : "",
+                  image: option["schema:image"],
                 }
               });
               if (multiple) {
