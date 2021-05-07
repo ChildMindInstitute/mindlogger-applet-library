@@ -30,7 +30,12 @@
     </div>
 
     <div class="mt-0">
-      <v-card 
+      <span v-if="cartApplets.length === 0">
+        You have not added anything to your cart yet.
+        Start searching above.
+      </span>
+      <v-card
+        v-else 
         class="mx-auto mb-4 d-flex pa-md-2"
         v-for="applet in filteredCartApplets"
         :key="applet.id"
