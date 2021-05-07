@@ -35,6 +35,58 @@
     >
       {{ $t('login') }}
     </v-btn>
+    <v-badge
+      v-if="this.basketContent.length && isLoggedIn && currentRoute !== '/'"
+      color="blue-grey darken-3"
+      class="pt-5"
+      :content="this.basketContent.length"
+      bottom
+      offset-x="35"
+      offset-y="37"
+    >
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon 
+            color="blue-grey darken-3" 
+            class="mx-4 mb-6 ds-cursor"
+            large 
+            v-bind="attrs"
+            v-on="on"
+            :disabled="!isLoggedIn"
+            @click="onViewBasket"
+          >
+            mdi-basket-outline 
+          </v-icon>
+        </template>
+        <span>Go to basket</span>
+      </v-tooltip>
+    </v-badge>
+    <v-badge
+      v-if="!this.basketContent.length && isLoggedIn && currentRoute !== '/'"
+      color="blue-grey darken-3"
+      class="pt-5"
+      content="0"
+      bottom
+      offset-x="35"
+      offset-y="37"
+    >
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon 
+            color="blue-grey darken-3" 
+            class="mx-4 mb-6 ds-cursor"
+            large 
+            v-bind="attrs"
+            v-on="on"
+            :disabled="!isLoggedIn"
+            @click="onViewBasket"
+          >
+            mdi-basket-outline 
+          </v-icon>
+        </template>
+        <span>Go to basket</span>
+      </v-tooltip>
+    </v-badge>
   </v-app-bar>
 </template>
 
@@ -76,9 +128,11 @@ export default {
   data() {
     return {
       windowWidth: window.innerWidth,
+      currentRoute: "",
     }
   },
   mounted() {
+    this.currentRoute = this.$route.path;
     window.onresize = () => {
       this.windowWidth = window.innerWidth
     }
@@ -93,11 +147,26 @@ export default {
     isTablet() {
       return this.windowWidth <= 1400 && this.windowWidth >= 768; 
     },
+    basketContent() {
+      return this.$store.state.basketContent;
+    }
+  },
+
+  watch:{
+    $route (to, from){
+      this.currentRoute = to.path;
+    },
+    basketContent (to, from) {
+
+    }
   },
   /**
    * Define here all methods that will be available in the scope of the template.
    */
   methods: {
+    onViewBasket() {
+      this.$router.push('/cart').catch(err => {});
+    },
     onLibrarySearch() {
       this.$router.push('/').catch(err => {});
     },

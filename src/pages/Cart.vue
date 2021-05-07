@@ -60,10 +60,6 @@
   margin-top: 0 !important;
 }
 
-.ds-tree-view, .ds-tree-layout {
-  width: 100%
-}
-
 .ds-cursor{
   cursor: pointer;
 }
@@ -113,17 +109,6 @@ export default {
     ...mapGetters([
       'isLoggedIn'
     ]),
-  },
-  async beforeMount() {
-    try {
-      this.isLoading = true;
-      if (this.isLoggedIn) {
-        await this.fetchBasketContent();
-      }
-      this.isLoading = false;
-    } catch(err) {
-      console.log(err);
-    }
   },
   methods: {
     onBackToBuilder(sync = false) {

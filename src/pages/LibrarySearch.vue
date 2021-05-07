@@ -10,22 +10,29 @@
         placeholder="Type keyword...">
       </v-text-field>
 
-      <v-badge
-        color="primary"
-        :content="numberOfCartItems"
-        bottom
-        offset-x="35"
-        offset-y="37"
-      >
-        <v-icon 
-          color="blue-grey darken-3" 
-          class="mx-4 mb-6 ds-cursor"
-          large 
-          @click="onViewBasket"
-        >
-          mdi-basket-outline 
-        </v-icon>
-      </v-badge>
+      <v-tooltip left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-badge
+            color="primary"
+            :content="numberOfCartItems"
+            bottom
+            offset-x="35"
+            offset-y="37"
+          >
+            <v-icon 
+              color="blue-grey darken-3" 
+              class="mx-4 mb-6 ds-cursor"
+              large 
+              v-bind="attrs"
+              v-on="on"
+              @click="onViewBasket"
+            >
+              mdi-basket-outline 
+            </v-icon>
+          </v-badge>
+        </template>
+        <span>Go to basket</span>
+      </v-tooltip>
     </div>
 
     <div class="mt-0">
@@ -56,16 +63,12 @@
           </v-avatar>
         </div>
         <div class="ds-tree-layout ml-2">
-          <v-card-title class="text-decoration-underline text-h6">
-            {{ applet.name }}
-          </v-card-title>
-
+          <v-card-title class="text-decoration-underline text-h6" v-html="highlight(applet.name)" />
           <v-card-subtitle 
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
-          >
-            Description: {{ applet.description }}
-          </v-card-subtitle>
+            v-html="highlight(applet.description)"
+          />
 
           <v-card-actions class="mx-5 px-2 py-0">
             <span 
@@ -79,10 +82,9 @@
               :key="keyword"
               color="orange lighten-2"
               text
-              :class="searchText === keyword ? 'font-weight-bold' : ''"
               @click="searchText = keyword"
             >
-              {{ keyword }}
+              <span v-html="highlight(keyword)" />
             </v-btn>
           </v-card-actions>
 
@@ -123,7 +125,7 @@
                   <div 
                     v-if="item.inputType === 'radio' || item.inputType === 'checkbox'"
                     v-for="option in item.options"
-                    :key="option"
+                    :key="option.name"
                     class="d-flex align-center pt-2"
                   >
                     <img
@@ -141,7 +143,7 @@
                     {{ option.name }}
                   </div>
                   <div 
-                    v-if="item.inputType !== 'radio' || item.inputType !== 'checkbox'"
+                    v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
                     class="d-flex align-center pt-2"
                   >
                     <img
@@ -173,7 +175,7 @@
                 </v-icon>
               </v-btn>
             </template>
-            <span>Add items to basket</span>
+            <span>Go to basket</span>
           </v-tooltip>
 
           <v-tooltip bottom>
@@ -255,10 +257,31 @@ export default {
     ]),
     filteredApplets() {
       if (!this.searchText) {
-        return this.publishedApplets;
+        return this.publishedApplets.filter(applet => applet);;
       }
       return this.publishedApplets.filter((applet) => {
-        return applet.keywords.find(keyword => keyword.toLowerCase() === this.searchText.toLowerCase())
+        const regex = new RegExp(this.searchText, 'ig');
+        const appletData = this.appletsTree[applet.appletId];
+
+        if (applet.name.match(regex)
+          || applet.description.match(regex)
+          || appletData.name.match(regex)) {
+          return true;
+        }
+
+        for (const keyword of applet.keywords) {
+          if (keyword.match(regex)) {
+            return true;
+          }
+        }
+
+        for (const activityData of appletData.children) {
+          if (activityData.name.match(regex)) {
+            return true;
+          }
+        }
+
+        return false;
       });
     },
     numberOfCartItems() {
@@ -301,7 +324,14 @@ export default {
           token: this.$store.state.auth.authToken.token,
         })).data;
 
-        this.baskets = Object.keys(basketApplets);
+        Object.keys(basketApplets).forEach((appletId) => {
+          const publishedApplet = this.publishedApplets.find((applet) => applet.appletId === appletId);
+          
+          if (publishedApplet) {
+            this.baskets.push(publishedApplet);
+          }
+        });
+        this.$store.commit("setBasketContent", [...this.baskets]);
       }
       this.isLoading = false;
     } catch(err) {
@@ -309,21 +339,37 @@ export default {
     }
   },
   methods: {
+    highlight (rawString) {
+      if (this.searchText) {
+        const searchRegex = new RegExp('(' + this.searchText + ')' , 'ig');
+
+        return rawString
+          .replace(searchRegex, '<b>$1</b>')
+          .replaceAll(" ", "&nbsp;");
+      } else {
+        return rawString;
+      }
+    },
     onAddBasket (appletId) {
       if (this.isLoggedIn) {  // add to basket
         const form = new FormData();
+        const currentApplet = this.filteredApplets.find(applet => applet.appletId === appletId);
+        const currentId = this.baskets.findIndex(applet => applet.appletId === appletId);
         const formData = this.parseAppletCartItem(appletId, this.appletSelections[appletId])
 
+        if (currentId !== -1) {
+          this.baskets[currentId] = currentApplet;
+        } else {
+          this.baskets.push(currentApplet);
+        }
+
+        this.$store.commit("setBasketContent", [...this.baskets]);
         form.set("selection", JSON.stringify(formData));
         api.updateAppletBasket({
           apiHost: this.$store.state.backend,
           token: this.$store.state.auth.authToken.token,
           appletId,
           data: form,
-        }).then(() => {
-          if (!this.baskets.includes(appletId)) {
-            this.baskets.push(appletId);
-          }
         });
       } else {  // add to cart
         this.$store.commit("setCartSelections", {

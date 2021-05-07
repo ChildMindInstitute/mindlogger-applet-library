@@ -51,14 +51,6 @@ export const AppletMixin = {
       this.$store.commit("setAppletContents", appletContents);
       this.$store.commit("setAppletsTree", appletsTree);
     },
-    async fetchBasketContent() {
-      const { data: basketContent } = await api.getBasketContent({
-        apiHost: this.apiHost,
-        token: this.token,
-      });
-
-      this.$store.commit("setBasketContent", basketContent);
-    },
     async addCartItemsToBasket() {
       const form = new FormData();
       const formData = {};
@@ -100,12 +92,13 @@ export const AppletMixin = {
           const values = itemId.split('/');
 
           if (activityId === values[0]) {
+            const nodes = items[itemId]["schema:question"][0]["@value"].split("250)");
             const item = {
               id: treeIndex,
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: items[itemId]["@id"]
+              name: nodes[nodes.length - 1] || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {
@@ -115,7 +108,7 @@ export const AppletMixin = {
               item.options = options.map((option) => {
                 return {
                   name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"] ? option["schema:image"][0]["@value"] : "",
+                  image: option["schema:image"],
                 }
               });
               if (multiple) {

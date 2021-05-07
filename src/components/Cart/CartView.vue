@@ -194,8 +194,8 @@
   margin-top: 0 !important;
 }
 
-.ds-tree-view, .ds-tree-layout {
-  width: 100%
+.v-treeview-node__label {
+  max-width: 600px;
 }
 
 .ds-cursor{
@@ -268,7 +268,7 @@ export default {
       this.$store.commit("setCartSelections", newCartSelections);
     },
     onAppletSelection(data) {
-      console.log('onAppletSelection', JSON.stringify(data));
+
     },
   },
 };
