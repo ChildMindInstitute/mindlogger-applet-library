@@ -260,8 +260,8 @@ export default {
     deleteAppletFromCart() {
       this.deleteCartItemDialog = false;
       const newCartSelections = {};
-      this.cartApplets.map(applet => {
-        if (applet.appletId != this.deleteAppletId) {
+      this.cartApplets.map(({ appletId }) => {
+        if (appletId != this.deleteAppletId) {
           newCartSelections[appletId] = this.cartSelections[appletId];
         }
       })
