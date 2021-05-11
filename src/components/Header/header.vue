@@ -36,10 +36,10 @@
       {{ $t('login') }}
     </v-btn>
     <v-badge
-      v-if="this.basketContent.length && isLoggedIn && currentRoute !== '/'"
+      v-if="currentRoute !== '/'"
       color="blue-grey darken-3"
       class="pt-5"
-      :content="this.basketContent.length"
+      :content="numberOfCartItems"
       bottom
       offset-x="35"
       offset-y="37"
@@ -52,33 +52,6 @@
             large 
             v-bind="attrs"
             v-on="on"
-            :disabled="!isLoggedIn"
-            @click="onViewBasket"
-          >
-            mdi-basket-outline 
-          </v-icon>
-        </template>
-        <span>Go to basket</span>
-      </v-tooltip>
-    </v-badge>
-    <v-badge
-      v-if="!this.basketContent.length && isLoggedIn && currentRoute !== '/'"
-      color="blue-grey darken-3"
-      class="pt-5"
-      content="0"
-      bottom
-      offset-x="35"
-      offset-y="37"
-    >
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon 
-            color="blue-grey darken-3" 
-            class="mx-4 mb-6 ds-cursor"
-            large 
-            v-bind="attrs"
-            v-on="on"
-            :disabled="!isLoggedIn"
             @click="onViewBasket"
           >
             mdi-basket-outline 
@@ -116,6 +89,7 @@ import encryption from '../../services/Encryption/encryption.vue';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import fr from 'javascript-time-ago/locale/fr';
+import { mapState } from 'vuex';
 
 TimeAgo.addLocale(en);
 TimeAgo.addLocale(fr);
@@ -141,14 +115,22 @@ export default {
    * Define here all computed properties.
    */
   computed: {
+    ...mapState([
+      'basketContent',
+      'cartSelections',
+    ]),
     isLoggedIn() {
       return !_.isEmpty(this.$store.state.auth);
     },
     isTablet() {
       return this.windowWidth <= 1400 && this.windowWidth >= 768; 
     },
-    basketContent() {
-      return this.$store.state.basketContent;
+    numberOfCartItems() {
+      if (this.isLoggedIn) {  // basket
+        return this.basketContent.length.toString();
+      } else {  // cart
+        return Object.keys(this.cartSelections).length.toString();
+      }
     }
   },
 
