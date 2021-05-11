@@ -107,7 +107,7 @@
                   mdi-basket-plus-outline
                 </v-icon>
               </template>
-              <span>Open status bar</span>
+              <span>Add to basket</span>
             </v-tooltip>
 
           </v-btn>
@@ -143,7 +143,7 @@
                 color="primary" 
                 v-bind="attrs"
                 v-on="on"
-                :disabled="!isLoggedIn || (!selectedActivities && !selectedItems)" 
+                :disabled="!selectedActivities && !selectedItems" 
                 large
                 @click="onUpdateBasket"
               >
@@ -335,6 +335,7 @@ export default {
   computed: {
     ...mapState([
       'publishedApplets',
+      'cartSelections',
     ]),
     ...mapGetters([
       'isLoggedIn',
@@ -412,7 +413,7 @@ export default {
         } else {
           this.basketContent.push(currentApplet);
         }
-
+ 
         this.$store.commit("setBasketContent", [...this.basketContent]);
         form.set("selection", JSON.stringify(this.selectedActs));
         api.updateAppletBasket({
@@ -422,6 +423,11 @@ export default {
           token: this.$store.state.auth.authToken.token,
         }).then((response) => {
           console.log(response);
+        });
+      } else {
+        this.$store.commit("setCartSelections", {
+          ...this.cartSelections,
+          [appletId]: this.selection
         });
       }
     },

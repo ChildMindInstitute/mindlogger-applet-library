@@ -175,7 +175,7 @@
                 </v-icon>
               </v-btn>
             </template>
-            <span>Go to basket</span>
+            <span>Add to basket</span>
           </v-tooltip>
 
           <v-tooltip bottom>
