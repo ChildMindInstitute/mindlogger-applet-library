@@ -118,11 +118,41 @@ const updateAppletBasket = ({ apiHost, token, appletId, data }) =>
     data,
   });
 
-const getAppletContent = ({ apiHost, libraryId }) =>
-  axios({
+const getAppletContent = ({ apiHost, libraryId, nextActivity }) => {
+  let url = `${apiHost}/library/applet/content?libraryId=${libraryId}`;
+
+  if (nextActivity) {
+    url = url + `&nextActivity=${nextActivity}`;
+  }
+
+  return axios({
     method: "get",
-    url: `${apiHost}/library/applet/content?libraryId=${libraryId}`,
-  });
+    url,
+  }).then(resp => {
+    const response = resp.data;
+
+    if (response.nextActivity)
+    {
+      return new Promise(resolve => setTimeout(() => resolve(getAppletContent({ apiHost, libraryId, nextActivity: response.nextActivity }).then(next => {
+        for (const activityIRI in next.data.activities) {
+          response.activities[activityIRI] = next.data.activities[activityIRI];
+        }
+
+        for (const itemIRI in next.data.items) {
+          response.items[itemIRI] = next.data.items[itemIRI];
+        }
+
+        return {
+          data: {
+            ...response
+          }
+        };
+      })), 50));
+    }
+
+    return resp;
+  })
+}
 
 const getBasketContent = ({ apiHost, libraryId, token }) =>
   axios({
