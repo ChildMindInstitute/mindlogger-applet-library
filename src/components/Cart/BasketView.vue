@@ -194,7 +194,7 @@
         <v-card-title class="headline">
           Delete Applet
         </v-card-title>
-        <v-card-text class="mx-2">
+        <v-card-text>
           Are you sure you want to delete <b>{{ deleteApplet.name }}</b> from your basket?
         </v-card-text>
         <v-card-actions>
