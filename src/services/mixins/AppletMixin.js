@@ -73,7 +73,7 @@ export const AppletMixin = {
       const treeItem = {
         id: treeIndex,
         appletId: applet._id.substring(7),
-        name: applet.displayName,
+        title: applet.displayName,
         children: [],
       };
 
@@ -83,7 +83,7 @@ export const AppletMixin = {
         const activityItem = {
           id: treeIndex,
           activityId,
-          name: activities[activityId]["@id"],
+          title: activities[activityId]["@id"],
           children: [],
         };
 
@@ -98,7 +98,7 @@ export const AppletMixin = {
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: nodes[nodes.length - 1] || items[itemId]["@id"]
+              title: nodes[nodes.length - 1] || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {

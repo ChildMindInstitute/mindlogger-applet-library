@@ -25,7 +25,7 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-4">
+        <div class="ds-main-layout ml-4">
           <v-card-title class="text-h6">
             {{ applet.name }}
           </v-card-title>
@@ -166,9 +166,6 @@
             selection-type="leaf"
             color="primary"
             selected-color="grey"
-            on-icon="mdi-checkbox-marked-circle-outline"
-            off-icon="mdi-checkbox-blank-circle-outline"
-            indeterminate-icon="mdi-minus-circle-outline"
             @input="onAppletSelection"
             :selectable="selectable"
             return-object
@@ -192,6 +189,7 @@
                 </v-icon>
             </template>
             <template v-slot:append="{ item }">
+              <span v-html="item.title" />
               <div v-if="item.selected === true">
                 <div 
                   v-if="item.inputType === 'radio' || item.inputType === 'checkbox'" 
@@ -444,7 +442,7 @@ export default {
         const activityItem = {
           id: index,
           activityId,
-          name: activities[activityId]["@id"],
+          title: activities[activityId]["@id"],
           children: [],
         };
 
@@ -459,7 +457,7 @@ export default {
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: nodes[nodes.length - 1] || items[itemId]["@id"]
+              title: nodes[nodes.length - 1] || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {
