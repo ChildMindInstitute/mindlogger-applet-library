@@ -27,7 +27,7 @@ let router = new Router({
       component: Cart,
     },
     {
-      path: "/",
+      path: "/librarySearch",
       name: "LibrarySearch",
       component: LibrarySearch,
     },
