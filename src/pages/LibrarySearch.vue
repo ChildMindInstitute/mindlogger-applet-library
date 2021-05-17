@@ -134,24 +134,10 @@
                       />
                       {{ option.name }}
                     </div>
-                  </template>
-                  <div v-else class="d-flex align-center pt-2">
-                    <img
-                      class="mr-2"
-                      width="15"
-                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
-                    />
-                    <v-img
-                      v-if="option.image"
-                      class="ds-avatar mr-2"
-                      :src="option.image"
-                      max-width="27px"
-                      height="27px"
-                    />
                     <span v-html="highlight(option.name)" />
                   </div>
                   <div
-                    v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
+                    v-else
                     class="d-flex align-center pt-2"
                   >
                     <img
