@@ -154,7 +154,7 @@ const getAppletContent = ({ apiHost, libraryId, nextActivity }) => {
   })
 }
 
-const getBasketContent = ({ apiHost, libraryId, token }) =>
+const getBasketContents = ({ apiHost, token }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/basket/content`,
@@ -214,7 +214,7 @@ export default {
   deleteBasketApplet,
   getPublishedApplets,
   getAppletContent,
-  getBasketContent,
+  getBasketContents,
   getUsersData,
   createToken,
   getAppletContributionOrigin,

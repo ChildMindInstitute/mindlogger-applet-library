@@ -15,9 +15,6 @@ export const AppletMixin = {
     token() {
       return this.$store.state.auth.authToken.token;
     },
-    appletsTree() {
-      return this.$store.state.appletsTree;
-    },
     cartSelections() {
       return this.$store.state.cartSelections;
     },
@@ -29,7 +26,6 @@ export const AppletMixin = {
       });
 
       const appletContents = {};
-      const appletsTree = {};
       await Promise.all(publishedApplets.map(async (applet) => {
         try {
           const { data: appletContent } = await api.getAppletContent({
@@ -41,7 +37,6 @@ export const AppletMixin = {
             ...appletContent,
             meta: applet
           };
-          appletsTree[applet.appletId] = this.buildAppletTree(appletContent);
         } catch (error) {
           console.log(error);
         }
@@ -49,14 +44,65 @@ export const AppletMixin = {
 
       this.$store.commit("setPublishedApplets", publishedApplets);
       this.$store.commit("setAppletContents", appletContents);
-      this.$store.commit("setAppletsTree", appletsTree);
+    },
+    async fetchBasketApplets() {
+      const { data: basketContents } = await api.getBasketContents({
+        apiHost: this.apiHost,
+        token: this.token,
+      });
+      this.$store.commit("setBasketContents", basketContents);
+    },
+    getFilteredApplets(applets, appletsTree, searchText) {
+      if (!searchText) {
+        return applets.filter((applet) => applet);
+      }
+      return applets.filter((applet) => {
+        const regex = new RegExp(searchText, "ig");
+        const appletData = appletsTree[applet.appletId];
+
+        if (
+          applet.name.match(regex) ||
+          applet.description.match(regex) ||
+          appletData.name.match(regex)
+        ) {
+          return true;
+        }
+
+        for (const keyword of applet.keywords) {
+          if (keyword.match(regex)) {
+            return true;
+          }
+        }
+
+        for (const activityData of appletData.children) {
+          if (activityData.title.match(regex)) {
+            return true;
+          }
+          for (const itemData of activityData.children) {
+            if (itemData.title.match(regex)) {
+              return true;
+            }
+            if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
+              for (const optionData of itemData.options) {
+                if (optionData.name.match(regex)) {
+                  return true;
+                }
+              }
+            } else if (itemData.inputType.match(regex)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      });
     },
     async addCartItemsToBasket() {
       const form = new FormData();
       const formData = {};
 
       Object.entries(this.cartSelections).map(([appletId, cartSelection]) => {
-        formData[appletId] = this.parseAppletCartItem(appletId, cartSelection);
+        formData[appletId] = this.parseAppletCartItem(this.$store.state.appletsTree[appletId], cartSelection);
       })
 
       form.set("basket", JSON.stringify(formData));
@@ -65,6 +111,28 @@ export const AppletMixin = {
         apiHost: this.apiHost,
         token: this.token,
         data: form,
+      });
+      await this.fetchBasketApplets();
+    },
+    async updateAppletBasket(appletId, appletTree, selection) {
+      const form = new FormData();
+      const formData = this.parseAppletCartItem(
+        appletTree,
+        selection
+      );
+      form.set("selection", JSON.stringify(formData));
+      await api.updateAppletBasket({
+        apiHost: this.apiHost,
+        token: this.token,
+        appletId,
+        data: form,
+      });
+    },
+    async deleteBasketApplet(appletId) {
+      await api.deleteBasketApplet({
+        apiHost: this.apiHost,
+        token: this.token,
+        appletId,
       });
     },
     buildAppletTree(appletData) {
@@ -98,19 +166,17 @@ export const AppletMixin = {
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              title: nodes[nodes.length - 1] || items[itemId]["@id"]
+              title: nodes.pop() || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {
               const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
               const multiple = items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"][0]["@value"];
 
-              item.options = options.map((option) => {
-                return {
-                  name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"],
-                }
-              });
+              item.options = options.map((option) => ({
+                name: option["schema:name"][0]["@value"],
+                image: option["schema:image"],
+              }));
               if (multiple) {
                 item.inputType = "checkbox";
               }
@@ -126,9 +192,8 @@ export const AppletMixin = {
 
       return treeItem;
     },
-    parseAppletCartItem(appletId, selection) {
+    parseAppletCartItem(appletTree, selection) {
       const cartItem = [];
-      const appletTree = this.appletsTree[appletId];
 
       selection.forEach(({ id }) => {
         appletTree.children.forEach(activity => {

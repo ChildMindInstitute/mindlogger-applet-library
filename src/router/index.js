@@ -6,7 +6,7 @@ import Cart from "../pages/Cart";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
 import api from "../services/Api/api.vue";
-import { getLanguageCode } from '../plugins/language';
+import { getLanguageCode } from "../plugins/language";
 import _ from "lodash";
 
 Vue.use(Router);
@@ -18,55 +18,54 @@ let router = new Router({
       name: "Login",
       component: Login,
       meta: {
-        guest: true,
-      },
+        guest: true
+      }
     },
     {
       path: "/cart",
       name: "Cart",
-      component: Cart,
+      component: Cart
     },
     {
-      path: "/librarySearch",
+      path: "/",
       name: "LibrarySearch",
-      component: LibrarySearch,
+      component: LibrarySearch
     },
     {
       path: "/appletDetail",
       name: "AppletDetail",
-      component: AppletDetail,
-    },
-    {
-      path: "/",
-      redirect: "/librarySearch",
-    },
-  ],
+      component: AppletDetail
+    }
+  ]
 });
 
 router.beforeEach(async (to, from, next) => {
   const { isLoggedIn } = store.getters;
 
-  const isPrivatePage = to.matched.some((record) => record.meta.requiresAuth);
-  const isGuestPage = to.matched.some((record) => record.meta.guest);
+  const isPrivatePage = to.matched.some(record => record.meta.requiresAuth);
+  const isGuestPage = to.matched.some(record => record.meta.guest);
   const lang = getLanguageCode(
-    from.query.lang || store.state.currentLanguage || 'en'
+    from.query.lang || store.state.currentLanguage || "en"
   );
-  const token = to.query.token || '';
-  
+  const token = to.query.token || "";
+
   if (token) {
     api
       .signInWithToken({
         apiHost: store.state.backend,
-        token,
+        token
       })
-      .then((resp) => {
-        store.commit("setAuth", { auth: resp.data, email: resp.data.user.email });
+      .then(resp => {
+        store.commit("setAuth", {
+          auth: resp.data,
+          email: resp.data.user.email
+        });
         return next({
-          path: "/librarySearch",
-          query: { nextUrl: to.fullPath, lang },
+          path: "/",
+          query: { nextUrl: to.fullPath, lang }
         });
       })
-      .catch((e) => {
+      .catch(e => {
         console.log(e);
       });
   }
@@ -75,30 +74,30 @@ router.beforeEach(async (to, from, next) => {
   if ((isPrivatePage || !to.matched.length) && !isLoggedIn) {
     return next({
       path: "/login",
-      query: { nextUrl: to.fullPath, lang },
+      query: { nextUrl: to.fullPath, lang }
     });
-  } 
+  }
 
   // Prevent users from accessing the login page if they are already
   // authenticated.
-  if ( (isGuestPage || !to.matched.length) && isLoggedIn) {
-    return next({ path: "/dashboard", query: { lang }});
-  } 
+  if ((isGuestPage || !to.matched.length) && isLoggedIn) {
+    return next({ path: "/dashboard", query: { lang } });
+  }
 
   // Evaluates to true if the lang parameter is set to just 'en' instead of
   // 'en_US'.
-  const isShortLangCode =  to.query.lang && to.query.lang.length < 5;
-  
+  const isShortLangCode = to.query.lang && to.query.lang.length < 5;
+
   // When navigating to a page, make sure that the current language is persisted
   // in the URL.
-  if (to && !to.query.lang || isShortLangCode) {
+  if ((to && !to.query.lang) || isShortLangCode) {
     return next({
       ...to,
       path: to.path,
       query: { ...to.query, lang },
-      params: to.params,
+      params: to.params
     });
-  } 
+  }
   return next();
 });
 
