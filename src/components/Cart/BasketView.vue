@@ -76,7 +76,7 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-2">
+        <div class="ds-main-layout ml-2">
           <v-card-title class="text-decoration-underline text-h6" v-html="highlight(applet.name)" />
           <v-card-subtitle 
             v-if="applet.description"
@@ -108,9 +108,6 @@
               :items="appletsTree.filter(({ appletId }) => appletId === applet.appletId)"
               selection-type="leaf"
               selected-color="darkgrey"
-              on-icon="mdi-checkbox-marked-circle-outline"
-              off-icon="mdi-checkbox-blank-circle-outline"
-              indeterminate-icon="mdi-minus-circle-outline"
               @input="onAppletSelection(applet.appletId)"
               open-on-click
               selectable
@@ -135,6 +132,7 @@
                   </v-icon>
               </template>
               <template v-slot:append="{ item }">
+                <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
                   <div 
                     v-if="item.inputType === 'radio' || item.inputType === 'checkbox'"
@@ -196,7 +194,7 @@
         <v-card-title class="headline">
           Delete Applet
         </v-card-title>
-        <v-card-text class="mx-2">
+        <v-card-text>
           Are you sure you want to delete <b>{{ deleteApplet.name }}</b> from your basket?
         </v-card-text>
         <v-card-actions>
@@ -314,7 +312,7 @@ export default {
  
           if (applet.name.match(regex)
             || applet.description.match(regex)
-            || appletData.name.match(regex)) {
+            || appletData.title.match(regex)) {
             return true;
           }
 
@@ -325,8 +323,22 @@ export default {
           }
 
           for (const activityData of appletData.children) {
-            if (activityData.name.match(regex)) {
+            if (activityData.title.match(regex)) {
               return true;
+            }
+            for (const itemData of activityData.children) {
+              if (itemData.title.match(regex)) {
+                return true;
+              }
+              if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
+                for (const optionData of itemData.options) {
+                  if (optionData.name.match(regex)) {
+                    return true;
+                  }
+                }
+              } else if (itemData.inputType.match(regex)) {
+                return true;
+              }
             }
           }
 
@@ -360,7 +372,7 @@ export default {
       const treeItem = {
         id: this.treeIndex,
         appletId: applet._id.substring(7),
-        name: applet.displayName,
+        title: applet.displayName,
         children: [],
       };
 
@@ -370,7 +382,7 @@ export default {
         const activityItem = {
           id: this.treeIndex,
           activityId,
-          name: activities[activityId]["@id"],
+          title: activities[activityId]["@id"],
           children: [],
         };
 
@@ -384,7 +396,7 @@ export default {
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: items[itemId]["@id"]
+              title: items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {

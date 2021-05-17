@@ -62,7 +62,7 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-2">
+        <div class="ds-main-layout ml-2">
           <v-card-title class="text-decoration-underline text-h6" v-html="highlight(applet.name)" />
           <v-card-subtitle 
             v-if="applet.description"
@@ -70,7 +70,7 @@
             v-html="highlight(applet.description)"
           />
 
-          <v-card-actions class="mx-5 px-2 py-0">
+          <v-card-actions class="d-block mx-5 px-2 py-0">
             <span 
               v-if="applet.keywords.length"
               class="text-body-1"
@@ -95,32 +95,30 @@
               :items="[appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
-              on-icon="mdi-checkbox-marked-circle-outline"
-              off-icon="mdi-checkbox-blank-circle-outline"
-              indeterminate-icon="mdi-minus-circle-outline"
               open-on-click
               selectable
               return-object
             >
               <template v-slot:prepend="{ item }">
-                  <v-icon 
-                    v-if="item.selected === true"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-down
-                  </v-icon>
-                  <v-icon 
-                    v-if="item.selected === false"
-                    class="mr-1"
-                    color="dark-grey" 
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-right
-                  </v-icon>
+                <v-icon 
+                  v-if="item.selected === true"
+                  class="mr-1"
+                  color="dark-grey"
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-down
+                </v-icon>
+                <v-icon 
+                  v-if="item.selected === false"
+                  class="mr-1"
+                  color="dark-grey" 
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-right
+                </v-icon>
               </template>
               <template v-slot:append="{ item }">
+                <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
                   <div 
                     v-if="item.inputType === 'radio' || item.inputType === 'checkbox'"
@@ -140,7 +138,7 @@
                       max-width="27px"
                       height="27px"
                     />
-                    {{ option.name }}
+                    <span v-html="highlight(option.name)" />
                   </div>
                   <div 
                     v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
@@ -151,7 +149,7 @@
                       width="15"
                       :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
-                    {{ item.inputType }}
+                    <span v-html="highlight(item.inputType)" />
                   </div>
                 </div>
               </template>
@@ -215,6 +213,10 @@
   width: 100%
 }
 
+.ds-main-layout {
+  width: calc(100% - 300px);
+}
+
 .ds-cursor{
   cursor: pointer;
 }
@@ -265,7 +267,7 @@ export default {
 
         if (applet.name.match(regex)
           || applet.description.match(regex)
-          || appletData.name.match(regex)) {
+          || appletData.title.match(regex)) {
           return true;
         }
 
@@ -276,8 +278,22 @@ export default {
         }
 
         for (const activityData of appletData.children) {
-          if (activityData.name.match(regex)) {
+          if (activityData.title.match(regex)) {
             return true;
+          }
+          for (const itemData of activityData.children) {
+            if (itemData.title.match(regex)) {
+              return true;
+            }
+            if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
+              for (const optionData of itemData.options) {
+                if (optionData.name.match(regex)) {
+                  return true;
+                }
+              }
+            } else if (itemData.inputType.match(regex)) {
+              return true;
+            }
           }
         }
 
@@ -344,7 +360,7 @@ export default {
         const searchRegex = new RegExp('(' + this.searchText + ')' , 'ig');
 
         return rawString
-          .replace(searchRegex, '<b>$1</b>')
+          .replace(searchRegex, '<b><i>$1</i></b>')
           .replaceAll(" ", "&nbsp;");
       } else {
         return rawString;

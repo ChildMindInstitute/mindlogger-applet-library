@@ -61,16 +61,13 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-2">
-          <v-card-title class="text-decoration-underline text-h6">
-            {{ applet.name }}
-          </v-card-title>
-
+        <div class="ds-main-layout ml-2">
+          <v-card-title class="text-decoration-underline text-h6" v-html="highlight(applet.name)" />
           <v-card-subtitle 
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
           >
-            Description: {{ applet.description }}
+            <span v-html="highlight(applet.description)" />
           </v-card-subtitle>
 
           <v-card-actions class="mx-5 px-2 py-0">
@@ -88,7 +85,7 @@
               :class="searchText === keyword ? 'font-weight-bold' : ''"
               @click="searchText = keyword"
             >
-              {{ keyword }}
+              <span v-html="highlight(keyword)" />
             </v-btn>
           </v-card-actions>
 
@@ -99,9 +96,6 @@
               :items="[appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
-              on-icon="mdi-checkbox-marked-circle-outline"
-              off-icon="mdi-checkbox-blank-circle-outline"
-              indeterminate-icon="mdi-minus-circle-outline"
               @input="onAppletSelection"
               open-on-click
               selectable
@@ -126,6 +120,7 @@
                   </v-icon>
               </template>
               <template v-slot:append="{ item }">
+                <span v-html="highlight(item.title)" />
                 <template v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')">
                   <div
                     v-for="option in item.options"
@@ -206,6 +201,7 @@
   position: absolute;
   z-index: 1;
   top: 0;
+  left: 0;
 }
 </style>
 
@@ -247,12 +243,58 @@ export default {
       if (!this.searchText) {
         return this.cartApplets;
       }
-      return this.cartApplets.filter(applet => 
-        applet.keywords.find((keyword) => (keyword.toLowerCase() === this.searchText.toLowerCase()))
-      );
+      return this.cartApplets.filter(applet => {
+        const regex = new RegExp(this.searchText, 'ig');
+        const appletData = this.appletsTree[applet.appletId];
+
+        if (applet.name.match(regex)
+          || applet.description.match(regex)
+          || appletData.title.match(regex)) {
+          return true;
+        }
+
+        for (const keyword of applet.keywords) {
+          if (keyword.match(regex)) {
+            return true;
+          }
+        }
+
+        for (const activityData of appletData.children) {
+          if (activityData.title.match(regex)) {
+            return true;
+          }
+          for (const itemData of activityData.children) {
+            if (itemData.title.match(regex)) {
+              return true;
+            }
+            if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
+              for (const optionData of itemData.options) {
+                if (optionData.name.match(regex)) {
+                  return true;
+                }
+              }
+            } else if (itemData.inputType.match(regex)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      });
     },
   },
   methods: {
+    highlight (rawString) {
+      if (this.searchText) {
+        const searchRegex = new RegExp('(' + this.searchText + ')' , 'ig');
+
+        return rawString
+          .replace(searchRegex, '<b>$1</b>')
+          .replaceAll(" ", "&nbsp;");
+      } else {
+        return rawString;
+      }
+    },
     onDeleteApplet(appletId) {
       this.deleteAppletId = appletId;
       this.deleteCartItemDialog = true;
