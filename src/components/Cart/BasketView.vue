@@ -22,9 +22,7 @@
           Add to
           <br />
           Applet Builder
-          <v-icon small>
-            mdi-chevron-right
-          </v-icon>
+          <v-icon small> mdi-chevron-right </v-icon>
         </div>
       </v-btn>
       <v-btn
@@ -37,9 +35,7 @@
         @click="$emit('backToBuilder')"
       >
         <div class="py-2">
-          <v-icon small>
-            mdi-chevron-left
-          </v-icon>
+          <v-icon small> mdi-chevron-left </v-icon>
           Back to Builder
         </div>
       </v-btn>
@@ -70,7 +66,7 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-2">
+        <div class="ds-main-layout ml-2">
           <v-card-title
             class="text-decoration-underline text-h6"
             v-html="highlight(applet.name)"
@@ -105,9 +101,6 @@
               "
               selection-type="leaf"
               selected-color="darkgrey"
-              on-icon="mdi-checkbox-marked-circle-outline"
-              off-icon="mdi-checkbox-blank-circle-outline"
-              indeterminate-icon="mdi-minus-circle-outline"
               open-on-click
               selectable
               return-object
@@ -131,6 +124,7 @@
                 </v-icon>
               </template>
               <template v-slot:append="{ item }">
+                <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
                   <template
                     v-if="
@@ -187,19 +181,15 @@
               dialog = true;
             "
           >
-            <v-icon color="grey darken-3">
-              mdi-trash-can-outline
-            </v-icon>
+            <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>
         </div>
       </v-card>
     </div>
     <v-dialog v-if="deleteApplet" v-model="dialog" persistent max-width="800">
       <v-card>
-        <v-card-title class="headline">
-          Delete Applet
-        </v-card-title>
-        <v-card-text class="mx-2">
+        <v-card-title class="headline"> Delete Applet </v-card-title>
+        <v-card-text>
           Are you sure you want to delete <b>{{ deleteApplet.name }}</b> from
           your basket?
         </v-card-text>

@@ -17,7 +17,7 @@
             </span>
           </v-avatar>
         </div>
-        <div class="ds-tree-layout ml-4">
+        <div class="ds-main-layout ml-4">
           <v-card-title class="text-h6">
             {{ applet.name }}
           </v-card-title>
@@ -140,7 +140,7 @@
       </v-card>
 
       <v-card class="mx-8 d-flex pa-md-2">
-        <div class="ds-tree-layout ml-2">
+        <div class="ds-main-layout ml-2">
           <v-treeview
             class="ds-tree-view"
             v-model="selection"
@@ -148,9 +148,6 @@
             selection-type="leaf"
             color="primary"
             selected-color="grey"
-            on-icon="mdi-checkbox-marked-circle-outline"
-            off-icon="mdi-checkbox-blank-circle-outline"
-            indeterminate-icon="mdi-minus-circle-outline"
             @input="onAppletSelection"
             :selectable="selectable"
             return-object
@@ -174,6 +171,7 @@
               </v-icon>
             </template>
             <template v-slot:append="{ item }">
+              <span v-html="item.title" />
               <div v-if="item.selected === true">
                 <template
                   v-if="
@@ -303,7 +301,7 @@ export default {
   name: "AppletDetail",
   mixins: [AppletMixin],
   components: {
-    ViewContributionsDialog,
+    ViewContributionsDialog
   },
   data() {
     return {
@@ -318,7 +316,7 @@ export default {
       selectedActivities: 0,
       selectedItems: 0,
       viewContributionsDialog: false,
-      contributionsData: [],
+      contributionsData: []
     };
   },
   computed: {
@@ -340,7 +338,7 @@ export default {
     },
     hasContributions() {
       return this.contributionsData.length > 0;
-    },
+    }
   },
   async beforeMount() {
     const { appletId } = this.$route.params;
@@ -354,7 +352,7 @@ export default {
     try {
       const { data: appletContent } = await api.getAppletContent({
         apiHost: this.$store.state.backend,
-        libraryId: this.$route.params.appletId,
+        libraryId: this.$route.params.appletId
       });
 
       this.appletTree = this.buildAppletTree(appletContent).children;
@@ -398,7 +396,7 @@ export default {
       } else {
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
-          [appletId]: this.selection,
+          [appletId]: this.selection
         });
       }
     },
@@ -416,7 +414,7 @@ export default {
       );
       this.selectedItems = 0;
       this.selectedActivities = 0;
-      selectedActs.map((activity) => {
+      selectedActs.map(activity => {
         if (activity.items) {
           this.selectedItems += activity.items.length;
         } else {
@@ -430,7 +428,7 @@ export default {
     },
     onExportContributions() {
       this.exportContributions(this.contributionsData);
-    },
-  },
+    }
+  }
 };
 </script>

@@ -67,7 +67,7 @@
             v-html="highlight(applet.description)"
           />
 
-          <v-card-actions class="mx-5 px-2 py-0">
+          <v-card-actions class="d-block mx-5 px-2 py-0">
             <span v-if="applet.keywords.length" class="text-body-1">
               Keywords:
             </span>
@@ -91,9 +91,6 @@
               "
               selection-type="leaf"
               selected-color="darkgrey"
-              on-icon="mdi-checkbox-marked-circle-outline"
-              off-icon="mdi-checkbox-blank-circle-outline"
-              indeterminate-icon="mdi-minus-circle-outline"
               open-on-click
               selectable
               return-object
@@ -117,6 +114,7 @@
                 </v-icon>
               </template>
               <template v-slot:append="{ item }">
+                <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
                   <template
                     v-if="
@@ -156,7 +154,31 @@
                           .icon
                       "
                     />
-                    {{ item.inputType }}
+                    <v-img
+                      v-if="option.image"
+                      class="ds-avatar mr-2"
+                      :src="option.image"
+                      max-width="27px"
+                      height="27px"
+                    />
+                    <span v-html="highlight(option.name)" />
+                  </div>
+                  <div
+                    v-if="
+                      item.inputType !== 'radio' &&
+                        item.inputType !== 'checkbox'
+                    "
+                    class="d-flex align-center pt-2"
+                  >
+                    <img
+                      class="mr-2"
+                      width="15"
+                      :src="
+                        itemTypes.find(({ text }) => text === item.inputType)
+                          .icon
+                      "
+                    />
+                    <span v-html="highlight(item.inputType)" />
                   </div>
                 </div>
               </template>
@@ -218,6 +240,10 @@
 .ds-tree-view,
 .ds-tree-layout {
   width: 100%;
+}
+
+.ds-main-layout {
+  width: calc(100% - 300px);
 }
 
 .ds-cursor {
@@ -307,7 +333,7 @@ export default {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
 
         return rawString
-          .replace(searchRegex, "<b>$1</b>")
+          .replace(searchRegex, "<b><i>$1</i></b>")
           .replaceAll(" ", "&nbsp;");
       } else {
         return rawString;

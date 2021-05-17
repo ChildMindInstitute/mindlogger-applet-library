@@ -75,8 +75,22 @@ export const AppletMixin = {
         }
 
         for (const activityData of appletData.children) {
-          if (activityData.name.match(regex)) {
+          if (activityData.title.match(regex)) {
             return true;
+          }
+          for (const itemData of activityData.children) {
+            if (itemData.title.match(regex)) {
+              return true;
+            }
+            if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
+              for (const optionData of itemData.options) {
+                if (optionData.name.match(regex)) {
+                  return true;
+                }
+              }
+            } else if (itemData.inputType.match(regex)) {
+              return true;
+            }
           }
         }
 
@@ -127,7 +141,7 @@ export const AppletMixin = {
       const treeItem = {
         id: treeIndex,
         appletId: applet._id.substring(7),
-        name: applet.displayName,
+        title: applet.displayName,
         children: [],
       };
 
@@ -137,7 +151,7 @@ export const AppletMixin = {
         const activityItem = {
           id: treeIndex,
           activityId,
-          name: activities[activityId]["@id"],
+          title: activities[activityId]["@id"],
           children: [],
         };
 

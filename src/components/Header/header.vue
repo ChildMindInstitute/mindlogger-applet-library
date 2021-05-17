@@ -23,7 +23,7 @@
       {{ $t("login") }}
     </v-btn>
     <v-badge
-      v-if="currentRoute !== '/'"
+      v-if="currentRoute !== '/librarySearch'"
       color="blue-grey darken-3"
       class="pt-5"
       :content="numberOfCartItems"
