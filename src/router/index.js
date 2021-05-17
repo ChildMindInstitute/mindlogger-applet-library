@@ -27,7 +27,7 @@ let router = new Router({
       component: Cart
     },
     {
-      path: "/librarySearch",
+      path: "/",
       name: "LibrarySearch",
       component: LibrarySearch
     },
@@ -35,10 +35,6 @@ let router = new Router({
       path: "/appletDetail",
       name: "AppletDetail",
       component: AppletDetail
-    },
-    {
-      path: "/",
-      redirect: "/librarySearch"
     }
   ]
 });
@@ -65,7 +61,7 @@ router.beforeEach(async (to, from, next) => {
           email: resp.data.user.email
         });
         return next({
-          path: "/librarySearch",
+          path: "/",
           query: { nextUrl: to.fullPath, lang }
         });
       })
