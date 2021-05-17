@@ -132,10 +132,9 @@
                         max-width="27px"
                         height="27px"
                       />
-                      {{ option.name }}
+                      <span v-html="highlight(option.name)" />
                     </div>
-                    <span v-html="highlight(option.name)" />
-                  </div>
+                  </template>
                   <div
                     v-else
                     class="d-flex align-center pt-2"
