@@ -113,11 +113,7 @@
               <template v-slot:append="{ item }">
                 <span v-html="highlight(item.title)" />
                 <template
-                  v-if="
-                    item.selected === true &&
-                      (item.inputType === 'radio' ||
-                        item.inputType === 'checkbox')
-                  "
+                  v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')"
                 >
                   <div
                     v-for="option in item.options"

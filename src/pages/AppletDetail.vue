@@ -173,11 +173,7 @@
             <template v-slot:append="{ item }">
               <span v-html="item.title" />
               <div v-if="item.selected === true">
-                <template
-                  v-if="
-                    item.inputType === 'radio' || item.inputType === 'checkbox'
-                  "
-                >
+                <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                   <div
                     v-for="option in item.options"
                     :key="option.name"
@@ -186,10 +182,7 @@
                     <img
                       class="mr-2"
                       width="15"
-                      :src="
-                        itemTypes.find(({ text }) => text === item.inputType)
-                          .icon
-                      "
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
                     <v-img
                       v-if="option.image"
@@ -205,9 +198,7 @@
                   <img
                     class="mr-2"
                     width="15"
-                    :src="
-                      itemTypes.find(({ text }) => text === item.inputType).icon
-                    "
+                    :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                   />
                   {{ item.inputType }}
                 </div>

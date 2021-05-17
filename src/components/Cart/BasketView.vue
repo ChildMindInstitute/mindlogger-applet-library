@@ -96,9 +96,7 @@
             <v-treeview
               class="ds-tree-view"
               v-model="selection[applet.appletId]"
-              :items="
-                appletsTree[applet.appletId] && [appletsTree[applet.appletId]]
-              "
+              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -126,12 +124,7 @@
               <template v-slot:append="{ item }">
                 <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
-                  <template
-                    v-if="
-                      item.inputType === 'radio' ||
-                        item.inputType === 'checkbox'
-                    "
-                  >
+                  <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                     <div
                       v-for="option in item.options"
                       :key="option"
@@ -140,10 +133,7 @@
                       <img
                         class="mr-2"
                         width="15"
-                        :src="
-                          itemTypes.find(({ text }) => text === item.inputType)
-                            .icon
-                        "
+                        :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                       />
                       <v-img
                         v-if="option.image"
@@ -159,10 +149,7 @@
                     <img
                       class="mr-2"
                       width="15"
-                      :src="
-                        itemTypes.find(({ text }) => text === item.inputType)
-                          .icon
-                      "
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
                     {{ item.inputType }}
                   </div>
@@ -176,10 +163,7 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="
-              deleteApplet = applet;
-              dialog = true;
-            "
+            @click="deleteApplet = applet; dialog = true;"
           >
             <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>

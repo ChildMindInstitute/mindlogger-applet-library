@@ -86,9 +86,7 @@
             <v-treeview
               class="ds-tree-view"
               v-model="appletSelections[applet.appletId]"
-              :items="
-                appletsTree[applet.appletId] && [appletsTree[applet.appletId]]
-              "
+              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -116,12 +114,7 @@
               <template v-slot:append="{ item }">
                 <span v-html="highlight(item.title)" />
                 <div v-if="item.selected === true">
-                  <template
-                    v-if="
-                      item.inputType === 'radio' ||
-                        item.inputType === 'checkbox'
-                    "
-                  >
+                  <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                     <div
                       v-for="option in item.options"
                       :key="option.name"
@@ -130,10 +123,7 @@
                       <img
                         class="mr-2"
                         width="15"
-                        :src="
-                          itemTypes.find(({ text }) => text === item.inputType)
-                            .icon
-                        "
+                        :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                       />
                       <v-img
                         v-if="option.image"
@@ -149,10 +139,7 @@
                     <img
                       class="mr-2"
                       width="15"
-                      :src="
-                        itemTypes.find(({ text }) => text === item.inputType)
-                          .icon
-                      "
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
                     <v-img
                       v-if="option.image"
@@ -164,19 +151,13 @@
                     <span v-html="highlight(option.name)" />
                   </div>
                   <div
-                    v-if="
-                      item.inputType !== 'radio' &&
-                        item.inputType !== 'checkbox'
-                    "
+                    v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
                     class="d-flex align-center pt-2"
                   >
                     <img
                       class="mr-2"
                       width="15"
-                      :src="
-                        itemTypes.find(({ text }) => text === item.inputType)
-                          .icon
-                      "
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
                     <span v-html="highlight(item.inputType)" />
                   </div>
@@ -195,10 +176,7 @@
                 fab
                 small
                 @click="onAddBasket(applet.appletId)"
-                :disabled="
-                  !appletSelections[applet.appletId] ||
-                    appletSelections[applet.appletId].length == 0
-                "
+                :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
               >
                 <v-icon color="grey darken-3"> mdi-basket-plus-outline </v-icon>
               </v-btn>
