@@ -1,9 +1,5 @@
 <template>
-  <v-app-bar
-    app
-    color="primary"
-    dark
-  >
+  <v-app-bar app color="primary" dark>
     <v-img
       class="logo"
       @click="onLibrarySearch"
@@ -11,12 +7,8 @@
       max-width="130"
       contain
     />
-    <v-btn
-      color="primary"
-      class="toolbar-btn"
-      @click="onLibrarySearch"
-    >
-      {{ $t('mindloggerLibrary') }}
+    <v-btn color="primary" class="toolbar-btn" @click="onLibrarySearch">
+      {{ $t("mindloggerLibrary") }}
     </v-btn>
     <v-spacer />
     <v-btn
@@ -25,15 +17,10 @@
       color="primary"
       @click="onLogout"
     >
-      {{ $t('logout') }}
+      {{ $t("logout") }}
     </v-btn>
-    <v-btn
-      v-else
-      color="primary"
-      class="toolbar-btn"
-      @click="onLogin"
-    >
-      {{ $t('login') }}
+    <v-btn v-else color="primary" class="toolbar-btn" @click="onLogin">
+      {{ $t("login") }}
     </v-btn>
     <v-badge
       v-if="currentRoute !== '/'"
@@ -46,15 +33,15 @@
     >
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-icon 
-            color="blue-grey darken-3" 
+          <v-icon
+            color="blue-grey darken-3"
             class="mx-4 mb-6 ds-cursor"
-            large 
+            large
             v-bind="attrs"
             v-on="on"
             @click="onViewBasket"
           >
-            mdi-basket-outline 
+            mdi-basket-outline
           </v-icon>
         </template>
         <span>Go to basket</span>
@@ -78,68 +65,49 @@
 .logout {
   font-size: 15px !important;
 }
-
 </style>
 
 <script>
+import api from "../../services/Api/api.vue";
+import encryption from "../../services/Encryption/encryption.vue";
 
-import api from '../../services/Api/api.vue';
-import encryption from '../../services/Encryption/encryption.vue';
-
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en';
-import fr from 'javascript-time-ago/locale/fr';
-import { mapState } from 'vuex';
+import TimeAgo from "javascript-time-ago";
+import en from "javascript-time-ago/locale/en";
+import fr from "javascript-time-ago/locale/fr";
+import { mapGetters } from "vuex";
 
 TimeAgo.addLocale(en);
 TimeAgo.addLocale(fr);
 
 export default {
   name: "Header",
-  components: {
-  },
+  components: {},
 
   data() {
     return {
       windowWidth: window.innerWidth,
-      currentRoute: "",
-    }
+      currentRoute: ""
+    };
   },
   mounted() {
     this.currentRoute = this.$route.path;
     window.onresize = () => {
-      this.windowWidth = window.innerWidth
-    }
+      this.windowWidth = window.innerWidth;
+    };
   },
   /**
    * Define here all computed properties.
    */
   computed: {
-    ...mapState([
-      'basketContent',
-      'cartSelections',
-    ]),
-    isLoggedIn() {
-      return !_.isEmpty(this.$store.state.auth);
-    },
+    ...mapGetters(["isLoggedIn", "numberOfCartItems"]),
     isTablet() {
-      return this.windowWidth <= 1400 && this.windowWidth >= 768; 
-    },
-    numberOfCartItems() {
-      if (this.isLoggedIn) {  // basket
-        return this.basketContent.length.toString();
-      } else {  // cart
-        return Object.keys(this.cartSelections).length.toString();
-      }
+      return this.windowWidth <= 1400 && this.windowWidth >= 768;
     }
   },
 
-  watch:{
-    $route (to, from){
+  watch: {
+    $route(to, from) {
       this.currentRoute = to.path;
-    },
-    basketContent (to, from) {
-
     }
   },
   /**
@@ -147,18 +115,18 @@ export default {
    */
   methods: {
     onViewBasket() {
-      this.$router.push('/cart').catch(err => {});
+      this.$router.push("/cart").catch(err => {});
     },
     onLibrarySearch() {
-      this.$router.push('/').catch(err => {});
+      this.$router.push("/").catch(err => {});
     },
     onLogout() {
-      this.$store.commit('resetState');
-      this.$router.push('/login').catch(err => {});
+      this.$store.commit("resetState");
+      this.$router.push("/login").catch(err => {});
     },
     onLogin() {
-      this.$router.push('/login').catch(err => {});
+      this.$router.push("/login").catch(err => {});
     }
-  },
+  }
 };
 </script>

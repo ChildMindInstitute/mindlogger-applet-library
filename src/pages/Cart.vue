@@ -135,6 +135,7 @@ export default {
     },
     async onLoginSuccess() {
       await this.addCartItemsToBasket();
+      await this.fetchBasketApplets();
       this.onSelectAccount();
     },
 

@@ -1,13 +1,14 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
 Vue.use(Vuex);
 
-import { Store } from 'vuex';
-import _ from 'lodash';
-import createPersistedState from 'vuex-persistedstate';
+import { Store } from "vuex";
+import _ from "lodash";
+import createPersistedState from "vuex-persistedstate";
 
-const baseImageURL = 'https://raw.githubusercontent.com/ChildMindInstitute/mindlogger-applet-builder/master/src/assets/icons/';
+const baseImageURL =
+  "https://raw.githubusercontent.com/ChildMindInstitute/mindlogger-applet-builder/master/src/assets/icons/";
 const getDefaultState = () => {
   return {
     backend: process.env.VUE_APP_SERVER_URL, //"https://api-staging.mindlogger.org/api/v1",
@@ -17,103 +18,111 @@ const getDefaultState = () => {
     currentAccount: {},
     currentApplets: [],
     currentRetentions: null,
-    currentLanguage: 'en_US',
+    currentLanguage: "en_US",
     itemTypes: [
       {
         text: "radio",
-        icon: baseImageURL + 'item-types/radio-icon.png',
+        icon: baseImageURL + "item-types/radio-icon.png"
       },
       {
         text: "stackedRadio",
-        icon: baseImageURL + 'item-types/radio-icon.png',
+        icon: baseImageURL + "item-types/radio-icon.png"
       },
       {
-        text: 'checkbox',
-        icon: baseImageURL + 'item-types/check-box-icon.png',
+        text: "checkbox",
+        icon: baseImageURL + "item-types/check-box-icon.png"
       },
       {
         text: "stackedCheckbox",
-        icon: baseImageURL + 'item-types/check-box-icon.png',
+        icon: baseImageURL + "item-types/check-box-icon.png"
       },
       {
         text: "text",
-        icon: baseImageURL + 'item-types/text-input-icon.png',
+        icon: baseImageURL + "item-types/text-input-icon.png"
       },
       {
         text: "slider",
-        icon: baseImageURL + 'item-types/slider-icon.png',
+        icon: baseImageURL + "item-types/slider-icon.png"
       },
       {
         text: "stackedSlider",
-        icon: baseImageURL + 'item-types/slider-icon.png',
+        icon: baseImageURL + "item-types/slider-icon.png"
       },
       {
         text: "photo",
-        icon: baseImageURL + 'item-types/photo-icon.png',
+        icon: baseImageURL + "item-types/photo-icon.png"
       },
       {
         text: "video",
-        icon: baseImageURL + 'item-types/video-icon.png',
+        icon: baseImageURL + "item-types/video-icon.png"
       },
       {
         text: "timeRange",
-        icon: baseImageURL + 'item-types/time-range.png',
+        icon: baseImageURL + "item-types/time-range.png"
       },
       {
         text: "date",
-        icon: baseImageURL + 'item-types/date-icon.png',
+        icon: baseImageURL + "item-types/date-icon.png"
       },
       {
         text: "drawing",
-        icon: baseImageURL + 'item-types/drawing-icon.png',
+        icon: baseImageURL + "item-types/drawing-icon.png"
       },
       {
         text: "audioRecord",
-        icon: baseImageURL + 'item-types/audio-icon.png',
+        icon: baseImageURL + "item-types/audio-icon.png"
       },
       {
         text: "audioImageRecord",
-        icon: baseImageURL + 'item-types/audio-image-record-icon.png',
+        icon: baseImageURL + "item-types/audio-image-record-icon.png"
       },
       {
         text: "geolocation",
-        icon: baseImageURL + 'item-types/geolocation-icon.png',
+        icon: baseImageURL + "item-types/geolocation-icon.png"
       },
       {
         text: "audioStimulus",
-        icon: baseImageURL + 'item-types/audio-stimulus-icon.png',
+        icon: baseImageURL + "item-types/audio-stimulus-icon.png"
       },
       {
         text: "markdownMessage",
-        icon: baseImageURL + 'item-types/message-icon.png',
+        icon: baseImageURL + "item-types/message-icon.png"
       },
       {
         text: "cumulativeScore",
-        icon: baseImageURL + 'item-types/cumulative-icon.png',
-      },
+        icon: baseImageURL + "item-types/cumulative-icon.png"
+      }
     ],
     publishedApplets: [],
     appletContents: {},
-    basketContent: [],
+    basketContents: {},
     appletsTree: {},
     appletSelections: {},
     cartSelections: {},
     basketSelections: {},
-    fromBuilder: false,
+    fromBuilder: false
   };
 };
 
 const state = getDefaultState();
 
 const getters = {
-  isLoggedIn (state) {
-    return !_.isEmpty(state.auth)
+  isLoggedIn(state) {
+    return !_.isEmpty(state.auth);
   },
-  itemTypes(state) {
-    return state.itemTypes;
+  numberOfCartItems(state, getters) {
+    if (getters.isLoggedIn) {
+      // basket
+      return Object.keys(state.basketContents).length.toString();
+    } else {
+      // cart
+      return Object.keys(state.cartSelections).length.toString();
+    }
   },
-  basketContent(state) {
-    return state.basketContent;
+  basketApplets(state) {
+    return state.publishedApplets.filter(
+      applet => state.basketContents[applet.appletId]
+    );
   }
 };
 
@@ -143,8 +152,8 @@ const mutations = {
   setAppletContents(state, appletContents) {
     state.appletContents = appletContents;
   },
-  setBasketContent(state, basketContent) {
-    state.basketContent = basketContent;
+  setBasketContents(state, basketContents) {
+    state.basketContents = basketContents;
   },
   setAppletsTree(state, appletsTree) {
     state.appletsTree = appletsTree;
@@ -160,7 +169,7 @@ const mutations = {
   }
 };
 
-const stateCopy = (({ 
+const stateCopy = (({
   // Excluded properties.
   currentLanguage,
   ...o
@@ -174,9 +183,9 @@ export const storeConfig = {
   plugins: [
     createPersistedState({
       storage: window.sessionStorage,
-      paths: stateToPersist,
-    }),
-  ],
+      paths: stateToPersist
+    })
+  ]
 };
 
 const store = new Store(storeConfig);

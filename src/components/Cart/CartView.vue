@@ -6,7 +6,8 @@
         light
         solo
         prepend-inner-icon="search"
-        placeholder="Type keyword...">
+        placeholder="Type keyword..."
+      >
       </v-text-field>
 
       <v-btn
@@ -19,8 +20,8 @@
         :disabled="this.cartApplets.length == 0"
       >
         <div class="py-2">
-          Add to 
-          <br/> 
+          Add to
+          <br />
           Applet Builder
           <v-icon small>
             mdi-chevron-right
@@ -31,13 +32,12 @@
 
     <div class="mt-0">
       <span v-if="cartApplets.length === 0">
-        You have not added anything to your cart yet.
-        Start searching above.
+        You have not added anything to your cart yet. Start searching above.
       </span>
       <v-card
-        v-else 
+        v-else
         class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in filteredCartApplets"
+        v-for="applet in filteredApplets"
         :key="applet.id"
       >
         <div class="text-center">
@@ -49,13 +49,7 @@
             height="150px"
           />
 
-          <v-avatar
-            v-else
-            tile
-            class="ma-2 ds-avatar"
-            color="blue"
-            size="150"
-          >
+          <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="150">
             <span class="white--text text-h3">
               {{ applet.name[0] }}
             </span>
@@ -66,7 +60,7 @@
             {{ applet.name }}
           </v-card-title>
 
-          <v-card-subtitle 
+          <v-card-subtitle
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
           >
@@ -74,11 +68,8 @@
           </v-card-subtitle>
 
           <v-card-actions class="mx-5 px-2 py-0">
-            <span 
-              v-if="applet.keywords.length"
-              class="text-body-1"
-            >
-              Keywords: 
+            <span v-if="applet.keywords.length" class="text-body-1">
+              Keywords:
             </span>
             <v-btn
               v-for="keyword in applet.keywords"
@@ -102,48 +93,49 @@
               on-icon="mdi-checkbox-marked-circle-outline"
               off-icon="mdi-checkbox-blank-circle-outline"
               indeterminate-icon="mdi-minus-circle-outline"
-              @input="onAppletSelection"
               open-on-click
               selectable
               return-object
             >
               <template v-slot:prepend="{ item }">
-                  <v-icon 
-                    v-if="item.selected === true && item.options"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-down
-                  </v-icon>
-                  <v-icon 
-                    v-if="item.selected === false && item.options"
-                    class="mr-1"
-                    color="dark-grey" 
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-right
-                  </v-icon>
+                <v-icon
+                  v-if="item.selected === true && item.options"
+                  class="mr-1"
+                  color="dark-grey"
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-down
+                </v-icon>
+                <v-icon
+                  v-if="item.selected === false && item.options"
+                  class="mr-1"
+                  color="dark-grey"
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-right
+                </v-icon>
               </template>
               <template v-slot:append="{ item }">
-                <template v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')">
+                <template
+                  v-if="
+                    item.selected === true &&
+                      (item.inputType === 'radio' ||
+                        item.inputType === 'checkbox')
+                  "
+                >
                   <div
                     v-for="option in item.options"
                     :key="option"
                     class="d-flex align-center pt-2"
                   >
-                    <v-icon 
+                    <v-icon
                       v-if="item.inputType === 'checkbox'"
                       class="mr-1"
-                      color="dark-grey" 
+                      color="dark-grey"
                     >
                       mdi-checkbox-marked-outline
                     </v-icon>
-                    <v-icon 
-                      v-else 
-                      class="mr-1"
-                      color="dark-grey" 
-                    >
+                    <v-icon v-else class="mr-1" color="dark-grey">
                       mdi-radiobox-marked
                     </v-icon>
                     <v-img
@@ -167,7 +159,7 @@
             small
             @click="onDeleteApplet(applet.appletId)"
           >
-            <v-icon color="grey darken-3" >
+            <v-icon color="grey darken-3">
               mdi-trash-can-outline
             </v-icon>
           </v-btn>
@@ -176,10 +168,16 @@
     </div>
 
     <ConfirmationDialog
-        v-model="deleteCartItemDialog"
-        :dialogText="$t('deleteAppletFromCartConfirmation', { appletName: deleteAppletId ? appletContents[deleteAppletId].applet.displayName : '' })"
-        :title="$t('deleteApplet')"
-        @onOK="deleteAppletFromCart"
+      v-model="deleteCartItemDialog"
+      :dialogText="
+        $t('deleteAppletFromCartConfirmation', {
+          appletName: deleteAppletId
+            ? appletContents[deleteAppletId].applet.displayName
+            : ''
+        })
+      "
+      :title="$t('deleteApplet')"
+      @onOK="deleteAppletFromCart"
     />
   </div>
 </template>
@@ -198,7 +196,7 @@
   max-width: 600px;
 }
 
-.ds-cursor{
+.ds-cursor {
   cursor: pointer;
 }
 
@@ -210,18 +208,17 @@
 </style>
 
 <script>
-import { mapState } from 'vuex';
-import _ from "lodash";
+import { mapState } from "vuex";
 import LoginForm from "../Login/LoginForm.vue";
 import { AppletMixin } from "../../services/mixins/AppletMixin";
-import ConfirmationDialog from '../dialogs/ConfirmationDialog';
+import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 
 export default {
-  name: 'CartView',
+  name: "CartView",
   mixins: [AppletMixin],
   components: {
     ConfirmationDialog,
-    LoginForm,
+    LoginForm
   },
   data() {
     return {
@@ -230,27 +227,28 @@ export default {
       selection: [],
       deleteCartItemDialog: false,
       deleteAppletId: null,
-      showLoginForm: false,
+      showLoginForm: false
     };
   },
   computed: {
     ...mapState([
-      'publishedApplets',
-      'appletContents',
-      'appletsTree',
-      'cartSelections',
+      "publishedApplets",
+      "appletContents",
+      "appletsTree",
+      "cartSelections"
     ]),
     cartApplets() {
-      return this.publishedApplets.filter(applet => this.cartSelections[applet.appletId])
-    },
-    filteredCartApplets() {
-      if (!this.searchText) {
-        return this.cartApplets;
-      }
-      return this.cartApplets.filter(applet => 
-        applet.keywords.find((keyword) => (keyword.toLowerCase() === this.searchText.toLowerCase()))
+      return this.publishedApplets.filter(
+        applet => this.cartSelections[applet.appletId]
       );
     },
+    filteredApplets() {
+      return this.getFilteredApplets(
+        this.cartApplets,
+        this.appletsTree,
+        this.searchText
+      );
+    }
   },
   methods: {
     onDeleteApplet(appletId) {
@@ -264,12 +262,9 @@ export default {
         if (appletId != this.deleteAppletId) {
           newCartSelections[appletId] = this.cartSelections[appletId];
         }
-      })
+      });
       this.$store.commit("setCartSelections", newCartSelections);
-    },
-    onAppletSelection(data) {
-
-    },
-  },
+    }
+  }
 };
 </script>

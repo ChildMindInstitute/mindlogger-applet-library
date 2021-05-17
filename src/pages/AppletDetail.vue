@@ -1,9 +1,7 @@
 <template>
   <div v-if="!isLoading">
     <div class="mt-0">
-      <v-card 
-        class="mx-8 my-6 d-flex pa-md-2"
-      >
+      <v-card class="mx-8 my-6 d-flex pa-md-2">
         <div class="text-center">
           <v-img
             v-if="applet.image"
@@ -13,13 +11,7 @@
             height="200px"
           />
 
-          <v-avatar
-            v-else
-            tile
-            class="ma-2 ds-avatar"
-            color="blue"
-            size="200"
-          >
+          <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="200">
             <span class="white--text text-h3">
               {{ applet.name[0] }}
             </span>
@@ -30,14 +22,14 @@
             {{ applet.name }}
           </v-card-title>
 
-          <v-card-subtitle 
+          <v-card-subtitle
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
           >
             Description: {{ applet.description }}
           </v-card-subtitle>
 
-          <v-card-subtitle 
+          <v-card-subtitle
             v-if="applet.description"
             class="mx-6 black--text text-body-1 ds-subtitle"
           >
@@ -45,14 +37,12 @@
           </v-card-subtitle>
 
           <v-card-actions class="mx-5 px-2 py-0">
-            <span 
-              v-if="applet.keywords.length"
-              class="text-body-1"
-            >
-              Keywords: 
+            <span v-if="applet.keywords.length" class="text-body-1">
+              Keywords:
             </span>
             <v-btn
               v-for="keyword in applet.keywords"
+              :key="keyword"
               color="orange lighten-2"
               text
             >
@@ -61,10 +51,7 @@
           </v-card-actions>
 
           <v-expand-transition>
-            <v-menu
-              v-if="hasContributions"
-              offset-y
-            >
+            <v-menu v-if="hasContributions" offset-y>
               <template v-slot:activator="{ on }">
                 <div
                   class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-contribution"
@@ -75,18 +62,14 @@
               </template>
 
               <v-list>
-                <v-list-item
-                  @click="onExportContributions"
-                >
+                <v-list-item @click="onExportContributions">
                   <v-list-item-title>
-                    {{ 'Export' }}
+                    {{ "Export" }}
                   </v-list-item-title>
                 </v-list-item>
-                <v-list-item
-                  @click="onViewContributions"
-                >
+                <v-list-item @click="onViewContributions">
                   <v-list-item-title>
-                    {{ 'View' }}
+                    {{ "View" }}
                   </v-list-item-title>
                 </v-list-item>
               </v-list>
@@ -109,41 +92,42 @@
               </template>
               <span>Add to basket</span>
             </v-tooltip>
-
           </v-btn>
         </div>
       </v-card>
 
-      <v-card 
+      <v-card
         v-if="selectBasket"
         class="mx-8 my-2 d-flex py-md-2 px-md-8 align-center"
       >
-        <div 
+        <div
           class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-pointer"
           @click="onSelectAll"
         >
           Select All
         </div>
-        <div 
+        <div
           class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-pointer ml-4"
           @click="onClearTree"
         >
           Cancel
         </div>
-        <div 
+        <div
           class="text-body-2 black--text ds-pointer ml-10"
           @click="onViewContributions"
         >
-          <div> Status: {{ activities }} / {{ items }} selected </div>
+          <div>Status: {{ activities }} / {{ items }} selected</div>
         </div>
-        <div class="text-body-1 primary--text font-weight-medium ds-pointer ml-4">
+        <div
+          class="text-body-1 primary--text font-weight-medium ds-pointer ml-4"
+        >
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
-                color="primary" 
+                color="primary"
                 v-bind="attrs"
                 v-on="on"
-                :disabled="!selectedActivities && !selectedItems" 
+                :disabled="!selectedActivities && !selectedItems"
                 large
                 @click="onUpdateBasket"
               >
@@ -155,9 +139,7 @@
         </div>
       </v-card>
 
-      <v-card 
-        class="mx-8 d-flex pa-md-2"
-      >
+      <v-card class="mx-8 d-flex pa-md-2">
         <div class="ds-tree-layout ml-2">
           <v-treeview
             class="ds-tree-view"
@@ -174,53 +156,60 @@
             return-object
           >
             <template v-slot:prepend="{ item }">
-                <v-icon 
-                  v-if="item.selected === true"
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-down
-                </v-icon>
-                <v-icon 
-                  v-else-if="item.selected === false"
-                  class="mr-1"
-                  color="dark-grey" 
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-right
-                </v-icon>
+              <v-icon
+                v-if="item.selected === true"
+                class="mr-1"
+                color="dark-grey"
+                @click="item.selected = !item.selected"
+              >
+                mdi-menu-down
+              </v-icon>
+              <v-icon
+                v-else-if="item.selected === false"
+                class="mr-1"
+                color="dark-grey"
+                @click="item.selected = !item.selected"
+              >
+                mdi-menu-right
+              </v-icon>
             </template>
             <template v-slot:append="{ item }">
               <div v-if="item.selected === true">
-                <div 
-                  v-if="item.inputType === 'radio' || item.inputType === 'checkbox'" 
-                  v-for="option in item.options"
-                  :key="option.name"
-                  class="d-flex align-center pt-2"
+                <template
+                  v-if="
+                    item.inputType === 'radio' || item.inputType === 'checkbox'
+                  "
                 >
+                  <div
+                    v-for="option in item.options"
+                    :key="option.name"
+                    class="d-flex align-center pt-2"
+                  >
+                    <img
+                      class="mr-2"
+                      width="15"
+                      :src="
+                        itemTypes.find(({ text }) => text === item.inputType)
+                          .icon
+                      "
+                    />
+                    <v-img
+                      v-if="option.image"
+                      class="ds-avatar mr-2"
+                      :src="option.image"
+                      max-width="27px"
+                      height="27px"
+                    />
+                    {{ option.name }}
+                  </div>
+                </template>
+                <div v-else class="d-flex align-center pt-2">
                   <img
                     class="mr-2"
                     width="15"
-                    :src="itemTypes.find(({ text }) => text === item.inputType).icon"
-                  />
-                  <v-img
-                    v-if="option.image"
-                    class="ds-avatar mr-2"
-                    :src="option.image"
-                    max-width="27px"
-                    height="27px"
-                  />
-                  {{ option.name }}
-                </div>
-                <div 
-                  v-if="item.inputType !== 'radio' && item.inputType !== 'checkbox'"
-                  class="d-flex align-center pt-2"
-                >
-                  <img
-                    class="mr-2"
-                    width="15"
-                    :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                    :src="
+                      itemTypes.find(({ text }) => text === item.inputType).icon
+                    "
                   />
                   {{ item.inputType }}
                 </div>
@@ -232,10 +221,10 @@
     </div>
 
     <ViewContributionsDialog
-        v-if="hasContributions"
-        v-model="viewContributionsDialog"
-        :contributionsData="contributionsData"
-        @close="viewContributionsDialog = false"
+      v-if="hasContributions"
+      v-model="viewContributionsDialog"
+      :contributionsData="contributionsData"
+      @close="viewContributionsDialog = false"
     />
   </div>
 </template>
@@ -262,7 +251,7 @@
   cursor: pointer;
 }
 
-.ds-pointer{
+.ds-pointer {
   cursor: pointer;
 }
 
@@ -307,11 +296,11 @@
 <script>
 import api from "../services/Api/api.vue";
 import { AppletMixin } from "../services/mixins/AppletMixin";
-import { mapGetters, mapState } from 'vuex';
-import ViewContributionsDialog from '../components/dialogs/ViewContributionsDialog.vue';
+import { mapGetters, mapState } from "vuex";
+import ViewContributionsDialog from "../components/dialogs/ViewContributionsDialog.vue";
 
 export default {
-  name: 'AppletDetail',
+  name: "AppletDetail",
   mixins: [AppletMixin],
   components: {
     ViewContributionsDialog,
@@ -333,27 +322,20 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      'publishedApplets',
-      'cartSelections',
-    ]),
-    ...mapGetters([
-      'isLoggedIn',
-      'itemTypes',
-      'basketContent',
-    ]),
-    activities () {
+    ...mapState(["publishedApplets", "cartSelections", "itemTypes"]),
+    ...mapGetters(["isLoggedIn"]),
+    activities() {
       if (this.selectedActivities === 1) {
-        return this.selectedActivities + ' activity';
+        return this.selectedActivities + " activity";
       } else {
-        return this.selectedActivities + ' activities';
+        return this.selectedActivities + " activities";
       }
     },
-    items () {
+    items() {
       if (this.selectedItems === 1) {
-        return this.selectedItems + ' item';
+        return this.selectedItems + " item";
       } else {
-        return this.selectedItems + ' items';
+        return this.selectedItems + " items";
       }
     },
     hasContributions() {
@@ -375,166 +357,78 @@ export default {
         libraryId: this.$route.params.appletId,
       });
 
-      this.buildAppletTree(appletContent);
+      this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
 
       if (this.isLoggedIn) {
-        this.contributionsData = await this.getAppletContributions(appletId, appletContent);
+        this.contributionsData = await this.getAppletContributions(
+          appletId,
+          appletContent
+        );
       }
 
       this.isLoading = false;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   },
   methods: {
-    onSelectAll () {
+    onSelectAll() {
       this.selection = [];
 
       for (const activity of this.appletTree) {
         this.selection.push(...activity.children);
       }
     },
-    onClearTree () {
+    onClearTree() {
       this.selection = [];
       this.selectBasket = false;
       this.selectable = false;
     },
-    onUpdateBasket () {
+    async onUpdateBasket() {
       const { appletId } = this.applet;
-      const form = new FormData();
 
       if (this.isLoggedIn) {
-        const currentApplet = this.publishedApplets.find(applet => applet.appletId === appletId);
-        const currentId = this.basketContent.findIndex(applet => applet.appletId === appletId);
-
-        if (currentId !== -1) {
-          this.basketContent[currentId] = currentApplet;
-        } else {
-          this.basketContent.push(currentApplet);
-        }
- 
-        this.$store.commit("setBasketContent", [...this.basketContent]);
-        form.set("selection", JSON.stringify(this.selectedActs));
-        api.updateAppletBasket({
-          apiHost: this.$store.state.backend,
-          appletId: this.applet.appletId,
-          selection: form,
-          token: this.$store.state.auth.authToken.token,
-        }).then((response) => {
-          console.log(response);
-        });
+        await this.updateAppletBasket(
+          appletId,
+          { children: this.appletTree },
+          this.selection
+        );
+        this.fetchBasketApplets();
       } else {
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
-          [appletId]: this.selection
+          [appletId]: this.selection,
         });
       }
     },
-    onCloseBasketStatus () {
+    onCloseBasketStatus() {
       this.selectBasket = true;
       this.selectable = true;
     },
-    buildAppletTree (appletData) {
-      let index = 1;
-      const { items, activities, applet } = appletData;
-      const treeItem = [];
-
-      for (const activityId in activities) {
-        const activityItem = {
-          id: index,
-          activityId,
-          name: activities[activityId]["@id"],
-          children: [],
-        };
-
-        index += 1;
-        for (const itemId in items) {
-          const values = itemId.split('/');
-
-          if (activityId === values[0]) {
-            const nodes = items[itemId]["schema:question"][0]["@value"].split("250)");
-            const item = {
-              id: index,
-              itemId: values[1],
-              inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-              selected: false,
-              name: nodes[nodes.length - 1] || items[itemId]["@id"]
-            };
-
-            if (item.inputType === "radio") {
-              const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"][0]["@value"];
-
-              item.options = options.map((option) => {
-                return {
-                  name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"],
-                }
-              });
-              if (multiple) {
-                item.inputType = "checkbox";
-              }
-            }
-
-            index += 1;
-            activityItem.children.push(item);
-          }
-        }
-        treeItem.push(activityItem);
-      }
-      this.appletTree = [ ...treeItem ];
-    },
     /*
-     * Change appletTreeData format to basket data 
+     * Change appletTreeData format to basket data
      */
     onAppletSelection() {
-      const selectedActs = [];
-
+      const selectedActs = this.parseAppletCartItem(
+        { children: this.appletTree },
+        this.selection
+      );
       this.selectedItems = 0;
       this.selectedActivities = 0;
-      this.selection.forEach(({ id }) => {
-        this.appletTree.forEach(activity => {
-          const selectedItem = activity.children.find(item => item.id === id);
-
-          if (selectedItem) {
-            const actIndex = selectedActs.findIndex(({ activityId }) => activityId === activity.activityId);
-
-            if (actIndex === -1) {
-              const act = {
-                activityId: activity.activityId,
-              };
-
-              if (activity.children.length === 1) {
-                act.items = null;
-                this.selectedActivities += 1;
-              } else {
-                act.items = [];
-                act.items.push(selectedItem.itemId);
-                this.selectedItems += 1;
-              }
-              selectedActs.push(act);
-            } else if (selectedActs[actIndex].items) {
-              this.selectedItems += 1;
-              selectedActs[actIndex].items.push(selectedItem.itemId);
-
-              if (selectedActs[actIndex].items.length === activity.children.length) {
-                selectedActs[actIndex].items = null;
-                this.selectedActivities += 1;
-                this.selectedItems -= activity.children.length;
-              }
-            }
-          }
-        });
+      selectedActs.map((activity) => {
+        if (activity.items) {
+          this.selectedItems += activity.items.length;
+        } else {
+          this.selectedActivities += 1;
+        }
       });
-
-      this.selectedActs = selectedActs;
     },
 
-    onViewContributions () {
+    onViewContributions() {
       this.viewContributionsDialog = true;
     },
-    onExportContributions () {
+    onExportContributions() {
       this.exportContributions(this.contributionsData);
     },
   },
