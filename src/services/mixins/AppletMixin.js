@@ -166,7 +166,7 @@ export const AppletMixin = {
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              name: nodes.pop() || items[itemId]["@id"]
+              title: nodes.pop() || items[itemId]["@id"]
             };
 
             if (item.inputType === "radio") {
