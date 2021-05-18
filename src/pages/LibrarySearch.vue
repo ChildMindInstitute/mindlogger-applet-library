@@ -38,7 +38,7 @@
     <div class="mt-0">
       <v-card
         class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in filteredApplets"
+        v-for="applet in currentApplets"
         :key="applet.id"
       >
         <div class="text-center">
@@ -187,6 +187,13 @@
         </div>
       </v-card>
     </div>
+    <div class="text-center">
+      <v-pagination
+        v-model="page"
+        :length="Math.ceil(filteredApplets.length / 5)"
+        :total-visible="visiblePage"
+      />
+    </div>
   </div>
 </template>
 
@@ -225,6 +232,8 @@ export default {
   mixins: [AccountMixin, AppletMixin],
   data() {
     return {
+      visiblePage: 7,
+      page: 1,
       isLoading: true,
       searchText: ""
     };
@@ -249,7 +258,12 @@ export default {
         this.appletsTree,
         this.searchText
       );
-    }
+    },
+    currentApplets() {
+      const applets = [...this.filteredApplets];
+
+      return applets.splice(5 * (this.page - 1), 5);
+    },
   },
   async beforeMount() {
     const { from, token } = this.$route.query;
@@ -296,7 +310,7 @@ export default {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
 
         return rawString
-          .replace(searchRegex, "<b><i>$1</i></b>")
+          .replace(searchRegex, "<b>$1</b>")
           .replaceAll(" ", "&nbsp;");
       } else {
         return rawString;
