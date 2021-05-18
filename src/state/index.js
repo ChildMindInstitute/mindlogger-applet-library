@@ -14,6 +14,7 @@ const getDefaultState = () => {
     backend: process.env.VUE_APP_SERVER_URL, //"https://api-staging.mindlogger.org/api/v1",
     auth: {},
     currentUser: {},
+    ownerAccount: {},
     allAccounts: [],
     currentAccount: {},
     currentApplets: [],
@@ -160,6 +161,11 @@ const mutations = {
   },
   setAuth(state, userData) {
     state.auth = userData.auth;
+    if (userData.auth.account) {
+      state.currentAccount = userData.auth.account;
+      state.currentApplets = userData.auth.account.applets.owner;
+      state.ownerAccount = userData.auth.account;
+    }
   },
   setCartSelections(state, cartSelections) {
     state.cartSelections = cartSelections;

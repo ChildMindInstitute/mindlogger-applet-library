@@ -106,6 +106,7 @@ export default {
     ...mapState([
       'fromBuilder',
       'allAccounts',
+      'ownerAccount',
     ]),
     ...mapGetters([
       'isLoggedIn'
@@ -142,7 +143,7 @@ export default {
 
     onSelectAccount() {
       if (this.allAccounts.length <= 1) {
-        this.onSelectedAccount(this.allAccounts[0].accountId);
+        this.onSelectedAccount(this.ownerAccount.accountId);
       } else {
         this.step = 'SELECT_ACCOUNT';
         this.showSelectAccountDialog = true;

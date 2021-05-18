@@ -12,7 +12,7 @@
       <v-card-text>
         <v-radio-group v-model="selectedAccount">
           <v-radio
-            v-for="account in allAccounts"
+            v-for="account in accounts"
             :key="account.accountId"
             :label="account.accountName"
             :value="account.accountId"
@@ -61,8 +61,15 @@ export default {
   },
   computed: {
     ...mapState([
+      'ownerAccount',
       'allAccounts'
     ]),
+    accounts() {
+      return [
+        this.ownerAccount,
+        ...this.allAccounts.filter(account => account.accountId !== this.ownerAccount.accountId)
+      ]
+    }
   },
   methods: {
     onAdd() {
