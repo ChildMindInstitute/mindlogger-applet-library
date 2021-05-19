@@ -336,11 +336,7 @@ export default {
 
     try {
       this.applet = this.publishedApplets.find(({ id }) => id === appletId);
-    } catch (error) {
-      console.log(error);
-    }
 
-    try {
       const { data: appletContent } = await api.getAppletContent({
         apiHost: this.$store.state.backend,
         libraryId: this.$route.params.appletId
@@ -349,12 +345,10 @@ export default {
       this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
 
-      if (this.isLoggedIn) {
-        this.contributionsData = await this.getAppletContributions(
-          appletId,
-          appletContent
-        );
-      }
+      this.contributionsData = await this.getAppletContributions(
+        appletId,
+        appletContent
+      );
 
       this.isLoading = false;
     } catch (error) {

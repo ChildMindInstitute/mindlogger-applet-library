@@ -182,22 +182,16 @@ const getUsersData = ({ apiHost, token, appletId, options }) =>
     params: options,
   });
 
-const getAppletContributionOrigin = ({ apiHost, token, libraryId }) =>
+const getAppletContributionOrigin = ({ apiHost, libraryId }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/contribution/origin?libraryId=${libraryId}`,
-    headers: {
-      "Girder-Token": token,
-    },
   });
 
-const getAppletContributionUpdates = ({ apiHost, token, libraryId }) =>
+const getAppletContributionUpdates = ({ apiHost, libraryId }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/contribution/updates?libraryId=${libraryId}`,
-    headers: {
-      "Girder-Token": token,
-    },
   });
 
 export default {
