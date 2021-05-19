@@ -36,7 +36,11 @@
     </div>
 
     <div class="mt-0">
+      <h3 class="mb-4 ml-8" v-if="!currentApplets.length">
+        No results found
+      </h3>
       <v-card
+        v-else
         class="mx-auto mb-4 d-flex pa-md-2"
         v-for="applet in currentApplets"
         :key="applet.id"

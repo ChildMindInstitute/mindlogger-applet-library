@@ -29,8 +29,8 @@
     </div>
 
     <div class="mt-0">
-      <span v-if="cartApplets.length === 0">
-        You have not added anything to your cart yet. Start searching above.
+      <span class="mb-4 ml-8" v-if="!filteredApplets.length">
+        You have not added anything to your basket yet. Start searching above.
       </span>
       <v-card
         v-else
