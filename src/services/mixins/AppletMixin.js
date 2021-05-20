@@ -230,7 +230,6 @@ export const AppletMixin = {
     async getAppletContributions(libraryId, appletContent) {
       const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
         apiHost: this.apiHost,
-        token: this.token,
         libraryId,
       })
 
@@ -240,7 +239,6 @@ export const AppletMixin = {
 
       const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
         apiHost: this.apiHost,
-        token: this.token,
         libraryId,
       })
 
