@@ -63,7 +63,7 @@ export const AppletMixin = {
         if (
           applet.name.match(regex) ||
           applet.description.match(regex) ||
-          appletData.name.match(regex)
+          appletData.title.match(regex)
         ) {
           return true;
         }
