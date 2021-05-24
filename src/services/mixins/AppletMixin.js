@@ -171,7 +171,7 @@ export const AppletMixin = {
 
             if (item.inputType === "radio") {
               const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"][0]["@value"];
+              const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
               item.options = options.map((option) => ({
                 name: option["schema:name"][0]["@value"],
