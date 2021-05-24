@@ -147,17 +147,20 @@ const mutations = {
     state.currentAccount = account;
     state.currentApplets = account.applets;
   },
-  setPublishedApplets(state, publishedApplets) {
-    state.publishedApplets = publishedApplets;
+  initPublishedApplets(state) {
+    state.publishedApplets = [];
   },
-  setAppletContents(state, appletContents) {
-    state.appletContents = appletContents;
+  addPublishedApplet(state, applet) {
+    state.publishedApplets.push(applet);
+  },
+  setAppletContent(state, { appletContent, appletId }) {
+    state.appletContents[appletId] = appletContent;
   },
   setBasketContents(state, basketContents) {
     state.basketContents = basketContents;
   },
-  setAppletsTree(state, appletsTree) {
-    state.appletsTree = appletsTree;
+  setAppletTree(state, { tree, appletId }) {
+    state.appletsTree[appletId] = tree;
   },
   setAuth(state, userData) {
     state.auth = userData.auth;
