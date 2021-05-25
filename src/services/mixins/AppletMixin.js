@@ -20,31 +20,6 @@ export const AppletMixin = {
     },
   },
   methods: {
-    async fetchPublishedApplets() {
-      const { data: publishedApplets } = await api.getPublishedApplets({
-        apiHost: this.apiHost,
-      });
-
-      const appletContents = {};
-      await Promise.all(publishedApplets.map(async (applet) => {
-        try {
-          const { data: appletContent } = await api.getAppletContent({
-            apiHost: this.apiHost,
-            libraryId: applet.id,
-          });
-
-          appletContents[applet.appletId] = {
-            ...appletContent,
-            meta: applet
-          };
-        } catch (error) {
-          console.log(error);
-        }
-      }));
-
-      this.$store.commit("setPublishedApplets", publishedApplets);
-      this.$store.commit("setAppletContents", appletContents);
-    },
     async fetchBasketApplets() {
       const { data: basketContents } = await api.getBasketContents({
         apiHost: this.apiHost,
@@ -171,7 +146,7 @@ export const AppletMixin = {
 
             if (item.inputType === "radio") {
               const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"][0]["@value"];
+              const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
               item.options = options.map((option) => ({
                 name: option["schema:name"][0]["@value"],

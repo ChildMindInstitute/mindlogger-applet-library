@@ -1,5 +1,5 @@
 <template>
-  <div v-show="!isLoading">
+  <div>
     <div class="d-flex align-center justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -36,7 +36,7 @@
     </div>
 
     <div class="mt-0">
-      <h4 class="mb-4 ml-8" v-if="!currentApplets.length">
+      <h3 class="mb-4 ml-8" v-if="!currentApplets.length && !isLoading">
         No results found
       </h4>
       <v-card
@@ -238,8 +238,8 @@ export default {
     return {
       visiblePage: 7,
       page: 1,
+      searchText: "",
       isLoading: true,
-      searchText: ""
     };
   },
   /**
@@ -271,6 +271,10 @@ export default {
   },
   async beforeMount() {
     const { from, token } = this.$route.query;
+    this.isLoading = true;
+
+    this.$store.commit("initPublishedApplets");
+
     if (from == "builder" && token) {
       try {
         const resp = await api.getUserDetails({
@@ -292,21 +296,47 @@ export default {
       }
     }
 
-    try {
-      this.isLoading = true;
-      await this.fetchPublishedApplets();
-      const appletsTree = {};
-      Object.entries(this.appletContents).map(([appletId, applet]) => {
-        appletsTree[appletId] = this.buildAppletTree(applet);
-      });
-      this.$store.commit("setAppletsTree", appletsTree);
-      if (this.isLoggedIn) {
+    if (this.isLoggedIn) {
         await this.fetchBasketApplets();
-      }
-      this.isLoading = false;
+    }
+
+    let publishedApplets = [];
+    try {
+      const resp = await api.getPublishedApplets({
+        apiHost: this.apiHost,
+      });
+
+      publishedApplets = resp.data;
     } catch (err) {
       console.log(err);
+      return ;
     }
+
+    const process = publishedApplets.reduce((process, applet) => {
+      return process.then(() => api.getAppletContent({
+          apiHost: this.apiHost,
+          libraryId: applet.id,
+        }).then(({ data: appletContent }) => {
+          this.$store.commit("setAppletTree", {
+            tree: this.buildAppletTree(appletContent),
+            appletId: applet.appletId
+          });
+
+          this.$store.commit("setAppletContent", {
+            appletContent,
+            appletId: applet.appletId
+          });
+
+          this.$store.commit("addPublishedApplet", applet);
+        })
+      );
+    }, Promise.resolve());
+
+    process.then(() => {
+      this.isLoading = false;
+    }).catch(err => {
+      console.log(err);
+    })
   },
   methods: {
     highlight(rawString) {
