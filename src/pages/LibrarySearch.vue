@@ -38,7 +38,7 @@
     <div class="mt-0">
       <h3 class="mb-4 ml-8" v-if="!currentApplets.length && !isLoading">
         No results found
-      </h4>
+      </h3>
       <v-card
         v-else
         class="mx-auto mb-4 d-flex pa-md-2"
