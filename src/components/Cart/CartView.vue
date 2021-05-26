@@ -29,9 +29,13 @@
     </div>
 
     <div class="mt-0">
-      <span class="mb-4 ml-8" v-if="!filteredApplets.length">
-        You have not added anything to your basket yet. Start searching above.
-      </span>
+      <h4 class="mb-4 ml-8" v-if="!cartApplets.length">
+        You have not added anything to your basket yet.
+        Start searching above.
+      </h4>
+      <h4 class="mb-4 ml-8" v-else-if="!filteredApplets.length">
+        No results found
+      </h4>
       <v-card
         v-else
         class="mx-auto mb-4 d-flex pa-md-2"
