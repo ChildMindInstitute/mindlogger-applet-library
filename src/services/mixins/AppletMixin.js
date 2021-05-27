@@ -110,6 +110,14 @@ export const AppletMixin = {
         appletId,
       });
     },
+    buildSelection(appletData) {
+      const selection = [];
+
+      for (let child of appletData.children) {
+        selection.push(...child.children);
+      }
+      return selection;
+    },
     buildAppletTree(appletData) {
       let treeIndex = 1;
       const { items, activities, applet } = appletData;
@@ -201,6 +209,10 @@ export const AppletMixin = {
       });
 
       return cartItem;
+    },
+    getItemtitle(itemTitle) {
+      const values = itemTitle.split('0)');
+      return values[values.length - 1];
     },
     async getAppletContributions(libraryId, appletContent) {
       const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({

@@ -101,6 +101,7 @@
               class="ds-tree-view"
               v-model="selection[applet.appletId]"
               :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+              @input="updateCart(applet.appletId)"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -126,7 +127,7 @@
                 </v-icon>
               </template>
               <template v-slot:append="{ item }">
-                <span v-html="highlight(item.title)" />
+                <span v-html="highlight(getItemtitle(item.title))" />
                 <div v-if="item.selected === true">
                   <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                     <div
@@ -167,7 +168,7 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="deleteApplet = applet; dialog = true;"
+            @click="deleteApplet = applet.appletId; dialog = true;"
           >
             <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>
@@ -185,7 +186,7 @@
           <v-btn color="primary darken-1" text @click="onDeleteApplet()">
             Yes
           </v-btn>
-          <v-btn color="primary darken-1" text @click="dialog = false">
+          <v-btn color="primary darken-1" text @click="onCancelConfirmation()">
             No
           </v-btn>
         </v-card-actions>
@@ -222,6 +223,8 @@ export default {
       dialog: false,
       isLoading: true,
       deleteApplet: null,
+      cached: null,
+      cachedSelection: [],
       appletsTree: [],
       selection: []
     };
@@ -240,11 +243,13 @@ export default {
   async beforeMount() {
     try {
       this.isLoading = true;
-      await this.fetchBasketApplets();
-
       this.appletsTree = {};
+      this.selection = {};
+
+      await this.fetchBasketApplets();
       Object.entries(this.basketContents).map(([appletId, applet]) => {
         this.appletsTree[appletId] = this.buildAppletTree(applet);
+        this.selection[appletId] = this.buildSelection(this.appletsTree[appletId]);
       });
       this.isLoading = false;
     } catch (err) {
@@ -252,6 +257,23 @@ export default {
     }
   },
   methods: {
+    async updateCart(appletId) {
+      if (!this.selection[appletId].length) {
+        this.cached = appletId;
+        this.deleteApplet = appletId; 
+        this.dialog = true;
+        // this.onDeleteApplet(appletId);
+      } else {
+        this.cacheSelection = [...this.selection[appletId]];
+        console.log('000', this.selection[appletId]);
+        await this.updateAppletBasket(
+          appletId,
+          this.appletsTree[appletId],
+          this.selection[appletId]
+        );
+        this.fetchBasketApplets();
+      }
+    },
     highlight(rawString) {
       if (this.searchText) {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
@@ -263,11 +285,20 @@ export default {
         return rawString;
       }
     },
+    onCancelConfirmation() {
+      this.dialog = false;
+
+      if (this.cached) {
+        this.selection[this.cached] = [...this.cacheSelection];
+        this.cached = null;
+      }
+    },
     async onDeleteApplet() {
-      const { appletId } = this.deleteApplet;
+      // console.log('---', this.selection)
+      // console.log('===', this.appletsTree)
 
       this.dialog = false;
-      await this.deleteBasketApplet(appletId);
+      await this.deleteBasketApplet(this.deleteApplet);
       await this.fetchBasketApplets();
     },
     onAppletDetail(applet) {
