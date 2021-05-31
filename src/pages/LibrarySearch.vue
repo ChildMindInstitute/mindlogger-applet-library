@@ -7,6 +7,7 @@
         solo
         prepend-inner-icon="search"
         placeholder="Type keyword..."
+        @keydown="onKeywordChange()"
       >
       </v-text-field>
 
@@ -377,6 +378,11 @@ export default {
       this.$router.push({
         name: "Cart"
       });
+    },
+    onKeywordChange() {
+      if (this.page > 1) {
+        this.page = 1;
+      }
     }
   }
 };

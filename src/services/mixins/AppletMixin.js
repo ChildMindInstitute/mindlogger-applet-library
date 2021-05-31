@@ -29,7 +29,7 @@ export const AppletMixin = {
     },
     getFilteredApplets(applets, appletsTree, searchText) {
       if (!searchText) {
-        return applets.filter((applet) => applet);
+        return applets.filter((applet) => applet).sort(this.alphaSort);
       }
       return applets.filter((applet) => {
         const regex = new RegExp(searchText, "ig");
@@ -70,7 +70,7 @@ export const AppletMixin = {
         }
 
         return false;
-      });
+      }).sort(this.alphaSort);
     },
     async addCartItemsToBasket() {
       const form = new FormData();
@@ -135,13 +135,16 @@ export const AppletMixin = {
           const values = itemId.split('/');
 
           if (activityId === values[0]) {
-            const nodes = items[itemId]["schema:question"][0]["@value"].split("250)");
+            const itemTitle = items[itemId]["schema:question"][0]["@value"];
+            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                : itemTitle.split("250x250)");
             const item = {
               id: treeIndex,
               itemId: values[1],
               inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
               selected: false,
-              title: nodes.pop() || items[itemId]["@id"]
+              title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
             };
 
             if (item.inputType === "radio") {
@@ -301,6 +304,19 @@ export const AppletMixin = {
     },
     formatTimeAgo(time) {
       return new TimeAgo(this.$i18n.locale.replace('_', '-')).format(new Date(time), 'round')
+    },
+    alphaSort(A, B) {
+      if (A.name.toLowerCase() > B.name.toLowerCase()) {
+        return 1;
+      } else if (A.name.toLowerCase() < B.name.toLowerCase()) {
+        return -1;
+      } else if (A.name < B.name) {
+        return 1;
+      } else if (A.name > B.name) { 
+        return -1;
+      } else {
+        return 0;
+      }
     }
   }
 }
