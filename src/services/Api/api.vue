@@ -83,10 +83,13 @@ const switchAccount = ({ apiHost, token, accountId }) =>
     },
   });
 
-const getPublishedApplets = ({ apiHost }) =>
+const getPublishedApplets = ({ apiHost, recordsPerPage, pageIndex, searchText }) =>
   axios({
     method: "get",
     url: `${apiHost}/library/applets`,
+    params: {
+      recordsPerPage, pageIndex, searchText
+    }
   });
 
 const addAppletsToBasket = ({ apiHost, token, data }) =>
