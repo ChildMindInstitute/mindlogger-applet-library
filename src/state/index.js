@@ -124,6 +124,9 @@ const getters = {
     return state.publishedApplets.filter(
       applet => state.basketContents[applet.appletId]
     );
+  },
+  appletsTree(state) {
+    return state.appletsTree;
   }
 };
 
@@ -147,11 +150,8 @@ const mutations = {
     state.currentAccount = account;
     state.currentApplets = account.applets;
   },
-  initPublishedApplets(state) {
-    state.publishedApplets = [];
-  },
-  addPublishedApplet(state, applet) {
-    state.publishedApplets.push(applet);
+  setPublishedApplets(state, applets) {
+    state.publishedApplets = applets;
   },
   setAppletContent(state, { appletContent, appletId }) {
     state.appletContents[appletId] = appletContent;
@@ -161,6 +161,11 @@ const mutations = {
   },
   setAppletTree(state, { tree, appletId }) {
     state.appletsTree[appletId] = tree;
+  },
+  addTreeNodes(state, { children, appletId }) {
+    for (const child of children) {
+      state.appletsTree[appletId].children.push(child);
+    }
   },
   setAuth(state, userData) {
     state.auth = userData.auth;
@@ -181,6 +186,7 @@ const mutations = {
 const stateCopy = (({
   // Excluded properties.
   currentLanguage,
+  appletContents,
   ...o
 }) => o)(state);
 const stateToPersist = Object.keys(stateCopy);

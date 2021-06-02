@@ -36,13 +36,18 @@
     </div>
 
     <div class="mt-0">
-      <h3 class="mb-4 ml-8" v-if="!currentApplets.length && !isLoading">
+      <v-progress-linear
+        v-if="isLoading"
+        indeterminate rounded height="3"
+      />
+
+      <h3 class="mb-4 ml-8" v-if="!publishedApplets.length && !isLoading">
         No results found
       </h3>
       <v-card
         v-else
         class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in currentApplets"
+        v-for="applet in publishedApplets"
         :key="applet.id"
       >
         <div class="text-center">
@@ -89,8 +94,9 @@
           <div class="ds-tree-layout ml-2">
             <v-treeview
               class="ds-tree-view"
+              :load-children="fetchApplet.bind(this, applet.id)"
               v-model="appletSelections[applet.appletId]"
-              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+              :items="[appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -194,7 +200,7 @@
     <div class="text-center">
       <v-pagination
         v-model="page"
-        :length="Math.ceil(filteredApplets.length / 5)"
+        :length="Math.ceil(appletCount / recordsPerPage)"
         :total-visible="visiblePage"
       />
     </div>
@@ -230,6 +236,7 @@ import api from "../services/Api/api.vue";
 import { mapState, mapGetters } from "vuex";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { AccountMixin } from "../services/mixins/AccountMixin";
+import debounce from "debounce-promise";
 
 export default {
   name: "LibrarySearch",
@@ -238,8 +245,10 @@ export default {
     return {
       visiblePage: 7,
       page: 1,
-      searchText: "",
+      recordsPerPage: 5,
+      searchText: '',
       isLoading: true,
+      appletCount: 0,
     };
   },
   /**
@@ -248,32 +257,52 @@ export default {
   computed: {
     ...mapState([
       "publishedApplets",
-      "appletsTree",
       "appletContents",
       "basketContents",
       "appletSelections",
       "cartSelections",
       "itemTypes"
     ]),
-    ...mapGetters(["isLoggedIn", "numberOfCartItems", "basketApplets"]),
-    filteredApplets() {
-      return this.getFilteredApplets(
-        this.publishedApplets,
-        this.appletsTree,
-        this.searchText
-      );
-    },
-    currentApplets() {
-      const applets = [...this.filteredApplets];
-
-      return applets.splice(5 * (this.page - 1), 5);
-    },
+    ...mapGetters(["isLoggedIn", "numberOfCartItems", "basketApplets", "appletsTree"])
   },
   async beforeMount() {
     const { from, token } = this.$route.query;
-    this.isLoading = true;
 
-    this.$store.commit("initPublishedApplets");
+    const getPublishedApplets = debounce(() => {
+      api.getPublishedApplets({
+        apiHost: this.apiHost,
+        recordsPerPage: this.recordsPerPage,
+        pageIndex: this.page - 1,
+        searchText: this.searchText
+      }).then(({ data: resp }) => {
+        let publishedApplets = resp.data;
+
+        for (const applet of publishedApplets) {
+          let tree = {
+            id: 1,
+            appletId: applet.appletId,
+            title: applet.name,
+            children: []
+          };
+
+          if (this.appletContents[applet.appletId]) {
+            tree = this.buildAppletTree(this.appletContents[applet.appletId])
+          }
+          this.$store.commit("setAppletTree", {
+            tree,
+            appletId: applet.appletId
+          });
+        }
+        this.appletCount = resp.totalCount;
+        this.$store.commit("setPublishedApplets", publishedApplets);
+        this.isLoading = false;
+      })
+    }, 270);
+
+    this.getPublishedApplets = () => {
+      this.isLoading = true;
+      return getPublishedApplets();
+    };
 
     if (from == "builder" && token) {
       try {
@@ -300,45 +329,29 @@ export default {
         await this.fetchBasketApplets();
     }
 
-    let publishedApplets = [];
-    try {
-      const resp = await api.getPublishedApplets({
-        apiHost: this.apiHost,
-      });
-
-      publishedApplets = resp.data;
-    } catch (err) {
-      console.log(err);
-      return ;
-    }
-
-    const process = publishedApplets.reduce((process, applet) => {
-      return process.then(() => api.getAppletContent({
-          apiHost: this.apiHost,
-          libraryId: applet.id,
-        }).then(({ data: appletContent }) => {
-          this.$store.commit("setAppletTree", {
-            tree: this.buildAppletTree(appletContent),
-            appletId: applet.appletId
-          });
-
-          this.$store.commit("setAppletContent", {
-            appletContent,
-            appletId: applet.appletId
-          });
-
-          this.$store.commit("addPublishedApplet", applet);
-        })
-      );
-    }, Promise.resolve());
-
-    process.then(() => {
-      this.isLoading = false;
-    }).catch(err => {
-      console.log(err);
-    })
+    await getPublishedApplets();
   },
   methods: {
+    async fetchApplet(libraryId) {
+      return api.getAppletContent({
+        apiHost: this.apiHost,
+        libraryId,
+      }).then(({ data: appletContent }) => {
+        const appletId = appletContent.applet._id.substring(7);
+
+        const tree = this.buildAppletTree(appletContent);
+        this.$store.commit("addTreeNodes", {
+          children: tree.children,
+          appletId
+        });
+
+        this.$store.commit("setAppletContent", {
+          appletContent,
+          appletId
+        });
+      });
+    },
+
     highlight(rawString) {
       if (this.searchText) {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
@@ -377,6 +390,15 @@ export default {
       this.$router.push({
         name: "Cart"
       });
+    }
+  },
+  watch: {
+    searchText() {
+      this.page = 1;
+      this.getPublishedApplets();
+    },
+    page() {
+      this.getPublishedApplets();
     }
   }
 };
