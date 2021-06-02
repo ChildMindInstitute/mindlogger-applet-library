@@ -38,7 +38,7 @@
 
     <div class="mt-0">
       <v-progress-linear
-        v-if="isLoading"
+        v-if="isLoading && searchTextChanged"
         indeterminate rounded height="3"
       />
 
@@ -200,7 +200,7 @@
     </div>
 
     <v-progress-linear
-      v-if="isLoading"
+      v-if="isLoading && !searchTextChanged"
       indeterminate rounded height="3"
     />
     <div class="footer">
@@ -288,6 +288,7 @@ export default {
       searchText: '',
       isLoading: true,
       appletCount: 0,
+      searchTextChanged: false,
       options: [
         5, 10, 25, 50, 100
       ]
@@ -442,13 +443,16 @@ export default {
   watch: {
     searchText() {
       this.page = 1;
+      this.searchTextChanged = true;
       this.getPublishedApplets();
     },
     page() {
+      this.searchTextChanged = false;
       this.getPublishedApplets();
     },
     recordsPerPage() {
       this.page = 1;
+      this.searchTextChanged = false;
       this.getPublishedApplets();
     }
   }
