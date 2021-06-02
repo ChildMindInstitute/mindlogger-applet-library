@@ -1,5 +1,5 @@
 import api from "../Api/api.vue";
-import Item from 'applet-schema-builder/src/models/Item';
+import Protocol from 'applet-schema-builder/src/models/Protocol';
 import ObjectToCSV from 'object-to-csv';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
@@ -215,43 +215,91 @@ export const AppletMixin = {
       return values[values.length - 1];
     },
     async getAppletContributions(libraryId, appletContent) {
-      const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
-        apiHost: this.apiHost,
-        libraryId,
-      })
-
-      if (Object.keys(appletContributionOrigins).length == 0) {
-        return [];
-      }
-
       const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
         apiHost: this.apiHost,
         libraryId,
       })
 
+      const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
+        apiHost: this.apiHost,
+        libraryId,
+      })
+
       const contributionsData = [];
-      const itemModel = new Item();
-      Object.entries(appletContributionOrigins).map(([itemId, itemContributionData]) => {
-        const itemIdentifier = Object.keys(contributionUpdatesData).find(identifier => identifier.split("/").pop() == itemId);
+
+      // const itemModel = new Item();
+      // Object.entries(appletContributionOrigins).map(([itemId, itemContributionData]) => {
+      //   const itemIdentifier = Object.keys(contributionUpdatesData).find(identifier => identifier.split("/").pop() == itemId);
+      //   const activityId = itemIdentifier.split("/")[0];
+      //   const itemUpdate = contributionUpdatesData[itemIdentifier];
+
+      //   const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
+      //   const updated = this.formatTimeAgo(itemUpdate["updated"]);
+
+      //   const itemOriginData = itemContributionData["content"];
+      //   const itemCurrentData = appletContent["items"][itemIdentifier];
+
+      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemOriginData)));
+      //   const originItem = itemModel.getItemData();
+
+      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemCurrentData)));
+      //   const currentItem = itemModel.getItemData();
+
+      //   const changeInfo = Item.getChangeInfo(originItem, currentItem);
+
+      //   changeInfo.log.map(log => {
+      //     contributionsData.push({
+      //       creator: itemContributionData["baseItem"]["account"],
+      //       created: created,
+      //       appletName: itemContributionData["baseItem"]["applet"],
+      //       activityName: appletContent["activities"][activityId]["@id"],
+      //       itemName: itemContributionData["content"]["@id"],
+      //       itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
+      //       editor: itemUpdate["lastUpdatedBy"],
+      //       updated: updated,
+      //       changes: log.name,
+      //       version: itemContributionData["content"]["schema:version"][0]["@value"],
+      //     });
+      //   });
+      // });
+
+      const generateLogs = (old, current) => {
+        const changeInfo = Protocol.getChangeInfo(old, current);
+        const changeLogs = [];
+
+        const extractLogs = (logs) => {
+          logs.map(log => {
+            if (log.children) {
+              extractLogs(log.children);
+            } else {
+              changeLogs.push(log.name);
+            }
+          })
+        }
+        extractLogs(changeInfo.log);
+
+        return changeLogs;
+      }
+
+      const currentApplet = await Protocol.parseApplet(appletContent);
+      const currentProtocol = await Protocol.formattedProtocol(currentApplet);
+      await Promise.all(Object.entries(contributionUpdatesData).reverse().map(async ([itemIdentifier, itemUpdate]) => {
         const activityId = itemIdentifier.split("/")[0];
-        const itemUpdate = contributionUpdatesData[itemIdentifier];
+        const itemId = itemIdentifier.split("/")[1];
 
-        const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
-        const updated = this.formatTimeAgo(itemUpdate["updated"]);
+        if (appletContributionOrigins[itemId]) {
+          const itemContributionData = appletContributionOrigins[itemId];
 
-        const itemOriginData = itemContributionData["content"];
-        const itemCurrentData = appletContent["items"][itemIdentifier];
+          const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
+          const updated = this.formatTimeAgo(itemUpdate["updated"]);
 
-        itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemOriginData)));
-        const originItem = itemModel.getItemData();
+          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
+          originAppletContent.items[itemIdentifier] = itemContributionData["content"];
 
-        itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemCurrentData)));
-        const currentItem = itemModel.getItemData();
+          const originalApplet = await Protocol.parseApplet(originAppletContent);
+          const originProtocol = await Protocol.formattedProtocol(originalApplet);
 
-        const changeInfo = Item.getChangeInfo(originItem, currentItem);
-
-        changeInfo.log.map(log => {
-          contributionsData.push({
+          const logData = {
             creator: itemContributionData["baseItem"]["account"],
             created: created,
             appletName: itemContributionData["baseItem"]["applet"],
@@ -260,11 +308,48 @@ export const AppletMixin = {
             itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
             editor: itemUpdate["lastUpdatedBy"],
             updated: updated,
-            changes: log.name,
             version: itemContributionData["content"]["schema:version"][0]["@value"],
-          });
-        });
-      });
+          };
+
+          const logs = generateLogs(originProtocol, currentProtocol);
+          logs.map(log => {
+            contributionsData.push({
+              ...logData,
+              changes: log
+            })
+          })
+        } else {
+          const updated = this.formatTimeAgo(itemUpdate["updated"]);
+          const created = updated;
+
+          const itemData = appletContent["items"][itemIdentifier];
+          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
+          delete originAppletContent.items[itemIdentifier];
+
+          const originalApplet = await Protocol.parseApplet(originAppletContent);
+          const originProtocol = await Protocol.formattedProtocol(originalApplet);
+
+          const logData = {
+            creator: itemUpdate["lastUpdatedBy"],
+            created: created,
+            appletName: appletContent["applet"]["displayName"],
+            activityName: appletContent["activities"][activityId]["@id"],
+            itemName: itemData["@id"],
+            itemQuestion: itemData["schema:question"][0]["@value"],
+            editor: itemUpdate["lastUpdatedBy"],
+            updated: updated,
+            version: itemData["schema:version"][0]["@value"],
+          };
+
+          const logs = generateLogs(originProtocol, currentProtocol);
+          logs.map(log => {
+            contributionsData.push({
+              ...logData,
+              changes: log
+            })
+          })
+        }
+      }));
 
       return contributionsData;
     },
