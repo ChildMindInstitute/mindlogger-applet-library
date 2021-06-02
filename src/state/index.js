@@ -58,6 +58,10 @@ const getDefaultState = () => {
         icon: baseImageURL + "item-types/video-icon.png"
       },
       {
+        text: "time",
+        icon: baseImageURL + "item-types/time-range.png"
+      },
+      {
         text: "timeRange",
         icon: baseImageURL + "item-types/time-range.png"
       },
