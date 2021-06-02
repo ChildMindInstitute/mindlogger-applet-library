@@ -90,6 +90,7 @@
               class="ds-tree-view"
               v-model="cartSelections[applet.appletId]"
               :items="[appletsTree[applet.appletId]]"
+              @input="updateCart(applet.appletId)"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -115,7 +116,7 @@
                 </v-icon>
               </template>
               <template v-slot:append="{ item }">
-                <span v-html="highlight(item.title)" />
+                <span v-html="highlight(getItemtitle(item.title))" />
                 <template v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')">
                   <div
                     v-for="option in item.options"
@@ -169,6 +170,7 @@
         })
       "
       :title="$t('deleteApplet')"
+      @onCancel="cancelConfirmation"
       @onOK="deleteAppletFromCart"
     />
   </div>
@@ -220,7 +222,9 @@ export default {
       selection: [],
       deleteCartItemDialog: false,
       deleteAppletId: null,
-      showLoginForm: false
+      showLoginForm: false,
+      cached: null,
+      cacheSelection: [],
     };
   },
   computed: {
@@ -244,6 +248,14 @@ export default {
     }
   },
   methods: {
+    updateCart(appletId) {
+      if (!this.cartSelections[appletId].length) {
+        this.cached = appletId;
+        this.onDeleteApplet(appletId);
+      } else {
+        this.cacheSelection = [...this.cartSelections[appletId]];
+      }
+    },
     highlight(rawString) {
       if (this.searchText) {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
@@ -258,6 +270,14 @@ export default {
     onDeleteApplet(appletId) {
       this.deleteAppletId = appletId;
       this.deleteCartItemDialog = true;
+    },
+    cancelConfirmation() {
+      this.deleteCartItemDialog = false;
+      
+      if (this.cached) {
+        this.cartSelections[this.cached] = [...this.cacheSelection];
+        this.cached = null;
+      }
     },
     deleteAppletFromCart() {
       this.deleteCartItemDialog = false;

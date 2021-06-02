@@ -171,7 +171,7 @@
               </v-icon>
             </template>
             <template v-slot:append="{ item }">
-              <span v-html="item.title" />
+              <span v-html="highlight(getItemtitle(item.title))" />
               <div v-if="item.selected === true">
                 <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                   <div

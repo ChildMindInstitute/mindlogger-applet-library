@@ -59,7 +59,7 @@ export default {
       this.$emit('input', false);
     },
     onCancel() {
-      this.$emit('input', false);
+      this.$emit('onCancel');
     },
   }
 }
