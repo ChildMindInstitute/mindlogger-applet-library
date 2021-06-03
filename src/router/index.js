@@ -47,28 +47,6 @@ router.beforeEach(async (to, from, next) => {
   const lang = getLanguageCode(
     from.query.lang || store.state.currentLanguage || "en"
   );
-  const token = to.query.token || "";
-
-  if (token) {
-    api
-      .signInWithToken({
-        apiHost: store.state.backend,
-        token
-      })
-      .then(resp => {
-        store.commit("setAuth", {
-          auth: resp.data,
-          email: resp.data.user.email
-        });
-        return next({
-          path: "/",
-          query: { nextUrl: to.fullPath, lang }
-        });
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  }
   // Redirect unauthenticated users to the login page if they are trying to
   // access a page that requires authentication.
   if ((isPrivatePage || !to.matched.length) && !isLoggedIn) {
