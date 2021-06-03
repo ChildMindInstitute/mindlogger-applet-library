@@ -107,6 +107,7 @@ export default {
       'fromBuilder',
       'allAccounts',
       'ownerAccount',
+      'currentApplets',
     ]),
     ...mapGetters([
       'isLoggedIn'
@@ -167,8 +168,12 @@ export default {
     },
 
     onSelectApplet() {
-      this.step = 'SELECT_APPLET';
-      this.showSelectAppletDialog = true;
+      if (this.currentApplets.length > 0) {
+        this.step = 'SELECT_APPLET';
+        this.showSelectAppletDialog = true;
+      } else {
+        this.onSelectedApplet(null);
+      }
     },
     onSelectedApplet(selectedApplet) {
       this.selectedApplet = selectedApplet;
