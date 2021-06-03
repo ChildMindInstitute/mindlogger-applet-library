@@ -32,9 +32,9 @@ let router = new Router({
       component: LibrarySearch
     },
     {
-      path: "/appletDetail",
+      path: "/detail/:id",
       name: "AppletDetail",
-      component: AppletDetail
+      component: AppletDetail,
     }
   ]
 });

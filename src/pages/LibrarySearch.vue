@@ -384,7 +384,7 @@ export default {
     onAppletDetail(applet) {
       this.$router.push({
         name: "AppletDetail",
-        params: { appletId: applet.id }
+        params: { id: applet.id }
       });
     },
     onViewBasket() {
