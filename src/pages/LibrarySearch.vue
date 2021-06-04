@@ -311,42 +311,6 @@ export default {
   async beforeMount() {
     const { from, token } = this.$route.query;
 
-    const getPublishedApplets = debounce(() => {
-      api.getPublishedApplets({
-        apiHost: this.apiHost,
-        recordsPerPage: this.recordsPerPage,
-        pageIndex: this.page - 1,
-        searchText: this.searchText
-      }).then(({ data: resp }) => {
-        let publishedApplets = resp.data;
-
-        for (const applet of publishedApplets) {
-          let tree = {
-            id: 1,
-            appletId: applet.appletId,
-            title: applet.name,
-            children: []
-          };
-
-          if (this.appletContents[applet.appletId]) {
-            tree = this.buildAppletTree(this.appletContents[applet.appletId])
-          }
-          this.$store.commit("setAppletTree", {
-            tree,
-            appletId: applet.appletId
-          });
-        }
-        this.appletCount = resp.totalCount;
-        this.$store.commit("setPublishedApplets", publishedApplets);
-        this.isLoading = false;
-      })
-    }, 270);
-
-    this.getPublishedApplets = () => {
-      this.isLoading = true;
-      return getPublishedApplets();
-    };
-
     if (from == "builder" && token) {
       try {
         const resp = await api.getUserDetails({
@@ -372,9 +336,41 @@ export default {
         await this.fetchBasketApplets();
     }
 
-    await getPublishedApplets();
+    await this.getPublishedApplets();
   },
   methods: {
+    async getPublishedApplets() {
+      this.isLoading = true;  
+
+      const { data: resp } = await api.getPublishedApplets({
+        apiHost: this.apiHost,
+        recordsPerPage: this.recordsPerPage,
+        pageIndex: this.page - 1,
+        searchText: this.searchText
+      });
+      let publishedApplets = resp.data;
+
+      for (const applet of publishedApplets) {
+        let tree = {
+          id: 1,
+          appletId: applet.appletId,
+          title: applet.name,
+          children: [],
+          vnode: null
+        };
+
+        if (this.appletContents[applet.appletId]) {
+          tree = this.buildAppletTree(this.appletContents[applet.appletId])
+        }
+        this.$store.commit("setAppletTree", {
+          tree,
+          appletId: applet.appletId
+        });
+      }
+      this.appletCount = resp.totalCount;
+      this.$store.commit("setPublishedApplets", publishedApplets);
+      this.isLoading = false;
+    },
     async fetchApplet(libraryId) {
       return api.getAppletContent({
         apiHost: this.apiHost,
@@ -438,22 +434,31 @@ export default {
       if (this.page > 1) {
         this.page = 1;
       }
+    },
+    onEntriesDebounced() {
+      // cancel pending call
+      clearTimeout(this._timerId)
+
+      // delay new call 500ms
+      this._timerId = setTimeout(async () => {
+        await this.getPublishedApplets();
+      }, 500)
     }
   },
   watch: {
     searchText() {
       this.page = 1;
       this.searchTextChanged = true;
-      this.getPublishedApplets();
+      this.onEntriesDebounced();
     },
     page() {
       this.searchTextChanged = false;
-      this.getPublishedApplets();
+      this.onEntriesDebounced();
     },
     recordsPerPage() {
       this.page = 1;
       this.searchTextChanged = false;
-      this.getPublishedApplets();
+      this.onEntriesDebounced();
     }
   }
 };

@@ -126,6 +126,7 @@ export const AppletMixin = {
         appletId: applet._id.substring(7),
         title: applet.displayName,
         children: [],
+        vnode: null
       };
 
       treeIndex += 1;
@@ -136,6 +137,7 @@ export const AppletMixin = {
           activityId,
           title: activities[activityId]["@id"],
           children: [],
+          vnode: null
         };
 
         treeIndex += 1;
