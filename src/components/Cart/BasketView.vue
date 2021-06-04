@@ -168,7 +168,7 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="deleteApplet = applet.appletId; dialog = true;"
+            @click="deleteApplet = applet; dialog = true;"
           >
             <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>
@@ -260,7 +260,8 @@ export default {
     async updateCart(appletId) {
       if (!this.selection[appletId].length) {
         this.cached = appletId;
-        this.deleteApplet = appletId; 
+
+        this.deleteApplet = this.filteredApplets.find(applet => applet.appletId == appletId);
         this.dialog = true;
         // this.onDeleteApplet(appletId);
       } else {
@@ -298,7 +299,7 @@ export default {
       // console.log('===', this.appletsTree)
 
       this.dialog = false;
-      await this.deleteBasketApplet(this.deleteApplet);
+      await this.deleteBasketApplet(this.deleteApplet.appletId);
       await this.fetchBasketApplets();
     },
     onAppletDetail(applet) {
