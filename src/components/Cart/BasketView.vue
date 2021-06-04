@@ -99,7 +99,7 @@
           <div class="ds-tree-layout ml-2">
             <v-treeview
               class="ds-tree-view"
-              v-model="selection[applet.appletId]"
+              v-model="cartSelections[applet.appletId]"
               :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
               @input="updateCart(applet.appletId)"
               selection-type="leaf"
@@ -118,7 +118,7 @@
                   mdi-menu-down
                 </v-icon>
                 <v-icon
-                  v-if="item.selected === false"
+                  v-else
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -168,18 +168,18 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="deleteApplet = applet.appletId; dialog = true;"
+            @click="onDeleteAppletFromBasket(applet)"
           >
             <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>
         </div>
       </v-card>
     </div>
-    <v-dialog v-if="deleteApplet" v-model="dialog" persistent max-width="800">
+    <v-dialog v-if="deleteAppletId" v-model="dialog" persistent max-width="800">
       <v-card>
         <v-card-title class="headline"> Delete Applet </v-card-title>
         <v-card-text>
-          Are you sure you want to delete <b>{{ deleteApplet.name }}</b> from your basket?
+          Are you sure you want to delete <b>{{ cartApplets[deleteAppletId].name }}</b> from your basket?
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -222,19 +222,16 @@ export default {
       searchText: "",
       dialog: false,
       isLoading: true,
-      deleteApplet: null,
-      cached: null,
+      deleteAppletId: null,
       cachedSelection: [],
-      appletsTree: [],
-      selection: []
+      appletsTree: []
     };
   },
   computed: {
-    ...mapState(["fromBuilder", "itemTypes", "basketContents"]),
-    ...mapGetters(["basketApplets"]),
+    ...mapState(["fromBuilder", "itemTypes", "cartApplets", "cartSelections"]),
     filteredApplets() {
       return this.getFilteredApplets(
-        this.basketApplets,
+        this.cartApplets,
         this.appletsTree,
         this.searchText
       );
@@ -244,13 +241,8 @@ export default {
     try {
       this.isLoading = true;
       this.appletsTree = {};
-      this.selection = {};
 
       await this.fetchBasketApplets();
-      Object.entries(this.basketContents).map(([appletId, applet]) => {
-        this.appletsTree[appletId] = this.buildAppletTree(applet);
-        this.selection[appletId] = this.buildSelection(this.appletsTree[appletId]);
-      });
       this.isLoading = false;
     } catch (err) {
       console.log(err);
@@ -258,18 +250,15 @@ export default {
   },
   methods: {
     async updateCart(appletId) {
-      if (!this.selection[appletId].length) {
-        this.cached = appletId;
-        this.deleteApplet = appletId; 
+      if (!this.cartSelections[appletId].length) {
+        this.deleteAppletId = appletId; 
         this.dialog = true;
-        // this.onDeleteApplet(appletId);
       } else {
-        this.cacheSelection = [...this.selection[appletId]];
-        console.log('000', this.selection[appletId]);
+        this.cacheSelection = [...this.cartSelections[appletId]];
         await this.updateAppletBasket(
           appletId,
           this.appletsTree[appletId],
-          this.selection[appletId]
+          this.cartSelections[appletId]
         );
         this.fetchBasketApplets();
       }
@@ -288,24 +277,29 @@ export default {
     onCancelConfirmation() {
       this.dialog = false;
 
-      if (this.cached) {
-        this.selection[this.cached] = [...this.cacheSelection];
-        this.cached = null;
+      if (this.deleteAppletId) {
+        this.$store.commit("setCartSelections", {
+          ...this.cartSelections,
+          [this.deleteAppletId]: [...this.cacheSelection]
+        });
+        this.deleteAppletId = null;
       }
     },
     async onDeleteApplet() {
-      // console.log('---', this.selection)
-      // console.log('===', this.appletsTree)
-
       this.dialog = false;
-      await this.deleteBasketApplet(this.deleteApplet);
+      await this.deleteBasketApplet(this.deleteAppletId);
       await this.fetchBasketApplets();
+      this.deleteAppletId = null;
     },
     onAppletDetail(applet) {
       this.$router.push({
         name: "AppletDetail",
         params: { appletId: applet.id }
       });
+    },
+    onDeleteAppletFromBasket(applet) {
+      deleteAppletId = applet.appletId;
+      dialog = true;
     }
   }
 };

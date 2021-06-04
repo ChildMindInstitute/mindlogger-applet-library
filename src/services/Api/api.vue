@@ -92,6 +92,15 @@ const getPublishedApplets = ({ apiHost, recordsPerPage, pageIndex, searchText })
     }
   });
 
+const getBasket = ({ apiHost, token }) =>
+  axios({
+    method: "get",
+    url: `${apiHost}/library/basket`,
+    headers: {
+      "Girder-Token": token,
+    }
+  });
+
 const addAppletsToBasket = ({ apiHost, token, data }) =>
   axios({
     method: "post",
@@ -157,10 +166,10 @@ const getAppletContent = ({ apiHost, libraryId, nextActivity }) => {
   })
 }
 
-const getBasketContents = ({ apiHost, token }) =>
+const getBasketApplets = ({ apiHost, token }) =>
   axios({
-    method: "get",
-    url: `${apiHost}/library/basket/content`,
+    method: "put",
+    url: `${apiHost}/library/basket/applets`,
     headers: {
       "Girder-Token": token,
     },
@@ -201,6 +210,7 @@ export default {
   signIn,
   signUp,
   signInWithToken,
+  getBasket,
   addAppletsToBasket,
   getAccounts,
   getUserDetails,
@@ -211,7 +221,7 @@ export default {
   deleteBasketApplet,
   getPublishedApplets,
   getAppletContent,
-  getBasketContents,
+  getBasketApplets,
   getUsersData,
   createToken,
   getAppletContributionOrigin,

@@ -100,11 +100,10 @@ const getDefaultState = () => {
     ],
     publishedApplets: [],
     appletContents: {},
-    basketContents: {},
     appletsTree: {},
     appletSelections: {},
+    cartApplets: [],
     cartSelections: {},
-    basketSelections: {},
     fromBuilder: false
   };
 };
@@ -115,19 +114,8 @@ const getters = {
   isLoggedIn(state) {
     return !_.isEmpty(state.auth);
   },
-  numberOfCartItems(state, getters) {
-    if (getters.isLoggedIn) {
-      // basket
-      return Object.keys(state.basketContents).length.toString();
-    } else {
-      // cart
-      return Object.keys(state.cartSelections).length.toString();
-    }
-  },
-  basketApplets(state) {
-    return state.publishedApplets.filter(
-      applet => state.basketContents[applet.appletId]
-    );
+  numberOfCartItems(state) {
+    return state.cartApplets.length.toString();
   },
   appletsTree(state) {
     return state.appletsTree;
@@ -160,9 +148,6 @@ const mutations = {
   setAppletContent(state, { appletContent, appletId }) {
     state.appletContents[appletId] = appletContent;
   },
-  setBasketContents(state, basketContents) {
-    state.basketContents = basketContents;
-  },
   setAppletTree(state, { tree, appletId }) {
     state.appletsTree[appletId] = tree;
   },
@@ -178,6 +163,9 @@ const mutations = {
       state.currentApplets = userData.auth.account.applets.owner;
       state.ownerAccount = userData.auth.account;
     }
+  },
+  setCartApplets(state, cartApplets) {
+    state.cartApplets = cartApplets;
   },
   setCartSelections(state, cartSelections) {
     state.cartSelections = cartSelections;

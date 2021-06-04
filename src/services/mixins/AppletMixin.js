@@ -15,17 +15,52 @@ export const AppletMixin = {
     token() {
       return this.$store.state.auth.authToken.token;
     },
+    appletContents() {
+      return this.$store.state.appletContents;
+    },
     cartSelections() {
       return this.$store.state.cartSelections;
     },
   },
   methods: {
     async fetchBasketApplets() {
-      const { data: basketContents } = await api.getBasketContents({
+      const { data: basketApplets } = await api.getBasketApplets({
         apiHost: this.apiHost,
         token: this.token,
       });
-      this.$store.commit("setBasketContents", basketContents);
+      this.$store.commit("setCartApplets", basketApplets);
+
+      for (const applet of basketApplets) {
+        await this.fetchAppletContent(applet.id, applet.appletId);
+      }
+
+      const { data: basketSelections } = await api.getBasket({
+        apiHost: this.apiHost,
+        token: this.token,
+      });
+      this.$store.commit("setCartSelections", basketSelections);
+    },
+    async fetchAppletContent(libraryId, appletId) {
+      if (this.appletContents[appletId]) {
+        return this.appletContents[appletId];
+      }
+      const { data: appletContent } = await api.getAppletContent({
+        apiHost: this.apiHost,
+        libraryId,
+      })
+
+      this.$store.commit("setAppletContent", {
+        appletContent,
+        appletId
+      });
+
+      const tree = this.buildAppletTree(appletContent);
+
+      this.$store.commit("setAppletTree", {
+        tree,
+        appletId
+      });
+
     },
     getFilteredApplets(applets, appletsTree, searchText) {
       if (!searchText) {
@@ -109,14 +144,6 @@ export const AppletMixin = {
         token: this.token,
         appletId,
       });
-    },
-    buildSelection(appletData) {
-      const selection = [];
-
-      for (let child of appletData.children) {
-        selection.push(...child.children);
-      }
-      return selection;
     },
     buildAppletTree(appletData) {
       let treeIndex = 1;

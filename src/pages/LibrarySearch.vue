@@ -95,9 +95,8 @@
           <div class="ds-tree-layout ml-2">
             <v-treeview
               class="ds-tree-view"
-              :load-children="fetchApplet.bind(this, applet.id)"
               v-model="appletSelections[applet.appletId]"
-              :items="[appletsTree[applet.appletId]]"
+              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -114,7 +113,7 @@
                   mdi-menu-down
                 </v-icon>
                 <v-icon
-                  v-if="item.selected === false"
+                  v-else
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -259,12 +258,13 @@ export default {
     ...mapState([
       "publishedApplets",
       "appletContents",
-      "basketContents",
+      "appletsTree",
       "appletSelections",
+      "cartApplets",
       "cartSelections",
       "itemTypes"
     ]),
-    ...mapGetters(["isLoggedIn", "numberOfCartItems", "basketApplets", "appletsTree"])
+    ...mapGetters(["isLoggedIn", "numberOfCartItems"])
   },
   async beforeMount() {
     const { from, token } = this.$route.query;
@@ -276,26 +276,8 @@ export default {
         pageIndex: this.page - 1,
         searchText: this.searchText
       }).then(({ data: resp }) => {
-        let publishedApplets = resp.data;
-
-        for (const applet of publishedApplets) {
-          let tree = {
-            id: 1,
-            appletId: applet.appletId,
-            title: applet.name,
-            children: []
-          };
-
-          if (this.appletContents[applet.appletId]) {
-            tree = this.buildAppletTree(this.appletContents[applet.appletId])
-          }
-          this.$store.commit("setAppletTree", {
-            tree,
-            appletId: applet.appletId
-          });
-        }
         this.appletCount = resp.totalCount;
-        this.$store.commit("setPublishedApplets", publishedApplets);
+        this.$store.commit("setPublishedApplets", resp.data);
         this.isLoading = false;
       })
     }, 270);
@@ -321,24 +303,10 @@ export default {
     }
   },
   methods: {
-    async fetchApplet(libraryId) {
-      return api.getAppletContent({
-        apiHost: this.apiHost,
-        libraryId,
-      }).then(({ data: appletContent }) => {
-        const appletId = appletContent.applet._id.substring(7);
-
-        const tree = this.buildAppletTree(appletContent);
-        this.$store.commit("addTreeNodes", {
-          children: tree.children,
-          appletId
-        });
-
-        this.$store.commit("setAppletContent", {
-          appletContent,
-          appletId
-        });
-      });
+    async fetchAppletContents() {
+      for (const applet of this.publishedApplets) {
+        await this.fetchAppletContent(applet.id, applet.appletId);
+      }
     },
 
     highlight(rawString) {
@@ -363,6 +331,10 @@ export default {
         this.fetchBasketApplets();
       } else {
         // add to cart
+        this.$store.commit("setCartApplets", {
+          ...this.cartApplets,
+          [appletId]: this.publishedApplets[appletId]
+        });
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
           [appletId]: this.appletSelections[appletId]
@@ -393,6 +365,9 @@ export default {
     },
     page() {
       this.getPublishedApplets();
+    },
+    publishedApplets() {
+      this.fetchAppletContents()
     }
   }
 };

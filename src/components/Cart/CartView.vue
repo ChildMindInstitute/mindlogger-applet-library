@@ -89,7 +89,7 @@
             <v-treeview
               class="ds-tree-view"
               v-model="cartSelections[applet.appletId]"
-              :items="[appletsTree[applet.appletId]]"
+              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
               @input="updateCart(applet.appletId)"
               selection-type="leaf"
               selected-color="darkgrey"
@@ -232,13 +232,9 @@ export default {
       "publishedApplets",
       "appletContents",
       "appletsTree",
+      "cartApplets",
       "cartSelections"
     ]),
-    cartApplets() {
-      return this.publishedApplets.filter(
-        applet => this.cartSelections[applet.appletId]
-      );
-    },
     filteredApplets() {
       return this.getFilteredApplets(
         this.cartApplets,
@@ -281,13 +277,10 @@ export default {
     },
     deleteAppletFromCart() {
       this.deleteCartItemDialog = false;
-      const newCartSelections = {};
-      this.cartApplets.map(({ appletId }) => {
-        if (appletId != this.deleteAppletId) {
-          newCartSelections[appletId] = this.cartSelections[appletId];
-        }
-      });
-      this.$store.commit("setCartSelections", newCartSelections);
+      const newCartApplets = this.cartApplets.filter(applet => applet.appletId != this.deleteAppletId);
+      this.$store.commit("setCartApplets", newCartApplets);
+      delete this.cartSelections[this.deleteAppletId]
+      this.$store.commit("setCartSelections", this.cartSelections);
     }
   }
 };
