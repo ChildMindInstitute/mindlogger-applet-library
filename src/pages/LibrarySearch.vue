@@ -346,33 +346,21 @@ export default {
       this.isLoading = true;
       return getPublishedApplets();
     };
+    await getPublishedApplets();
 
-    if (from == "builder" && token) {
+    if (token) {
       try {
-        const resp = await api.getUserDetails({
-          apiHost: this.$store.state.backend,
-          token
-        });
-        if (resp.data) {
-          this.setAuth({
-            auth: {
-              authToken: {
-                token
-              }
-            }
-          });
-          this.$store.commit("setFromBuilder", true);
-        }
-      } catch (e) {
-        console.log("token error", e.response.data.message);
+        await this.signInWithToken(token);
+      } catch (err) {
+        console.log(err);
       }
     }
-
     if (this.isLoggedIn) {
-        await this.fetchBasketApplets();
+      if (from == "builder") {
+        this.$store.commit("setFromBuilder", true);
+      }
+      await this.fetchBasketApplets();
     }
-
-    await getPublishedApplets();
   },
   methods: {
     async fetchApplet(libraryId) {
