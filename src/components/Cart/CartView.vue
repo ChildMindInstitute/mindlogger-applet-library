@@ -89,8 +89,8 @@
             <v-treeview
               class="ds-tree-view"
               v-model="cartSelections[applet.appletId]"
-              :items="[appletsTree[applet.appletId]]"
-              @input="updateCart(applet.appletId)"
+              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+              @input="updateCart(applet)"
               selection-type="leaf"
               selected-color="darkgrey"
               open-on-click
@@ -99,7 +99,7 @@
             >
               <template v-slot:prepend="{ item }">
                 <v-icon
-                  v-if="item.selected === true && item.options"
+                  v-if="item.selected === true"
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -107,7 +107,7 @@
                   mdi-menu-down
                 </v-icon>
                 <v-icon
-                  v-if="item.selected === false && item.options"
+                  v-else-if="item.selected === false"
                   class="mr-1"
                   color="dark-grey"
                   @click="item.selected = !item.selected"
@@ -117,30 +117,35 @@
               </template>
               <template v-slot:append="{ item }">
                 <span v-html="highlight(getItemtitle(item.title))" />
-                <template v-if="item.selected === true && (item.inputType === 'radio' || item.inputType === 'checkbox')">
-                  <div
-                    v-for="option in item.options"
-                    :key="option"
-                    class="d-flex align-center pt-2"
-                  >
-                    <v-icon
-                      v-if="item.inputType === 'checkbox'"
-                      class="mr-1"
-                      color="dark-grey"
+                <template v-if="item.selected === true">
+                  <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                    <div
+                      v-for="option in item.options"
+                      :key="option.name"
+                      class="d-flex align-center pt-2"
                     >
-                      mdi-checkbox-marked-outline
-                    </v-icon>
-                    <v-icon v-else class="mr-1" color="dark-grey">
-                      mdi-radiobox-marked
-                    </v-icon>
-                    <v-img
-                      v-if="option.image"
-                      class="ds-avatar mr-2"
-                      :src="option.image"
-                      max-width="27px"
-                      height="27px"
+                      <img
+                        class="mr-2"
+                        width="15"
+                        :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                      />
+                      <v-img
+                        v-if="option.image"
+                        class="ds-avatar mr-2"
+                        :src="option.image"
+                        max-width="27px"
+                        height="27px"
+                      />
+                      {{ option.name }}
+                    </div>
+                  </div>
+                  <div v-else class="d-flex align-center pt-2">
+                    <img
+                      class="mr-2"
+                      width="15"
+                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                     />
-                    {{ option.name }}
+                    {{ item.inputType }}
                   </div>
                 </template>
               </template>
@@ -152,7 +157,7 @@
             class="mx-8 mt-2"
             fab
             small
-            @click="onDeleteApplet(applet.appletId)"
+            @click="onDeleteApplet(applet)"
           >
             <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
           </v-btn>
@@ -164,14 +169,12 @@
       v-model="deleteCartItemDialog"
       :dialogText="
         $t('deleteAppletFromCartConfirmation', {
-          appletName: deleteAppletId
-            ? appletContents[deleteAppletId].applet.displayName
-            : ''
+          appletName: deleteApplet ? deleteApplet.name : ''
         })
       "
       :title="$t('deleteApplet')"
-      @onCancel="cancelConfirmation"
-      @onOK="deleteAppletFromCart"
+      @onCancel="onCancelConfirmation"
+      @onOK="onDeleteAppletFromCart"
     />
   </div>
 </template>
@@ -204,7 +207,6 @@
 
 <script>
 import { mapState } from "vuex";
-import LoginForm from "../Login/LoginForm.vue";
 import { AppletMixin } from "../../services/mixins/AppletMixin";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 
@@ -212,33 +214,23 @@ export default {
   name: "CartView",
   mixins: [AppletMixin],
   components: {
-    ConfirmationDialog,
-    LoginForm
+    ConfirmationDialog
   },
   data() {
     return {
       searchText: "",
-      selectedApplets: {},
-      selection: [],
       deleteCartItemDialog: false,
-      deleteAppletId: null,
-      showLoginForm: false,
-      cached: null,
+      deleteApplet: null,
       cacheSelection: [],
     };
   },
   computed: {
     ...mapState([
-      "publishedApplets",
-      "appletContents",
+      "itemTypes",
       "appletsTree",
+      "cartApplets",
       "cartSelections"
     ]),
-    cartApplets() {
-      return this.publishedApplets.filter(
-        applet => this.cartSelections[applet.appletId]
-      );
-    },
     filteredApplets() {
       return this.getFilteredApplets(
         this.cartApplets,
@@ -248,10 +240,10 @@ export default {
     }
   },
   methods: {
-    updateCart(appletId) {
+    updateCart(applet) {
+      const { appletId } = applet;
       if (!this.cartSelections[appletId].length) {
-        this.cached = appletId;
-        this.onDeleteApplet(appletId);
+        this.onDeleteApplet(applet);
       } else {
         this.cacheSelection = [...this.cartSelections[appletId]];
       }
@@ -267,27 +259,28 @@ export default {
         return rawString;
       }
     },
-    onDeleteApplet(appletId) {
-      this.deleteAppletId = appletId;
+    onDeleteApplet(applet) {
+      this.deleteApplet = applet;
       this.deleteCartItemDialog = true;
     },
-    cancelConfirmation() {
+    onCancelConfirmation() {
       this.deleteCartItemDialog = false;
-      
-      if (this.cached) {
-        this.cartSelections[this.cached] = [...this.cacheSelection];
-        this.cached = null;
+
+      if (this.deleteApplet) {
+        this.$store.commit("setCartSelections", {
+          ...this.cartSelections,
+          [this.deleteApplet.appletId]: [...this.cacheSelection]
+        });
+        this.deleteApplet = null;
       }
     },
-    deleteAppletFromCart() {
+    onDeleteAppletFromCart() {
       this.deleteCartItemDialog = false;
-      const newCartSelections = {};
-      this.cartApplets.map(({ appletId }) => {
-        if (appletId != this.deleteAppletId) {
-          newCartSelections[appletId] = this.cartSelections[appletId];
-        }
-      });
-      this.$store.commit("setCartSelections", newCartSelections);
+      const { appletId } = this.deleteApplet;
+      const newCartApplets = this.cartApplets.filter(applet => applet.appletId != appletId);
+      this.$store.commit("setCartApplets", newCartApplets);
+      delete this.cartSelections[appletId]
+      this.$store.commit("setCartSelections", this.cartSelections);
     }
   }
 };
