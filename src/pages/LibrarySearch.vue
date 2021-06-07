@@ -38,7 +38,7 @@
 
     <div class="mt-0">
       <v-progress-linear
-        v-if="isLoading"
+        v-if="isLoading && searchTextChanged"
         indeterminate rounded height="3"
       />
 
@@ -199,17 +199,55 @@
         </v-card>
       </template>
     </div>
-    <div class="text-center">
-      <v-pagination
-        v-model="page"
-        :length="Math.ceil(appletCount / recordsPerPage)"
-        :total-visible="visiblePage"
-      />
+
+    <v-progress-linear
+      v-if="isLoading && !searchTextChanged"
+      indeterminate rounded height="3"
+    />
+    <div class="footer">
+      <div class="text-center pagination">
+        <v-pagination
+          v-model="page"
+          :length="Math.ceil(appletCount / recordsPerPage)"
+          :total-visible="visiblePage"
+        />
+      </div>
+
+      <div class="rows-per-page">
+        <div class="rows-per-page-title">Rows per page:</div>
+        <v-select
+          v-model="recordsPerPage"
+          class="rows-per-page-options"
+          :items="options"
+          solo
+        ></v-select>
+      </div>
     </div>
   </div>
 </template>
 
 <style lang="scss">
+.footer {
+  display: flex;
+
+  .pagination {
+    flex-grow: 1;
+  }
+
+  .rows-per-page {
+    display: flex;
+    align-items: baseline;
+
+    .rows-per-page-title {
+      margin-right: 20px;
+    }
+
+    .rows-per-page-options {
+      width: 100px;
+    }
+  }
+}
+
 .ds-avatar {
   border-radius: 4px !important;
 }
@@ -251,6 +289,10 @@ export default {
       searchText: '',
       isLoading: true,
       appletCount: 0,
+      searchTextChanged: false,
+      options: [
+        5, 10, 25, 50, 100
+      ]
     };
   },
   /**
@@ -349,7 +391,7 @@ export default {
     onAppletDetail(applet) {
       this.$router.push({
         name: "AppletDetail",
-        params: { appletId: applet.id }
+        params: { id: applet.id }
       });
     },
     onViewBasket() {
@@ -366,9 +408,16 @@ export default {
   watch: {
     searchText() {
       this.page = 1;
+      this.searchTextChanged = true;
       this.getPublishedApplets();
     },
     page() {
+      this.searchTextChanged = false;
+      this.getPublishedApplets();
+    },
+    recordsPerPage() {
+      this.page = 1;
+      this.searchTextChanged = false;
       this.getPublishedApplets();
     },
     publishedApplets() {

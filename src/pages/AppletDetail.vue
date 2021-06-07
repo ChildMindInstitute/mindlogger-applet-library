@@ -332,14 +332,14 @@ export default {
     }
   },
   async beforeMount() {
-    const { appletId } = this.$route.params;
+    const appletId = this.$route.params.id;
 
     try {
       this.applet = this.publishedApplets.find(({ id }) => id === appletId);
 
       const { data: appletContent } = await api.getAppletContent({
         apiHost: this.$store.state.backend,
-        libraryId: this.$route.params.appletId
+        libraryId: appletId
       });
 
       this.appletTree = this.buildAppletTree(appletContent).children;

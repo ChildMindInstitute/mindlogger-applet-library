@@ -44,9 +44,11 @@
 <script>
 import _ from "lodash";
 import LoginForm from "../components/Login/LoginForm.vue";
+import { AppletMixin } from "../services/mixins/AppletMixin";
 
 export default {
   name: "Login",
+  mixins: [AppletMixin],
 
   components: {
     LoginForm,
@@ -62,7 +64,8 @@ export default {
     this.text = this.$t("resetEmailSent");
   },
   methods: {
-    loginSuccess() {
+    async loginSuccess() {
+      await this.addCartItemsToBasket();
       this.$router.push('/').catch(err => {});
     },
   },
