@@ -42,92 +42,112 @@
         indeterminate rounded height="3"
       />
 
-      <h3 class="mb-4 ml-8" v-if="!publishedApplets.length && !isLoading">
-        No results found
-      </h3>
-      <v-card
-        v-else
-        class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in publishedApplets"
-        :key="applet.id"
-      >
-        <div class="text-center">
-          <v-img
-            v-if="applet.image"
-            class="ma-2 ds-avatar"
-            :src="applet.image"
-            max-width="150px"
-            height="150px"
-          />
+      <template v-else>
+        <h3 class="mb-4 ml-8" v-if="!publishedApplets.length">
+          No results found
+        </h3>
+        <v-card
+          v-else
+          class="mx-auto mb-4 d-flex pa-md-2"
+          v-for="applet in publishedApplets"
+          :key="applet.id"
+        >
+          <div class="text-center">
+            <v-img
+              v-if="applet.image"
+              class="ma-2 ds-avatar"
+              :src="applet.image"
+              max-width="150px"
+              height="150px"
+            />
 
-          <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="150">
-            <span class="white--text text-h3">
-              {{ applet.name[0] }}
-            </span>
-          </v-avatar>
-        </div>
-        <div class="ds-tree-layout ml-2">
-          <v-card-title
-            class="text-decoration-underline text-h6"
-            v-html="highlight(applet.name)"
-          />
-          <v-card-subtitle
-            v-if="applet.description"
-            class="mx-6 black--text text-body-1 ds-subtitle"
-            v-html="highlight(applet.description)"
-          />
-
-          <v-card-actions class="d-block mx-5 px-2 py-0">
-            <span v-if="applet.keywords.length" class="text-body-1">
-              Keywords:
-            </span>
-            <v-btn
-              v-for="keyword in applet.keywords"
-              :key="keyword"
-              color="orange lighten-2"
-              text
-              @click="searchText = keyword"
-            >
-              <span v-html="highlight(keyword)" />
-            </v-btn>
-          </v-card-actions>
-
+            <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="150">
+              <span class="white--text text-h3">
+                {{ applet.name[0] }}
+              </span>
+            </v-avatar>
+          </div>
           <div class="ds-tree-layout ml-2">
-            <v-treeview
-              class="ds-tree-view"
-              v-model="appletSelections[applet.appletId]"
-              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
-              selection-type="leaf"
-              selected-color="darkgrey"
-              open-on-click
-              selectable
-              return-object
-            >
-              <template v-slot:prepend="{ item }">
-                <v-icon
-                  v-if="item.selected === true"
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-down
-                </v-icon>
-                <v-icon
-                  v-else
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-right
-                </v-icon>
-              </template>
-              <template v-slot:append="{ item }">
-                <span v-html="highlight(getItemtitle(item.title))" />
-                <div v-if="item.selected === true">
-                  <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+            <v-card-title
+              class="text-decoration-underline text-h6"
+              v-html="highlight(applet.name)"
+            />
+            <v-card-subtitle
+              v-if="applet.description"
+              class="mx-6 black--text text-body-1 ds-subtitle"
+              v-html="highlight(applet.description)"
+            />
+
+            <v-card-actions class="d-block mx-5 px-2 py-0">
+              <span v-if="applet.keywords.length" class="text-body-1">
+                Keywords:
+              </span>
+              <v-btn
+                v-for="keyword in applet.keywords"
+                :key="keyword"
+                color="orange lighten-2"
+                text
+                @click="searchText = keyword"
+              >
+                <span v-html="highlight(keyword)" />
+              </v-btn>
+            </v-card-actions>
+
+            <div class="ds-tree-layout ml-2">
+              <v-treeview
+                class="ds-tree-view"
+                v-model="appletSelections[applet.appletId]"
+                :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+                selection-type="leaf"
+                selected-color="darkgrey"
+                open-on-click
+                selectable
+                return-object
+              >
+                <template v-slot:prepend="{ item }">
+                  <v-icon
+                    v-if="item.selected === true"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                  <v-icon
+                    v-else-if="item.selected === false"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-right
+                  </v-icon>
+                </template>
+                <template v-slot:append="{ item }">
+                  <span v-html="highlight(getItemtitle(item.title))" />
+                  <template v-if="item.selected === true">
+                    <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                      <div
+                        v-for="option in item.options"
+                        :key="option.name"
+                        class="d-flex align-center pt-2"
+                      >
+                        <img
+                          class="mr-2"
+                          width="15"
+                          :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                        />
+                        <v-img
+                          v-if="option.image"
+                          class="ds-avatar mr-2"
+                          :src="option.image"
+                          max-width="27px"
+                          height="27px"
+                        />
+                        <span v-html="highlight(option.name)" />
+                      </div>
+                    </div>
                     <div
-                      v-for="option in item.options"
-                      :key="option.name"
+                      v-else
                       class="d-flex align-center pt-2"
                     >
                       <img
@@ -135,67 +155,49 @@
                         width="15"
                         :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                       />
-                      <v-img
-                        v-if="option.image"
-                        class="ds-avatar mr-2"
-                        :src="option.image"
-                        max-width="27px"
-                        height="27px"
-                      />
-                      <span v-html="highlight(option.name)" />
+                      <span v-html="highlight(item.inputType)" />
                     </div>
                   </template>
-                  <div
-                    v-else
-                    class="d-flex align-center pt-2"
-                  >
-                    <img
-                      class="mr-2"
-                      width="15"
-                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
-                    />
-                    <span v-html="highlight(item.inputType)" />
-                  </div>
-                </div>
-              </template>
-            </v-treeview>
+                </template>
+              </v-treeview>
+            </div>
           </div>
-        </div>
-        <div class="d-flex align-baseline">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                class="mx-2 mt-2"
-                v-bind="attrs"
-                v-on="on"
-                fab
-                small
-                @click="onAddBasket(applet.appletId)"
-                :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
-              >
-                <v-icon color="grey darken-3"> mdi-basket-plus-outline </v-icon>
-              </v-btn>
-            </template>
-            <span>Add to basket</span>
-          </v-tooltip>
+          <div class="d-flex align-baseline">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  class="mx-2 mt-2"
+                  v-bind="attrs"
+                  v-on="on"
+                  fab
+                  small
+                  @click="onAddBasket(applet)"
+                  :disabled="!appletSelections[applet.appletId] || appletSelections[applet.appletId].length == 0"
+                >
+                  <v-icon color="grey darken-3"> mdi-basket-plus-outline </v-icon>
+                </v-btn>
+              </template>
+              <span>Add to basket</span>
+            </v-tooltip>
 
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                class="ml-2 mt-2 mr-6"
-                v-bind="attrs"
-                v-on="on"
-                fab
-                small
-                @click="onAppletDetail(applet)"
-              >
-                <v-icon color="grey darken-3"> mdi-information-outline </v-icon>
-              </v-btn>
-            </template>
-            <span>See applet detail</span>
-          </v-tooltip>
-        </div>
-      </v-card>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  class="ml-2 mt-2 mr-6"
+                  v-bind="attrs"
+                  v-on="on"
+                  fab
+                  small
+                  @click="onAppletDetail(applet)"
+                >
+                  <v-icon color="grey darken-3"> mdi-information-outline </v-icon>
+                </v-btn>
+              </template>
+              <span>See applet detail</span>
+            </v-tooltip>
+          </div>
+        </v-card>
+      </template>
     </div>
     <div class="text-center">
       <v-pagination
@@ -270,6 +272,7 @@ export default {
     const { from, token } = this.$route.query;
 
     const getPublishedApplets = debounce(() => {
+      this.isLoading = true;
       api.getPublishedApplets({
         apiHost: this.apiHost,
         recordsPerPage: this.recordsPerPage,
@@ -283,7 +286,6 @@ export default {
     }, 270);
 
     this.getPublishedApplets = () => {
-      this.isLoading = true;
       return getPublishedApplets();
     };
     await getPublishedApplets();
@@ -304,9 +306,11 @@ export default {
   },
   methods: {
     async fetchAppletContents() {
+      this.isLoading = true;
       for (const applet of this.publishedApplets) {
         await this.fetchAppletContent(applet.id, applet.appletId);
       }
+      this.isLoading = false;
     },
 
     highlight(rawString) {
@@ -320,7 +324,8 @@ export default {
         return rawString;
       }
     },
-    async onAddBasket(appletId) {
+    async onAddBasket(applet) {
+      const { appletId } = applet
       if (this.isLoggedIn) {
         // add to basket
         await this.updateAppletBasket(
@@ -331,10 +336,10 @@ export default {
         this.fetchBasketApplets();
       } else {
         // add to cart
-        this.$store.commit("setCartApplets", {
+        this.$store.commit("setCartApplets", [
           ...this.cartApplets,
-          [appletId]: this.publishedApplets[appletId]
-        });
+          applet,
+        ]);
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
           [appletId]: this.appletSelections[appletId]

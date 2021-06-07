@@ -4,6 +4,7 @@ import ObjectToCSV from 'object-to-csv';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import fr from 'javascript-time-ago/locale/fr';
+import _ from "lodash";
 TimeAgo.addLocale(en);
 TimeAgo.addLocale(fr);
 
@@ -38,7 +39,27 @@ export const AppletMixin = {
         apiHost: this.apiHost,
         token: this.token,
       });
-      this.$store.commit("setCartSelections", basketSelections);
+
+      const cartSelections = {};
+      Object.entries(basketSelections).map(([appletId, basketSelection]) => {
+        const appletTree = this.$store.state.appletsTree[appletId];
+        if (appletTree) {
+          cartSelections[appletId] = [];
+          basketSelection.map(activitySelection => {
+            const { activityId, items } = activitySelection;
+            const activityTree = appletTree.children.find(activity => activity.activityId == activityId);
+            if (activityTree) {
+              if (items) {
+                cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children.filter(item => items.includes(item.itemId)));
+              } else {
+                cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children);
+              }
+            }
+          })
+        }
+      });
+
+      this.$store.commit("setCartSelections", cartSelections);
     },
     async fetchAppletContent(libraryId, appletId) {
       if (this.appletContents[appletId]) {

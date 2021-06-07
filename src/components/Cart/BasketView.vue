@@ -1,5 +1,5 @@
 <template>
-  <div v-show="!isLoading">
+  <div v-if="!isLoading">
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -42,151 +42,153 @@
     </div>
 
     <div class="mt-0">
-      <h3 class="mb-4 ml-8" v-if="!basketApplets.length">
-        You have not added anything to your basket yet.
-        Start searching above.
+      <h3 class="mb-4 ml-8" v-if="!cartApplets.length">
+        You have not added anything to your basket yet. Start searching above.
       </h3>
-      <h3 class="mb-4 ml-8" v-else-if="!filteredApplets.length">
-        No results found
-      </h3>
-      <v-card
-        v-else
-        class="mx-auto mb-4 d-flex pa-md-2"
-        v-for="applet in filteredApplets"
-        :key="applet.id"
-      >
-        <div class="text-center">
-          <v-img
-            v-if="applet.image"
-            class="ma-2 ds-avatar"
-            :src="applet.image"
-            max-width="150px"
-            height="150px"
-          />
+      <template v-else>
+        <h3 class="mb-4 ml-8" v-if="!filteredApplets.length">
+          No results found
+        </h3>
+        <v-card
+          v-else
+          class="mx-auto mb-4 d-flex pa-md-2"
+          v-for="applet in filteredApplets"
+          :key="applet.id"
+        >
+          <div class="text-center">
+            <v-img
+              v-if="applet.image"
+              class="ma-2 ds-avatar"
+              :src="applet.image"
+              max-width="150px"
+              height="150px"
+            />
 
-          <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="150">
-            <span class="white--text text-h3">
-              {{ applet.name[0] }}
-            </span>
-          </v-avatar>
-        </div>
-        <div class="ds-main-layout ml-2">
-          <v-card-title
-            class="text-decoration-underline text-h6"
-            v-html="highlight(applet.name)"
-          />
-          <v-card-subtitle
-            v-if="applet.description"
-            class="mx-6 black--text text-body-1 ds-subtitle"
-            v-html="highlight(applet.description)"
-          />
+            <v-avatar v-else tile class="ma-2 ds-avatar" color="blue" size="150">
+              <span class="white--text text-h3">
+                {{ applet.name[0] }}
+              </span>
+            </v-avatar>
+          </div>
+          <div class="ds-main-layout ml-2">
+            <v-card-title
+              class="text-decoration-underline text-h6"
+              v-html="highlight(applet.name)"
+            />
+            <v-card-subtitle
+              v-if="applet.description"
+              class="mx-6 black--text text-body-1 ds-subtitle"
+              v-html="highlight(applet.description)"
+            />
 
-          <v-card-actions class="mx-5 px-2 py-0">
-            <span v-if="applet.keywords.length" class="text-body-1">
-              Keywords:
-            </span>
-            <v-btn
-              v-for="keyword in applet.keywords"
-              :key="keyword"
-              color="orange lighten-2"
-              text
-              @click="searchText = keyword"
-            >
-              <span v-html="highlight(keyword)" />
-            </v-btn>
-          </v-card-actions>
+            <v-card-actions class="mx-5 px-2 py-0">
+              <span v-if="applet.keywords.length" class="text-body-1">
+                Keywords:
+              </span>
+              <v-btn
+                v-for="keyword in applet.keywords"
+                :key="keyword"
+                color="orange lighten-2"
+                text
+                @click="searchText = keyword"
+              >
+                <span v-html="highlight(keyword)" />
+              </v-btn>
+            </v-card-actions>
 
-          <div class="ds-tree-layout ml-2">
-            <v-treeview
-              class="ds-tree-view"
-              v-model="cartSelections[applet.appletId]"
-              :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
-              @input="updateCart(applet.appletId)"
-              selection-type="leaf"
-              selected-color="darkgrey"
-              open-on-click
-              selectable
-              return-object
-            >
-              <template v-slot:prepend="{ item }">
-                <v-icon
-                  v-if="item.selected === true"
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-down
-                </v-icon>
-                <v-icon
-                  v-else
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-right
-                </v-icon>
-              </template>
-              <template v-slot:append="{ item }">
-                <span v-html="highlight(getItemtitle(item.title))" />
-                <div v-if="item.selected === true">
-                  <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
-                    <div
-                      v-for="option in item.options"
-                      :key="option"
-                      class="d-flex align-center pt-2"
-                    >
+            <div class="ds-tree-layout ml-2">
+              <v-treeview
+                class="ds-tree-view"
+                v-model="cartSelections[applet.appletId]"
+                :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+                @input="updateCart(applet)"
+                selection-type="leaf"
+                selected-color="darkgrey"
+                open-on-click
+                selectable
+                return-object
+              >
+                <template v-slot:prepend="{ item }">
+                  <v-icon
+                    v-if="item.selected === true"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                  <v-icon
+                    v-else-if="item.selected === false"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-right
+                  </v-icon>
+                </template>
+                <template v-slot:append="{ item }">
+                  <span v-html="highlight(getItemtitle(item.title))" />
+                  <template v-if="item.selected === true">
+                    <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                      <div
+                        v-for="option in item.options"
+                        :key="option.name"
+                        class="d-flex align-center pt-2"
+                      >
+                        <img
+                          class="mr-2"
+                          width="15"
+                          :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                        />
+                        <v-img
+                          v-if="option.image"
+                          class="ds-avatar mr-2"
+                          :src="option.image"
+                          max-width="27px"
+                          height="27px"
+                        />
+                        {{ option.name }}
+                      </div>
+                    </div>
+                    <div v-else class="d-flex align-center pt-2">
                       <img
                         class="mr-2"
                         width="15"
                         :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                       />
-                      <v-img
-                        v-if="option.image"
-                        class="ds-avatar mr-2"
-                        :src="option.image"
-                        max-width="27px"
-                        height="27px"
-                      />
-                      {{ option.name }}
+                      {{ item.inputType }}
                     </div>
                   </template>
-                  <div v-else class="d-flex align-center pt-2">
-                    <img
-                      class="mr-2"
-                      width="15"
-                      :src="itemTypes.find(({ text }) => text === item.inputType).icon"
-                    />
-                    {{ item.inputType }}
-                  </div>
-                </div>
-              </template>
-            </v-treeview>
+                </template>
+              </v-treeview>
+            </div>
           </div>
-        </div>
-        <div class="d-flex align-baseline">
-          <v-btn
-            class="mx-8 mt-2"
-            fab
-            small
-            @click="onDeleteAppletFromBasket(applet)"
-          >
-            <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
-          </v-btn>
-        </div>
-      </v-card>
+          <div class="d-flex align-baseline">
+            <v-btn
+              class="mx-8 mt-2"
+              fab
+              small
+              @click="onDeleteApplet(applet)"
+            >
+              <v-icon color="grey darken-3"> mdi-trash-can-outline </v-icon>
+            </v-btn>
+          </div>
+        </v-card>
+      </template>
     </div>
-    <v-dialog v-if="deleteAppletId" v-model="dialog" persistent max-width="800">
+    <v-dialog v-if="deleteApplet" v-model="deleteBasketItemDialog" persistent max-width="800">
       <v-card>
         <v-card-title class="headline"> Delete Applet </v-card-title>
         <v-card-text>
-          Are you sure you want to delete <b>{{ cartApplets[deleteAppletId].name }}</b> from your basket?
+          Are you sure you want to delete
+          <b>{{ deleteApplet.name }}</b> from your basket?
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary darken-1" text @click="onDeleteApplet()">
+          <v-btn color="primary darken-1" text @click="onDeleteAppletFromBasket">
             Yes
           </v-btn>
-          <v-btn color="primary darken-1" text @click="onCancelConfirmation()">
+          <v-btn color="primary darken-1" text @click="onCancelConfirmation">
             No
           </v-btn>
         </v-card-actions>
@@ -211,7 +213,7 @@
 </style>
 
 <script>
-import { mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 import { AppletMixin } from "../../services/mixins/AppletMixin";
 
 export default {
@@ -220,15 +222,20 @@ export default {
   data() {
     return {
       searchText: "",
-      dialog: false,
+      deleteBasketItemDialog: false,
       isLoading: true,
-      deleteAppletId: null,
-      cachedSelection: [],
-      appletsTree: []
+      deleteApplet: null,
+      cachedSelection: []
     };
   },
   computed: {
-    ...mapState(["fromBuilder", "itemTypes", "cartApplets", "cartSelections"]),
+    ...mapState([
+      "fromBuilder",
+      "itemTypes",
+      "appletsTree",
+      "cartApplets",
+      "cartSelections"
+    ]),
     filteredApplets() {
       return this.getFilteredApplets(
         this.cartApplets,
@@ -240,7 +247,6 @@ export default {
   async beforeMount() {
     try {
       this.isLoading = true;
-      this.appletsTree = {};
 
       await this.fetchBasketApplets();
       this.isLoading = false;
@@ -249,10 +255,10 @@ export default {
     }
   },
   methods: {
-    async updateCart(appletId) {
+    async updateCart(applet) {
+      const { appletId } = applet
       if (!this.cartSelections[appletId].length) {
-        this.deleteAppletId = appletId; 
-        this.dialog = true;
+        this.onDeleteApplet(applet);
       } else {
         this.cacheSelection = [...this.cartSelections[appletId]];
         await this.updateAppletBasket(
@@ -274,32 +280,32 @@ export default {
         return rawString;
       }
     },
+    onDeleteApplet(applet) {
+      this.deleteApplet = applet;
+      this.deleteBasketItemDialog = true;
+    },
     onCancelConfirmation() {
-      this.dialog = false;
+      this.deleteBasketItemDialog = false;
 
-      if (this.deleteAppletId) {
+      if (this.deleteApplet) {
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
-          [this.deleteAppletId]: [...this.cacheSelection]
+          [this.deleteApplet.appletId]: [...this.cacheSelection]
         });
-        this.deleteAppletId = null;
+        this.deleteApplet = null;
       }
     },
-    async onDeleteApplet() {
-      this.dialog = false;
-      await this.deleteBasketApplet(this.deleteAppletId);
+    async onDeleteAppletFromBasket() {
+      this.deleteBasketItemDialog = false;
+      await this.deleteBasketApplet(this.deleteApplet.appletId);
       await this.fetchBasketApplets();
-      this.deleteAppletId = null;
+      this.deleteApplet = null;
     },
     onAppletDetail(applet) {
       this.$router.push({
         name: "AppletDetail",
         params: { appletId: applet.id }
       });
-    },
-    onDeleteAppletFromBasket(applet) {
-      deleteAppletId = applet.appletId;
-      dialog = true;
     }
   }
 };
