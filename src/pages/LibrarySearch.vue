@@ -42,7 +42,7 @@
         indeterminate rounded height="3"
       />
 
-      <h3 class="mb-4 ml-8" v-if="!publishedApplets.length && !isLoading">
+      <h3 class="mb-4 ml-8" v-else-if="!publishedApplets.length && !isLoading">
         No results found
       </h3>
       <v-card
@@ -207,6 +207,7 @@
       <div class="text-center pagination">
         <v-pagination
           v-model="page"
+          @input="onPageChange()"
           :length="Math.ceil(appletCount / recordsPerPage)"
           :total-visible="visiblePage"
         />
@@ -371,6 +372,10 @@ export default {
       this.$store.commit("setPublishedApplets", publishedApplets);
       this.isLoading = false;
     },
+    async onPageChange() {
+      this.searchTextChanged = false;
+      await this.getPublishedApplets();
+    },
     async fetchApplet(libraryId) {
       return api.getAppletContent({
         apiHost: this.apiHost,
@@ -446,19 +451,15 @@ export default {
     }
   },
   watch: {
-    searchText() {
+    async searchText() {
       this.page = 1;
       this.searchTextChanged = true;
-      this.onEntriesDebounced();
+      await this.getPublishedApplets();
     },
-    page() {
-      this.searchTextChanged = false;
-      this.onEntriesDebounced();
-    },
-    recordsPerPage() {
+    async recordsPerPage() {
       this.page = 1;
       this.searchTextChanged = false;
-      this.onEntriesDebounced();
+      await this.getPublishedApplets();
     }
   }
 };
