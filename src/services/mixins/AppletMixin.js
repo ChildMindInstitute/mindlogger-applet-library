@@ -4,6 +4,7 @@ import ObjectToCSV from 'object-to-csv';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en';
 import fr from 'javascript-time-ago/locale/fr';
+import _ from "lodash";
 TimeAgo.addLocale(en);
 TimeAgo.addLocale(fr);
 
@@ -15,17 +16,72 @@ export const AppletMixin = {
     token() {
       return this.$store.state.auth.authToken.token;
     },
+    appletContents() {
+      return this.$store.state.appletContents;
+    },
     cartSelections() {
       return this.$store.state.cartSelections;
     },
   },
   methods: {
     async fetchBasketApplets() {
-      const { data: basketContents } = await api.getBasketContents({
+      const { data: basketApplets } = await api.getBasketApplets({
         apiHost: this.apiHost,
         token: this.token,
       });
-      this.$store.commit("setBasketContents", basketContents);
+      this.$store.commit("setCartApplets", basketApplets);
+
+      for (const applet of basketApplets) {
+        await this.fetchAppletContent(applet.id, applet.appletId);
+      }
+
+      const { data: basketSelections } = await api.getBasket({
+        apiHost: this.apiHost,
+        token: this.token,
+      });
+
+      const cartSelections = {};
+      Object.entries(basketSelections).map(([appletId, basketSelection]) => {
+        const appletTree = this.$store.state.appletsTree[appletId];
+        if (appletTree) {
+          cartSelections[appletId] = [];
+          basketSelection.map(activitySelection => {
+            const { activityId, items } = activitySelection;
+            const activityTree = appletTree.children.find(activity => activity.activityId == activityId);
+            if (activityTree) {
+              if (items) {
+                cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children.filter(item => items.includes(item.itemId)));
+              } else {
+                cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children);
+              }
+            }
+          })
+        }
+      });
+
+      this.$store.commit("setCartSelections", cartSelections);
+    },
+    async fetchAppletContent(libraryId, appletId) {
+      if (this.appletContents[appletId]) {
+        return this.appletContents[appletId];
+      }
+      const { data: appletContent } = await api.getAppletContent({
+        apiHost: this.apiHost,
+        libraryId,
+      })
+
+      this.$store.commit("setAppletContent", {
+        appletContent,
+        appletId
+      });
+
+      const tree = this.buildAppletTree(appletContent);
+
+      this.$store.commit("setAppletTree", {
+        tree,
+        appletId
+      });
+
     },
     getFilteredApplets(applets, appletsTree, searchText) {
       if (!searchText) {
@@ -110,14 +166,6 @@ export const AppletMixin = {
         appletId,
       });
     },
-    buildSelection(appletData) {
-      const selection = [];
-
-      for (let child of appletData.children) {
-        selection.push(...child.children);
-      }
-      return selection;
-    },
     buildAppletTree(appletData) {
       let treeIndex = 1;
       const { items, activities, applet } = appletData;
@@ -142,36 +190,70 @@ export const AppletMixin = {
 
         treeIndex += 1;
         for (const itemId in items) {
-          const values = itemId.split('/');
+          if (itemId.includes("https://raw.githubusercontent.com")) {
+            const values = activityId.split("/");
 
-          if (activityId === values[0]) {
-            const itemTitle = items[itemId]["schema:question"][0]["@value"];
-            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                : itemTitle.split("250x250)");
-            const item = {
-              id: treeIndex,
-              itemId: values[1],
-              inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-              selected: false,
-              title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
-            };
+            if (itemId.includes(values[values.length - 2])) {
+              const itemTitle = items[itemId]["schema:question"][0]["@value"];
+              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                  : itemTitle.split("250x250)");
+              const item = {
+                id: treeIndex,
+                itemId: items[itemId]["_id"].split("/")[1],
+                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
+                selected: false,
+                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
+              };
 
-            if (item.inputType === "radio") {
-              const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+              if (item.inputType === "radio") {
+                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
-              item.options = options.map((option) => ({
-                name: option["schema:name"][0]["@value"],
-                image: option["schema:image"],
-              }));
-              if (multiple) {
-                item.inputType = "checkbox";
+                item.options = options.map((option) => ({
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"],
+                }));
+                if (multiple) {
+                  item.inputType = "checkbox";
+                }
               }
-            }
 
-            treeIndex += 1;
-            activityItem.children.push(item);
+              treeIndex += 1;
+              activityItem.children.push(item);
+            }
+          } else {
+            const values = itemId.split("/");
+
+            if (activityId === values[0]) {
+              const itemTitle = items[itemId]["schema:question"][0]["@value"];
+              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                  : itemTitle.split("250x250)");
+              const item = {
+                id: treeIndex,
+                itemId: values[1],
+                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
+                selected: false,
+                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
+              };
+
+              if (item.inputType === "radio") {
+                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+                item.options = options.map((option) => ({
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"],
+                }));
+                if (multiple) {
+                  item.inputType = "checkbox";
+                }
+              }
+
+              treeIndex += 1;
+              activityItem.children.push(item);
+            }
           }
         }
 

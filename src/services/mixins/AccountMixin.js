@@ -10,6 +10,16 @@ export const AccountMixin = {
     },
   },
   methods: {
+    async signInWithToken(token) {
+      const resp = await api.signInWithToken({
+        apiHost: this.apiHost,
+        token
+      });
+      this.setAuth({
+        auth: resp.data,
+        email: resp.data.user.email
+      });
+    },
     setAuth(authData) {
       this.$store.commit("setAuth", authData);
       this.setAccounts();
