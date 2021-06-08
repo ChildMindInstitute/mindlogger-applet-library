@@ -36,7 +36,7 @@
       >
         <div class="py-2">
           <v-icon small> mdi-chevron-left </v-icon>
-          Back to Builder
+          Back to applet builder
         </div>
       </v-btn>
     </div>
