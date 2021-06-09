@@ -269,17 +269,6 @@ export default {
         this.fetchBasketApplets();
       }
     },
-    highlight(rawString) {
-      if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
-
-        return rawString
-          .replace(searchRegex, "<b>$1</b>")
-          .replaceAll(" ", "&nbsp;");
-      } else {
-        return rawString;
-      }
-    },
     onDeleteApplet(applet) {
       this.deleteApplet = applet;
       this.deleteBasketItemDialog = true;

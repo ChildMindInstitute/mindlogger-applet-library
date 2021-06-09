@@ -311,7 +311,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["publishedApplets", "cartSelections", "itemTypes"]),
+    ...mapState(["publishedApplets", "cartApplets", "cartSelections", "itemTypes"]),
     ...mapGetters(["isLoggedIn"]),
     activities() {
       if (this.selectedActivities === 1) {
@@ -372,6 +372,7 @@ export default {
       const { appletId } = this.applet;
 
       if (this.isLoggedIn) {
+        // add to basket
         await this.updateAppletBasket(
           appletId,
           { children: this.appletTree },
@@ -379,6 +380,11 @@ export default {
         );
         this.fetchBasketApplets();
       } else {
+        // add to cart
+        this.$store.commit("setCartApplets", [
+          ...this.cartApplets,
+          this.applet,
+        ]);
         this.$store.commit("setCartSelections", {
           ...this.cartSelections,
           [appletId]: this.selection
