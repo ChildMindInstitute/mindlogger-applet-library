@@ -498,6 +498,17 @@ export const AppletMixin = {
       } else {
         return 0;
       }
+    },
+    highlight(rawString) {
+      if (this.searchText) {
+        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
+
+        return rawString
+          .replace(searchRegex, "<b>$1</b>")
+          .replaceAll(" ", "&nbsp;");
+      } else {
+        return rawString;
+      }
     }
   }
 }

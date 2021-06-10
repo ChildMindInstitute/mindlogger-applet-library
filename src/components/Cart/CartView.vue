@@ -248,17 +248,6 @@ export default {
         this.cacheSelection = [...this.cartSelections[appletId]];
       }
     },
-    highlight(rawString) {
-      if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
-
-        return rawString
-          .replace(searchRegex, "<b>$1</b>")
-          .replaceAll(" ", "&nbsp;");
-      } else {
-        return rawString;
-      }
-    },
     onDeleteApplet(applet) {
       this.deleteApplet = applet;
       this.deleteCartItemDialog = true;
