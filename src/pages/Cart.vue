@@ -112,6 +112,9 @@ export default {
     ...mapGetters([
       'isLoggedIn'
     ]),
+    accounts() {
+      return this.allAccounts.filter((account) => !account.owned)
+    }
   },
   methods: {
     onBackToBuilder(sync = false) {
@@ -143,7 +146,7 @@ export default {
     },
 
     onSelectAccount() {
-      if (this.allAccounts.length <= 1) {
+      if (this.accounts.length == 0) {
         this.onSelectedAccount(this.ownerAccount.accountId);
       } else {
         this.step = 'SELECT_ACCOUNT';
