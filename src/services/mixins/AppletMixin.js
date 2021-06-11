@@ -174,6 +174,7 @@ export const AppletMixin = {
         appletId: applet._id.substring(7),
         title: applet.displayName,
         children: [],
+        vnode: null
       };
 
       treeIndex += 1;
@@ -184,40 +185,75 @@ export const AppletMixin = {
           activityId,
           title: activities[activityId]["@id"],
           children: [],
+          vnode: null
         };
 
         treeIndex += 1;
         for (const itemId in items) {
-          const values = itemId.split('/');
+          if (itemId.includes("https://raw.githubusercontent.com")) {
+            const values = activityId.split("/");
 
-          if (activityId === values[0]) {
-            const itemTitle = items[itemId]["schema:question"][0]["@value"];
-            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                : itemTitle.split("250x250)");
-            const item = {
-              id: treeIndex,
-              itemId: values[1],
-              inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-              selected: false,
-              title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
-            };
+            if (itemId.includes(values[values.length - 2])) {
+              const itemTitle = items[itemId]["schema:question"][0]["@value"];
+              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                  : itemTitle.split("250x250)");
+              const item = {
+                id: treeIndex,
+                itemId: items[itemId]["_id"].split("/")[1],
+                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
+                selected: false,
+                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
+              };
 
-            if (item.inputType === "radio") {
-              const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+              if (item.inputType === "radio") {
+                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
-              item.options = options.map((option) => ({
-                name: option["schema:name"][0]["@value"],
-                image: option["schema:image"],
-              }));
-              if (multiple) {
-                item.inputType = "checkbox";
+                item.options = options.map((option) => ({
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"],
+                }));
+                if (multiple) {
+                  item.inputType = "checkbox";
+                }
               }
-            }
 
-            treeIndex += 1;
-            activityItem.children.push(item);
+              treeIndex += 1;
+              activityItem.children.push(item);
+            }
+          } else {
+            const values = itemId.split("/");
+
+            if (activityId === values[0]) {
+              const itemTitle = items[itemId]["schema:question"][0]["@value"];
+              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                  : itemTitle.split("250x250)");
+              const item = {
+                id: treeIndex,
+                itemId: values[1],
+                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
+                selected: false,
+                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
+              };
+
+              if (item.inputType === "radio") {
+                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+                item.options = options.map((option) => ({
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"],
+                }));
+                if (multiple) {
+                  item.inputType = "checkbox";
+                }
+              }
+
+              treeIndex += 1;
+              activityItem.children.push(item);
+            }
           }
         }
 
