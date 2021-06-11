@@ -11,7 +11,7 @@ const baseImageURL =
   "https://raw.githubusercontent.com/ChildMindInstitute/mindlogger-applet-builder/master/src/assets/icons/";
 const getDefaultState = () => {
   return {
-    backend: "https://api-staging.mindlogger.org/api/v1", //"https://api-staging.mindlogger.org/api/v1",
+    backend: process.env.VUE_APP_SERVER_URL, //"https://api-staging.mindlogger.org/api/v1",
     auth: {},
     currentUser: {},
     ownerAccount: {},
@@ -130,7 +130,7 @@ const mutations = {
     Object.assign(state, getDefaultState());
   },
   setBackend(state, backend) {
-    state.backend = backend || "https://api-staging.mindlogger.org/api/v1";
+    state.backend = backend || process.env.VUE_APP_SERVER_URL;
   },
   setAccounts(state, accounts) {
     state.allAccounts = accounts;
