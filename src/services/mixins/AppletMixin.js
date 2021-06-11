@@ -183,7 +183,7 @@ export const AppletMixin = {
         const activityItem = {
           id: treeIndex,
           activityId,
-          title: activities[activityId]["@id"],
+          title: activities[activityId]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
           children: [],
           vnode: null
         };

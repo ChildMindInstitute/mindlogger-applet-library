@@ -330,8 +330,6 @@ export default {
       await this.fetchBasketApplets();
     }
 
-    console.log('appletsTree', this.appletsTree)
-
     await this.getPublishedApplets();
   },
   methods: {
@@ -463,7 +461,7 @@ export default {
     },
     async publishedApplets() {
       this.isLoading = true;
-      console.log('publishedApplets', this.publishedApplets)
+
       for (const applet of this.publishedApplets) {
         await this.fetchAppletContent(applet.id, applet.appletId);
       }
