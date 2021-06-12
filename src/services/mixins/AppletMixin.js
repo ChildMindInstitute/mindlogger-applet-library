@@ -179,6 +179,37 @@ export const AppletMixin = {
 
       treeIndex += 1;
 
+      const parseItemData = ({ itemData, index, itemId }) => {
+        const itemTitle = itemData["schema:question"][0]["@value"];
+        const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+          : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+            : itemTitle.split("250x250)");
+        const item = {
+          id: index,
+          itemId: itemId,
+          inputType: itemData["reprolib:terms/inputType"][0]["@value"],
+          selected: false,
+          title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
+        };
+
+        if (item.inputType === "radio") {
+          const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+          const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+          item.options = options.map((option) => ({
+            name: option["schema:name"][0]["@value"],
+            image: option["schema:image"],
+          }));
+          if (multiple) {
+            item.inputType = "checkbox";
+          }
+        } else if (item.inputType == "markdown-message") {
+          item.inputType = "markdownMessage";
+        }
+
+        return item;
+      }
+
       for (const activityId in activities) {
         const activityItem = {
           id: treeIndex,
@@ -194,30 +225,11 @@ export const AppletMixin = {
             const values = activityId.split("/");
 
             if (itemId.includes(values[values.length - 2])) {
-              const itemTitle = items[itemId]["schema:question"][0]["@value"];
-              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                  : itemTitle.split("250x250)");
-              const item = {
-                id: treeIndex,
-                itemId: items[itemId]["_id"].split("/")[1],
-                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-                selected: false,
-                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
-              };
-
-              if (item.inputType === "radio") {
-                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
-
-                item.options = options.map((option) => ({
-                  name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"],
-                }));
-                if (multiple) {
-                  item.inputType = "checkbox";
-                }
-              }
+              const item = parseItemData({
+                itemData: items[itemId],
+                index: treeIndex,
+                itemId: items[itemId]["_id"].split("/")[1]
+              });
 
               treeIndex += 1;
               activityItem.children.push(item);
@@ -226,30 +238,11 @@ export const AppletMixin = {
             const values = itemId.split("/");
 
             if (activityId === values[0]) {
-              const itemTitle = items[itemId]["schema:question"][0]["@value"];
-              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                  : itemTitle.split("250x250)");
-              const item = {
-                id: treeIndex,
-                itemId: values[1],
-                inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-                selected: false,
-                title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
-              };
-
-              if (item.inputType === "radio") {
-                const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-                const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
-
-                item.options = options.map((option) => ({
-                  name: option["schema:name"][0]["@value"],
-                  image: option["schema:image"],
-                }));
-                if (multiple) {
-                  item.inputType = "checkbox";
-                }
-              }
+              const item = parseItemData({
+                itemData: items[itemId],
+                index: treeIndex,
+                itemId: values[1]
+              });
 
               treeIndex += 1;
               activityItem.children.push(item);
