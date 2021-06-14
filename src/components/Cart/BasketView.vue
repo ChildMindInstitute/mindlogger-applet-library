@@ -2,6 +2,7 @@
   <div v-if="!isLoading">
     <v-alert
       v-if="fromBuilder"
+      class="text-center"
       color="yellow"
     >
       Adding content for the applet you are currently creating
