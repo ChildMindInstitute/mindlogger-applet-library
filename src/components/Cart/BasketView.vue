@@ -1,5 +1,11 @@
 <template>
   <div v-if="!isLoading">
+    <v-alert
+      v-if="fromBuilder"
+      color="yellow"
+    >
+      Adding content for the applet you are currently creating
+    </v-alert>
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
