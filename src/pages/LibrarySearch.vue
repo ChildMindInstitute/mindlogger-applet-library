@@ -98,9 +98,12 @@
                 class="ds-tree-view"
                 v-model="appletSelections[applet.appletId]"
                 :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
+                :open-all="isOpenAll[applet.appletId]"
+                item-key="id"
                 selection-type="leaf"
                 selected-color="darkgrey"
                 open-on-click
+                activatable
                 selectable
                 return-object
               >
@@ -291,6 +294,7 @@ export default {
       recordsPerPage: 5,
       searchText: '',
       isLoading: true,
+      isOpenAll: [],
       appletCount: 0,
       searchTextChanged: false,
       options: [
@@ -356,6 +360,15 @@ export default {
         if (this.appletContents[applet.appletId]) {
           tree = this.buildAppletTree(this.appletContents[applet.appletId])
         }
+
+        if (this.searchText) {
+          // this.getOpenItems(publishedApplets, tree, this.searchText);
+        }
+        
+        // publishedApplets.forEach(applet => {
+        //   this.isOpenAll[applet.appletId] = true;
+        // })
+
         this.$store.commit("setAppletTree", {
           tree,
           appletId: applet.appletId
@@ -367,7 +380,7 @@ export default {
     },
     async onPageChange() {
       this.searchTextChanged = false;
-      await this.getPublishedApplets();
+      this.onEntriesDebounced();
     },
     async fetchApplet(libraryId) {
       return api.getAppletContent({
@@ -452,12 +465,13 @@ export default {
     async searchText() {
       this.page = 1;
       this.searchTextChanged = true;
-      await this.getPublishedApplets();
+      this.onEntriesDebounced();
     },
     async recordsPerPage() {
       this.page = 1;
       this.searchTextChanged = false;
-      await this.getPublishedApplets();
+
+      this.onEntriesDebounced();
     },
     async publishedApplets() {
       this.isLoading = true;
