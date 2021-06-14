@@ -97,27 +97,29 @@
               selectable
               return-object
             >
-              <template v-slot:prepend="{ item }">
-                <v-icon
-                  v-if="item.selected === true"
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-down
-                </v-icon>
-                <v-icon
-                  v-else-if="item.selected === false"
-                  class="mr-1"
-                  color="dark-grey"
-                  @click="item.selected = !item.selected"
-                >
-                  mdi-menu-right
-                </v-icon>
+              <template v-slot:prepend="{ item, leaf }">
+                <template v-if="!leaf">
+                  <v-icon
+                    v-if="item.selected === true"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                  <v-icon
+                    v-else-if="item.selected === false"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-right
+                  </v-icon>
+                </template>
               </template>
-              <template v-slot:append="{ item }">
+              <template v-slot:append="{ item, leaf }">
                 <span v-html="highlight(getItemtitle(item.title))" />
-                <template v-if="item.selected === true">
+                <template v-if="leaf">
                   <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                     <div
                       v-for="option in item.options"
@@ -246,17 +248,6 @@ export default {
         this.onDeleteApplet(applet);
       } else {
         this.cacheSelection = [...this.cartSelections[appletId]];
-      }
-    },
-    highlight(rawString) {
-      if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
-
-        return rawString
-          .replace(searchRegex, "<b>$1</b>")
-          .replaceAll(" ", "&nbsp;");
-      } else {
-        return rawString;
       }
     },
     onDeleteApplet(applet) {

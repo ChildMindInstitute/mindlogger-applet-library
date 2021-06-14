@@ -67,7 +67,7 @@ export default {
     accounts() {
       return [
         this.ownerAccount,
-        ...this.allAccounts.filter(account => account.accountId !== this.ownerAccount.accountId)
+        ...this.allAccounts.filter((account) => !account.owned)
       ]
     }
   },

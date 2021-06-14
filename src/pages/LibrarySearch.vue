@@ -104,27 +104,29 @@
                 selectable
                 return-object
               >
-                <template v-slot:prepend="{ item }">
-                  <v-icon
-                    v-if="item.selected === true"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-down
-                  </v-icon>
-                  <v-icon
-                    v-else-if="item.selected === false"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-right
-                  </v-icon>
+                <template v-slot:prepend="{ item, leaf }">
+                  <template v-if="!leaf">
+                    <v-icon
+                      v-if="item.selected === true"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = !item.selected"
+                    >
+                      mdi-menu-down
+                    </v-icon>
+                    <v-icon
+                      v-else-if="item.selected === false"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = !item.selected"
+                    >
+                      mdi-menu-right
+                    </v-icon>
+                  </template>
                 </template>
-                <template v-slot:append="{ item }">
+                <template v-slot:append="{ item, leaf }">
                   <span v-html="highlight(getItemtitle(item.title))" />
-                  <template v-if="item.selected === true">
+                  <template v-if="leaf">
                     <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                       <div
                         v-for="option in item.options"
@@ -208,6 +210,7 @@
       <div class="text-center pagination">
         <v-pagination
           v-model="page"
+          @input="onPageChange()"
           :length="Math.ceil(appletCount / recordsPerPage)"
           :total-visible="visiblePage"
         />
@@ -313,26 +316,7 @@ export default {
   async beforeMount() {
     const { from, token } = this.$route.query;
 
-    const getPublishedApplets = debounce(() => {
-      this.isLoading = true;
-      api.getPublishedApplets({
-        apiHost: this.apiHost,
-        recordsPerPage: this.recordsPerPage,
-        pageIndex: this.page - 1,
-        searchText: this.searchText
-      }).then(({ data: resp }) => {
-        this.appletCount = resp.totalCount;
-        this.$store.commit("setPublishedApplets", resp.data);
-        this.isLoading = false;
-      })
-    }, 270);
-
-    this.getPublishedApplets = () => {
-      return getPublishedApplets();
-    };
-    await getPublishedApplets();
-
-    if (token) {
+    if (from == "builder" && token) {
       try {
         await this.signInWithToken(token);
       } catch (err) {
@@ -345,14 +329,64 @@ export default {
       }
       await this.fetchBasketApplets();
     }
+
+    await this.getPublishedApplets();
   },
   methods: {
-    async fetchAppletContents() {
-      this.isLoading = true;
-      for (const applet of this.publishedApplets) {
-        await this.fetchAppletContent(applet.id, applet.appletId);
+    async getPublishedApplets() {
+      this.isLoading = true;  
+
+      const { data: resp } = await api.getPublishedApplets({
+        apiHost: this.apiHost,
+        recordsPerPage: this.recordsPerPage,
+        pageIndex: this.page - 1,
+        searchText: this.searchText
+      });
+      let publishedApplets = resp.data;
+
+      for (const applet of publishedApplets) {
+        let tree = {
+          id: 1,
+          appletId: applet.appletId,
+          title: applet.name,
+          children: [],
+          vnode: null
+        };
+
+        if (this.appletContents[applet.appletId]) {
+          tree = this.buildAppletTree(this.appletContents[applet.appletId])
+        }
+        this.$store.commit("setAppletTree", {
+          tree,
+          appletId: applet.appletId
+        });
       }
+      this.appletCount = resp.totalCount;
+      this.$store.commit("setPublishedApplets", publishedApplets);
       this.isLoading = false;
+    },
+    async onPageChange() {
+      this.searchTextChanged = false;
+      await this.getPublishedApplets();
+    },
+    async fetchApplet(libraryId) {
+      return api.getAppletContent({
+        apiHost: this.apiHost,
+        libraryId,
+      }).then(({ data: appletContent }) => {
+        const appletId = appletContent.applet._id.substring(7);
+
+        const tree = this.buildAppletTree(appletContent);
+        this.$store.commit("addTreeNodes", {
+          children: tree.children,
+          appletId
+        });
+
+        this.$store.commit("setAppletContent", {
+          appletContent,
+          appletId
+        });
+      });
     },
 
     highlight(rawString) {
@@ -403,25 +437,35 @@ export default {
       if (this.page > 1) {
         this.page = 1;
       }
+    },
+    onEntriesDebounced() {
+      // cancel pending call
+      clearTimeout(this._timerId)
+
+      // delay new call 500ms
+      this._timerId = setTimeout(async () => {
+        await this.getPublishedApplets();
+      }, 500)
     }
   },
   watch: {
-    searchText() {
+    async searchText() {
       this.page = 1;
       this.searchTextChanged = true;
-      this.getPublishedApplets();
+      await this.getPublishedApplets();
     },
-    page() {
-      this.searchTextChanged = false;
-      this.getPublishedApplets();
-    },
-    recordsPerPage() {
+    async recordsPerPage() {
       this.page = 1;
       this.searchTextChanged = false;
-      this.getPublishedApplets();
+      await this.getPublishedApplets();
     },
-    publishedApplets() {
-      this.fetchAppletContents()
+    async publishedApplets() {
+      this.isLoading = true;
+
+      for (const applet of this.publishedApplets) {
+        await this.fetchAppletContent(applet.id, applet.appletId);
+      }
+      this.isLoading = false;
     }
   }
 };

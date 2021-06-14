@@ -174,50 +174,79 @@ export const AppletMixin = {
         appletId: applet._id.substring(7),
         title: applet.displayName,
         children: [],
+        vnode: null
       };
 
       treeIndex += 1;
+
+      const parseItemData = ({ itemData, index, itemId }) => {
+        const itemTitle = itemData["schema:question"][0]["@value"];
+        const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+          : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+            : itemTitle.split("250x250)");
+        const item = {
+          id: index,
+          itemId: itemId,
+          inputType: itemData["reprolib:terms/inputType"][0]["@value"],
+          selected: false,
+          title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
+        };
+
+        if (item.inputType === "radio") {
+          const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+          const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+          item.options = options.map((option) => ({
+            name: option["schema:name"][0]["@value"],
+            image: option["schema:image"],
+          }));
+          if (multiple) {
+            item.inputType = "checkbox";
+          }
+        } else if (item.inputType == "markdown-message") {
+          item.inputType = "markdownMessage";
+        }
+
+        return item;
+      }
 
       for (const activityId in activities) {
         const activityItem = {
           id: treeIndex,
           activityId,
-          title: activities[activityId]["@id"],
+          title: activities[activityId]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
           children: [],
+          vnode: null
         };
 
         treeIndex += 1;
         for (const itemId in items) {
-          const values = itemId.split('/');
+          if (itemId.includes("https://raw.githubusercontent.com")) {
+            const values = activityId.split("/");
 
-          if (activityId === values[0]) {
-            const itemTitle = items[itemId]["schema:question"][0]["@value"];
-            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                : itemTitle.split("250x250)");
-            const item = {
-              id: treeIndex,
-              itemId: values[1],
-              inputType: items[itemId]["reprolib:terms/inputType"][0]["@value"],
-              selected: false,
-              title: (nodes.pop() || items[itemId]["@id"]).replaceAll("**", "")
-            };
+            if (itemId.includes(values[values.length - 2])) {
+              const item = parseItemData({
+                itemData: items[itemId],
+                index: treeIndex,
+                itemId: items[itemId]["_id"].split("/")[1]
+              });
 
-            if (item.inputType === "radio") {
-              const options = items[itemId]["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = _.get(items[itemId]["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
-
-              item.options = options.map((option) => ({
-                name: option["schema:name"][0]["@value"],
-                image: option["schema:image"],
-              }));
-              if (multiple) {
-                item.inputType = "checkbox";
-              }
+              treeIndex += 1;
+              activityItem.children.push(item);
             }
+          } else {
+            const values = itemId.split("/");
 
-            treeIndex += 1;
-            activityItem.children.push(item);
+            if (activityId === values[0]) {
+              const item = parseItemData({
+                itemData: items[itemId],
+                index: treeIndex,
+                itemId: values[1]
+              });
+
+              treeIndex += 1;
+              activityItem.children.push(item);
+            }
           }
         }
 
@@ -461,6 +490,17 @@ export const AppletMixin = {
         return -1;
       } else {
         return 0;
+      }
+    },
+    highlight(rawString) {
+      if (this.searchText) {
+        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
+
+        return rawString
+          .replace(searchRegex, "<b>$1</b>")
+          .replaceAll(" ", "&nbsp;");
+      } else {
+        return rawString;
       }
     }
   }
