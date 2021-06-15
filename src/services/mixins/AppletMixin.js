@@ -83,49 +83,73 @@ export const AppletMixin = {
       });
 
     },
+    getOpenItems(applets, appletData, searchText) {
+      applets.forEach((applet) => {
+        const regex = new RegExp(searchText, "ig");
+        console.log('appletData', appletData)
+
+        this.isOpenAll[applet.appletId] = true;
+        for (const activityData of appletData.children) {
+          if (activityData.title.match(regex) && !this.isOpenAll[applet.appletId].includes(appletData.id)) {
+            this.isOpenAll[applet.appletId].push(appletData.id);
+          }
+          for (const itemData of activityData.children) {
+            if (itemData.title.match(regex) && !this.isOpenAll[applet.appletId].includes(activityData.id)) {
+              this.isOpenAll[applet.appletId].push(activityData.id);
+            }
+          }
+        }
+      });
+    },
     getFilteredApplets(applets, appletsTree, searchText) {
       if (!searchText) {
         return applets.filter((applet) => applet).sort(this.alphaSort);
       }
       return applets.filter((applet) => {
         const regex = new RegExp(searchText, "ig");
-        const appletData = appletsTree[applet.appletId];
+        const appletData = appletsTree;
+        let hasSearchText = false;
 
         if (
           applet.name.match(regex) ||
           applet.description.match(regex) ||
           appletData.title.match(regex)
         ) {
-          return true;
+          hasSearchText = true;
         }
 
         for (const keyword of applet.keywords) {
           if (keyword.match(regex)) {
+            this.isOpenAll[applet.appletId] = true;
             return true;
           }
         }
 
         for (const activityData of appletData.children) {
           if (activityData.title.match(regex)) {
+            this.isOpenAll[applet.appletId] = true;
             return true;
           }
           for (const itemData of activityData.children) {
             if (itemData.title.match(regex)) {
+              this.isOpenAll[applet.appletId] = true;
               return true;
             }
             if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
               for (const optionData of itemData.options) {
                 if (optionData.name.match(regex)) {
+                  this.isOpenAll[applet.appletId] = true;
                   return true;
                 }
               }
             } else if (itemData.inputType.match(regex)) {
+              this.isOpenAll[applet.appletId] = true;
               return true;
             }
           }
         }
 
-        return false;
+        return hasSearchText;
       }).sort(this.alphaSort);
     },
     async addCartItemsToBasket() {
@@ -180,7 +204,9 @@ export const AppletMixin = {
       treeIndex += 1;
 
       const parseItemData = ({ itemData, index, itemId }) => {
-        const itemTitle = itemData["schema:question"][0]["@value"];
+        const itemTitle = itemData["schema:question"]
+          ? itemData["schema:question"][0]["@value"]
+          : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
         const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
           : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
             : itemTitle.split("250x250)");
