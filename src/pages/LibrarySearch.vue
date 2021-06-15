@@ -93,7 +93,7 @@
               </v-btn>
             </v-card-actions>
 
-            <div class="ds-tree-layout ml-2">
+            <div class="ml-2">
               <v-treeview
                 class="ds-tree-view"
                 v-model="appletSelections[applet.appletId]"
@@ -103,12 +103,11 @@
                 selection-type="leaf"
                 selected-color="darkgrey"
                 open-on-click
-                activatable
                 selectable
                 return-object
               >
                 <template v-slot:prepend="{ item, leaf }">
-                  <template v-if="!leaf">
+                  <template v-if="item.selected || item.selected === false">
                     <v-icon
                       v-if="item.selected === true"
                       class="mr-1"
@@ -129,7 +128,7 @@
                 </template>
                 <template v-slot:append="{ item, leaf }">
                   <span v-html="highlight(getItemtitle(item.title))" />
-                  <template v-if="leaf">
+                  <template v-if="item.selected">
                     <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                       <div
                         v-for="option in item.options"
@@ -265,7 +264,7 @@
 
 .ds-tree-view,
 .ds-tree-layout {
-  width: 100%;
+  width: calc(100% - 300px);
 }
 
 .ds-main-layout {
