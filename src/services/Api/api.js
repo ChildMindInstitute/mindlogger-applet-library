@@ -1,7 +1,3 @@
-<script>
-/**
- * Admin-panel API routes
- */
 import axios from "axios";
 import store from '../../state';
 
@@ -227,4 +223,3 @@ export default {
   getAppletContributionOrigin,
   getAppletContributionUpdates,
 }
-</script>

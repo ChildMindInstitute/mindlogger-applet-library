@@ -1,6 +1,6 @@
 <template>
   <div v-if="!isLoading">
-    <div class="mt-0">
+    <div>
       <v-card class="mx-8 my-6 d-flex pa-md-2">
         <div class="text-center">
           <v-img
@@ -283,10 +283,10 @@
 </style>
 
 <script>
-import api from "../services/Api/api.vue";
+import api from "../services/Api/api";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { mapGetters, mapState } from "vuex";
-import ViewContributionsDialog from "../components/dialogs/ViewContributionsDialog.vue";
+import ViewContributionsDialog from "../components/dialogs/ViewContributionsDialog";
 
 export default {
   name: "AppletDetail",

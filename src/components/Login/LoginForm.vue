@@ -81,7 +81,7 @@
 </style>
 
 <script>
-import api from '../../services/Api/api.vue';
+import api from '../../services/Api/api';
 import _ from "lodash";
 import { AccountMixin } from '../../services/mixins/AccountMixin';
 

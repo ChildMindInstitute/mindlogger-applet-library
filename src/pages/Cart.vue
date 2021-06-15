@@ -4,7 +4,6 @@
       <template v-if="isLoggedIn">
         <BasketView
           @addToBuilder="onAddToBuilder"
-          @backToBuilder="onBackToBuilder(false)"
         />
       </template>
       <template v-else>
@@ -73,12 +72,12 @@
 </style>
 
 <script>
-import api from "../services/Api/api.vue";
+import api from "../services/Api/api";
 import { mapState, mapGetters } from 'vuex';
 import _ from "lodash";
-import LoginForm from "../components/Login/LoginForm.vue";
-import BasketView from '../components/Cart/BasketView.vue';
-import CartView from '../components/Cart/CartView.vue';
+import LoginForm from "../components/Login/LoginForm";
+import BasketView from '../components/Cart/BasketView';
+import CartView from '../components/Cart/CartView';
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import SelectAccountDialog from "../components/dialogs/SelectAccountDialog";
 import SelectAppletDialog from "../components/dialogs/SelectAppletDialog";
@@ -117,9 +116,6 @@ export default {
     }
   },
   methods: {
-    onBackToBuilder(sync = false) {
-      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&cache=true&sync=${sync}`;
-    },
     onAddToBuilder() {
       if (this.fromBuilder) {
         this.onBackToBuilder(true);

@@ -1,12 +1,5 @@
 <template>
   <div v-if="!isLoading">
-    <v-alert
-      v-if="fromBuilder"
-      class="text-center"
-      color="yellow"
-    >
-      Adding content for the applet you are currently creating
-    </v-alert>
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -30,20 +23,6 @@
           <br />
           Applet Builder
           <v-icon small> mdi-chevron-right </v-icon>
-        </div>
-      </v-btn>
-      <v-btn
-        v-if="fromBuilder"
-        outlined
-        color="secondary"
-        class="ml-2"
-        height="50"
-        dark
-        @click="$emit('backToBuilder')"
-      >
-        <div class="py-2">
-          <v-icon small> mdi-chevron-left </v-icon>
-          Back to applet builder
         </div>
       </v-btn>
     </div>

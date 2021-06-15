@@ -2,6 +2,7 @@
   <v-app>
     <Header />
     <v-content>
+      <ContentBar @backToBuilder="onBackToBuilder(false)" />
       <v-container fluid>
         <router-view />
       </v-container>
@@ -11,15 +12,17 @@
 
 <script>
 import store from './state';
-import api from './services/Api/api.vue';
-import Header from './components/Header/header.vue';
+import Header from './components/Header/header';
+import ContentBar from './components/ContentBar';
 import _ from 'lodash';
+
 
 export default {
   name: 'App',
   store,
   components: {
     Header,
+    ContentBar,
   },
 
   /**

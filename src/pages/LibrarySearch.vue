@@ -277,11 +277,10 @@
 </style>
 
 <script>
-import api from "../services/Api/api.vue";
+import api from "../services/Api/api";
 import { mapState, mapGetters } from "vuex";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { AccountMixin } from "../services/mixins/AccountMixin";
-import debounce from "debounce-promise";
 
 export default {
   name: "LibrarySearch",
