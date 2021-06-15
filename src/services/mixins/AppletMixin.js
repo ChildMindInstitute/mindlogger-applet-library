@@ -204,7 +204,9 @@ export const AppletMixin = {
       treeIndex += 1;
 
       const parseItemData = ({ itemData, index, itemId }) => {
-        const itemTitle = itemData["schema:question"][0]["@value"];
+        const itemTitle = itemData["schema:question"]
+          ? itemData["schema:question"][0]["@value"]
+          : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
         const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
           : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
             : itemTitle.split("250x250)");
