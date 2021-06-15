@@ -1,5 +1,12 @@
 <template>
   <div v-if="!isLoading">
+    <v-alert
+      v-if="fromBuilder"
+      class="text-center"
+      color="yellow"
+    >
+      Adding content for the applet you are currently creating
+    </v-alert>
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
@@ -36,7 +43,7 @@
       >
         <div class="py-2">
           <v-icon small> mdi-chevron-left </v-icon>
-          Back to Builder
+          Back to applet builder
         </div>
       </v-btn>
     </div>
