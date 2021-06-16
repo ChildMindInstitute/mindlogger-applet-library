@@ -319,7 +319,7 @@ export default {
   async beforeMount() {
     const { from, token } = this.$route.query;
 
-    if (from == "builder" && token) {
+    if (!this.isLoggedIn && token) {
       try {
         await this.signInWithToken(token);
       } catch (err) {
