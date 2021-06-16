@@ -5,7 +5,6 @@ import LibrarySearch from "../pages/LibrarySearch";
 import Cart from "../pages/Cart";
 import AppletDetail from "../pages/AppletDetail";
 import store from "../state";
-import api from "../services/Api/api.vue";
 import { getLanguageCode } from "../plugins/language";
 import _ from "lodash";
 

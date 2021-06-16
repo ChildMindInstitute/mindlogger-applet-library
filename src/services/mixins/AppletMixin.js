@@ -1,4 +1,4 @@
-import api from "../Api/api.vue";
+import api from "../Api/api";
 import Protocol from 'applet-schema-builder/src/models/Protocol';
 import ObjectToCSV from 'object-to-csv';
 import TimeAgo from 'javascript-time-ago';
@@ -24,6 +24,9 @@ export const AppletMixin = {
     },
   },
   methods: {
+    onBackToBuilder(sync = false) {
+      window.location.href = `${process.env.VUE_APP_ADMIN_URI}/#/library/?from=library&cache=true&sync=${sync}`;
+    },
     async fetchBasketApplets() {
       const { data: basketApplets } = await api.getBasketApplets({
         apiHost: this.apiHost,

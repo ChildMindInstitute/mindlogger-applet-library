@@ -1,4 +1,4 @@
-import api from "../Api/api.vue";
+import api from "../Api/api";
 
 export const AccountMixin = {
   computed: {

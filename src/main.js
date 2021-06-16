@@ -6,7 +6,7 @@ import * as Sentry from "@sentry/browser";
 import { Vue as VueIntegration } from "@sentry/integrations";
 
 import router from "./router";
-import App from "./App.vue";
+import App from "./App";
 import vuetify from "./plugins/vuetify";
 import i18n from "./plugins/language";
 

@@ -68,20 +68,10 @@
 </style>
 
 <script>
-import api from "../../services/Api/api.vue";
-import encryption from "../../services/Encryption/encryption.vue";
-
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en";
-import fr from "javascript-time-ago/locale/fr";
 import { mapGetters } from "vuex";
-
-TimeAgo.addLocale(en);
-TimeAgo.addLocale(fr);
 
 export default {
   name: "Header",
-  components: {},
 
   data() {
     return {

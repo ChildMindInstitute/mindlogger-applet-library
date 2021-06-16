@@ -43,7 +43,7 @@
 
 <script>
 import _ from "lodash";
-import LoginForm from "../components/Login/LoginForm.vue";
+import LoginForm from "../components/Login/LoginForm";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 
 export default {
