@@ -324,12 +324,16 @@ export const AppletMixin = {
       return values[values.length - 1];
     },
     async getAppletContributions(libraryId, appletContent) {
-      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
+      const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
         apiHost: this.apiHost,
         libraryId,
       })
 
-      const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
+      if (Object.keys(appletContributionOrigins).length === 0) {
+        return [];
+      }
+
+      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
         apiHost: this.apiHost,
         libraryId,
       })
