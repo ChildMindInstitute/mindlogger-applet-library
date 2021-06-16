@@ -206,76 +206,56 @@ export const AppletMixin = {
 
       treeIndex += 1;
 
-      const parseItemData = ({ itemData, index, itemId }) => {
-        const itemTitle = itemData["schema:question"]
-          ? itemData["schema:question"][0]["@value"]
-          : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-        const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-          : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-            : itemTitle.split("250x250)");
-        const item = {
-          id: index,
-          itemId: itemId,
-          inputType: itemData["reprolib:terms/inputType"][0]["@value"],
-          selected: false,
-          title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
-        };
-
-        if (item.inputType === "radio") {
-          const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-          const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
-
-          item.options = options.map((option) => ({
-            name: option["schema:name"][0]["@value"],
-            image: option["schema:image"],
-          }));
-          if (multiple) {
-            item.inputType = "checkbox";
-          }
-        } else if (item.inputType == "markdown-message") {
-          item.inputType = "markdownMessage";
-        }
-
-        return item;
-      }
-
-      for (const activityId in activities) {
+      for (const activityKey in activities) {
+        const activityData = activities[activityKey];
+        const activityId = activityData["_id"].split("/").pop();
+        const activityIdentifier = activityKey.includes("https://raw.githubusercontent.com") ? activityKey.split("/").slice(0, -1).join("/") : activityId;
         const activityItem = {
           id: treeIndex,
           activityId,
-          title: activities[activityId]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
+          title: activityData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
           children: [],
           vnode: null
         };
 
         treeIndex += 1;
-        for (const itemId in items) {
-          if (itemId.includes("https://raw.githubusercontent.com")) {
-            const values = activityId.split("/");
+        for (const itemKey in items) {
+          const itemData = items[itemKey];
+          const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
+          if (itemActivityIdentifier === activityIdentifier) {
+            const itemId = itemData["_id"].split("/").pop()
 
-            if (itemId.includes(values[values.length - 2])) {
-              const item = parseItemData({
-                itemData: items[itemId],
-                index: treeIndex,
-                itemId: items[itemId]["_id"].split("/")[1]
-              });
+            const itemTitle = itemData["schema:question"]
+              ? itemData["schema:question"][0]["@value"]
+              : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                : itemTitle.split("250x250)");
+            const item = {
+              id: treeIndex,
+              itemId,
+              inputType: itemData["reprolib:terms/inputType"][0]["@value"],
+              selected: false,
+              title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
+            };
 
-              treeIndex += 1;
-              activityItem.children.push(item);
+            if (item.inputType === "radio") {
+              const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+              const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+              item.options = options.map((option) => ({
+                name: option["schema:name"][0]["@value"],
+                image: option["schema:image"],
+              }));
+              if (multiple) {
+                item.inputType = "checkbox";
+              }
+            } else if (item.inputType == "markdown-message") {
+              item.inputType = "markdownMessage";
             }
-          } else {
-            const values = itemId.split("/");
 
-            if (activityId === values[0]) {
-              const item = parseItemData({
-                itemData: items[itemId],
-                index: treeIndex,
-                itemId: values[1]
-              });
-
-              treeIndex += 1;
-              activityItem.children.push(item);
-            }
+            treeIndex += 1;
+            activityItem.children.push(item);
           }
         }
 
@@ -467,31 +447,31 @@ export const AppletMixin = {
         keys: [{
           as: 'Original Owner',
           key: 'creator',
-        },{
+        }, {
           as: 'Date Created',
           key: 'created',
-        },{
+        }, {
           as: 'Applet Name',
           key: 'appletName',
-        },{
+        }, {
           as: 'Activity Name',
           key: 'activityName',
-        },{
+        }, {
           as: 'Item Name',
           key: 'itemName',
-        },{
+        }, {
           as: 'Item Question',
           key: 'itemQuestion',
-        },{
+        }, {
           as: 'Edited by',
           key: 'editor',
-        },{
+        }, {
           as: 'Edit Date',
           key: 'updated',
-        },{
+        }, {
           as: 'Changes',
           key: 'changes',
-        },{
+        }, {
           as: 'Version',
           key: 'version',
         }],
@@ -515,7 +495,7 @@ export const AppletMixin = {
         return -1;
       } else if (A.name < B.name) {
         return 1;
-      } else if (A.name > B.name) { 
+      } else if (A.name > B.name) {
         return -1;
       } else {
         return 0;
