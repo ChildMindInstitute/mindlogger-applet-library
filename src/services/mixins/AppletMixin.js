@@ -444,7 +444,7 @@ export const AppletMixin = {
             itemQuestion: itemData["schema:question"][0]["@value"],
             editor: itemUpdate["lastUpdatedBy"],
             updated: updated,
-            version: itemData["schema:version"][0]["@value"],
+            version: itemData["schema:version"] ? itemData["schema:version"][0]["@value"] : "0.0.1",
           };
 
           const logs = generateLogs(originProtocol, currentProtocol);

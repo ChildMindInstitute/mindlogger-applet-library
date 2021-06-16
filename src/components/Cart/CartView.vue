@@ -98,7 +98,7 @@
               return-object
             >
               <template v-slot:prepend="{ item, leaf }">
-                <template v-if="!leaf">
+                <template v-if="item.selected || item.selected === false">
                   <v-icon
                     v-if="item.selected === true"
                     class="mr-1"
@@ -119,7 +119,7 @@
               </template>
               <template v-slot:append="{ item, leaf }">
                 <span v-html="highlight(getItemtitle(item.title))" />
-                <template v-if="leaf">
+                <template v-if="item.selected">
                   <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                     <div
                       v-for="option in item.options"
