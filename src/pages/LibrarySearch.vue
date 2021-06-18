@@ -106,33 +106,51 @@
                 selectable
                 return-object
               >
-                <template v-slot:prepend="{ item, leaf }">
-                  <template v-if="item.selected || item.selected === false">
-                    <v-icon
-                      v-if="item.selected === true"
-                      class="mr-1"
-                      color="dark-grey"
-                      @click="item.selected = !item.selected"
-                    >
-                      mdi-menu-down
-                    </v-icon>
-                    <v-icon
-                      v-else-if="item.selected === false"
-                      class="mr-1"
-                      color="dark-grey"
-                      @click="item.selected = !item.selected"
-                    >
-                      mdi-menu-right
-                    </v-icon>
-                  </template>
+                <template v-slot:prepend="{ item }">
+                  <v-icon
+                    v-if="item.selected === true"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-down
+                  </v-icon>
+                  <v-icon
+                    v-else-if="item.selected === false"
+                    class="mr-1"
+                    color="dark-grey"
+                    @click="item.selected = !item.selected"
+                  >
+                    mdi-menu-right
+                  </v-icon>
                 </template>
                 <template v-slot:append="{ item, leaf }">
                   <span v-html="highlight(getItemtitle(item.title))" />
-                  <template v-if="item.selected">
-                    <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                  <template v-if="leaf">
+                    <div v-show="item.selected">
+                      <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                        <div
+                          v-for="option in item.options"
+                          :key="option.name"
+                          class="d-flex align-center pt-2"
+                        >
+                          <img
+                            class="mr-2"
+                            width="15"
+                            :src="itemTypes.find(({ text }) => text === item.inputType).icon"
+                          />
+                          <v-img
+                            v-if="option.image"
+                            class="ds-avatar mr-2"
+                            :src="option.image"
+                            max-width="27px"
+                            height="27px"
+                          />
+                          <span v-html="highlight(option.name)" />
+                        </div>
+                      </div>
                       <div
-                        v-for="option in item.options"
-                        :key="option.name"
+                        v-else
                         class="d-flex align-center pt-2"
                       >
                         <img
@@ -140,26 +158,8 @@
                           width="15"
                           :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                         />
-                        <v-img
-                          v-if="option.image"
-                          class="ds-avatar mr-2"
-                          :src="option.image"
-                          max-width="27px"
-                          height="27px"
-                        />
-                        <span v-html="highlight(option.name)" />
+                        <span v-html="highlight(item.inputType)" />
                       </div>
-                    </div>
-                    <div
-                      v-else
-                      class="d-flex align-center pt-2"
-                    >
-                      <img
-                        class="mr-2"
-                        width="15"
-                        :src="itemTypes.find(({ text }) => text === item.inputType).icon"
-                      />
-                      <span v-html="highlight(item.inputType)" />
                     </div>
                   </template>
                 </template>
@@ -398,18 +398,6 @@ export default {
           appletId
         });
       });
-    },
-
-    highlight(rawString) {
-      if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
-
-        return rawString
-          .replace(searchRegex, "<b>$1</b>")
-          .replaceAll(" ", "&nbsp;");
-      } else {
-        return rawString;
-      }
     },
     async onAddBasket(applet) {
       const { appletId } = applet
