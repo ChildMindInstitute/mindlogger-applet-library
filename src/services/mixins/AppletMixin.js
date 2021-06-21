@@ -309,6 +309,10 @@ export const AppletMixin = {
         libraryId,
       })
 
+      if (Object.keys(appletContributionOrigins).length === 0) {
+        return [];
+      }
+
       const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
         apiHost: this.apiHost,
         libraryId,
