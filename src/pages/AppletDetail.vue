@@ -51,7 +51,7 @@
           </v-card-actions>
 
           <v-expand-transition>
-            <v-menu v-if="hasContributions" offset-y>
+            <v-menu offset-y>
               <template v-slot:activator="{ on }">
                 <div
                   class="text-body-1 text-decoration-underline primary--text font-weight-medium ds-contribution"
@@ -210,7 +210,6 @@
     </div>
 
     <ViewContributionsDialog
-      v-if="hasContributions"
       v-model="viewContributionsDialog"
       :contributionsData="contributionsData"
       @close="viewContributionsDialog = false"
@@ -327,9 +326,6 @@ export default {
         return this.selectedItems + " items";
       }
     },
-    hasContributions() {
-      return this.contributionsData.length > 0;
-    }
   },
   async beforeMount() {
     const appletId = this.$route.params.id;

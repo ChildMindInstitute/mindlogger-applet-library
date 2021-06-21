@@ -13,8 +13,9 @@
       <v-card-text>
         <v-data-table
           :headers="headers"
-          :items="contributionsData"
+          :items="contributions"
           :search="search"
+          class="elevation-1"
         ></v-data-table>
       </v-card-text>
     </v-card>
@@ -26,6 +27,12 @@
 </style>
 
 <script>
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en';
+import fr from 'javascript-time-ago/locale/fr';
+TimeAgo.addLocale(en);
+TimeAgo.addLocale(fr);
+
 export default {
   name: 'ViewContributionsDialog',
   mixins: [],
@@ -93,5 +100,20 @@ export default {
       value: 'version',
     }],
   }),
+  computed: {
+    contributions() {
+      return this.contributionsData.map(contribution => ({
+        ...contribution,
+        changes: contribution.changes.join(', '),
+        created: this.formatTimeAgo(contribution.created),
+        updated: this.formatTimeAgo(contribution.updated)
+      }));
+    }
+  },
+  methods: {
+    formatTimeAgo(time) {
+      return time && new TimeAgo(this.$i18n.locale.replace('_', '-')).format(new Date(time), 'round')
+    },
+  }
 };
 </script>
