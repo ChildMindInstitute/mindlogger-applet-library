@@ -1,5 +1,12 @@
 <template>
-  <div v-if="!isLoading">
+  <div v-if="isLoading" class="ds-progress-bar">
+    <v-progress-circular
+      :size="50"
+      color="primary"
+      indeterminate
+    />
+  </div>
+  <div v-else>
     <div>
       <v-card class="mx-8 my-6 d-flex pa-md-2">
         <div class="text-center">
@@ -244,6 +251,12 @@
   cursor: pointer;
 }
 
+.ds-progress-bar {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+}
+
 .ds-basket {
   position: absolute !important;
   bottom: 50px;
@@ -345,10 +358,13 @@ export default {
       this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
 
+      console.log('0000000000', appletContent);
       this.contributionsData = await this.getAppletContributions(
         appletId,
         appletContent
       );
+
+      console.log('1111111111', this.contributionsData);
 
       this.isLoading = false;
     } catch (error) {

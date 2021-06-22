@@ -45,7 +45,7 @@ export const AppletMixin = {
 
       const cartSelections = {};
       Object.entries(basketSelections).map(([appletId, basketSelection]) => {
-        const appletTree = this.$store.state.appletsTree[appletId];
+        const appletTree = this.$store.state.appletsTree[appletId][0];
         if (appletTree) {
           cartSelections[appletId] = [];
           basketSelection.map(activitySelection => {
@@ -89,7 +89,6 @@ export const AppletMixin = {
     getOpenItems(applets, appletData, searchText) {
       applets.forEach((applet) => {
         const regex = new RegExp(searchText, "ig");
-        console.log('appletData', appletData)
 
         this.isOpenAll[applet.appletId] = true;
         for (const activityData of appletData.children) {
@@ -110,12 +109,12 @@ export const AppletMixin = {
       }
       return applets.filter((applet) => {
         const regex = new RegExp(searchText, "ig");
-        const appletData = appletsTree;
+        const appletData = appletsTree[applet.appletId][0];
         let hasSearchText = false;
 
         if (
           applet.name.match(regex) ||
-          applet.description.match(regex) ||
+          (applet.description && applet.description.match(regex)) ||
           appletData.title.match(regex)
         ) {
           hasSearchText = true;
@@ -123,30 +122,25 @@ export const AppletMixin = {
 
         for (const keyword of applet.keywords) {
           if (keyword.match(regex)) {
-            this.isOpenAll[applet.appletId] = true;
             return true;
           }
         }
 
         for (const activityData of appletData.children) {
           if (activityData.title.match(regex)) {
-            this.isOpenAll[applet.appletId] = true;
             return true;
           }
           for (const itemData of activityData.children) {
             if (itemData.title.match(regex)) {
-              this.isOpenAll[applet.appletId] = true;
               return true;
             }
             if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
               for (const optionData of itemData.options) {
                 if (optionData.name.match(regex)) {
-                  this.isOpenAll[applet.appletId] = true;
                   return true;
                 }
               }
             } else if (itemData.inputType.match(regex)) {
-              this.isOpenAll[applet.appletId] = true;
               return true;
             }
           }
@@ -284,6 +278,36 @@ export const AppletMixin = {
 
       return treeItem;
     },
+    getOpenNodes(tree, key) {
+      const searchText = key.toLowerCase();
+      const nodes = [];
+      let openApplet = false;
+
+      tree.children.forEach((activity) => {
+        let openActivity = false;
+
+        activity.children.forEach((item) => {
+          if (item.title.toLowerCase().includes(searchText)) {
+            openActivity = true;
+            openApplet = true;
+          }
+        })
+
+        if (openActivity) {
+          nodes.push(activity);
+        }
+
+        if (activity.title.toLowerCase().includes(searchText)) {
+          openApplet = true;
+        }
+      })
+
+      if (openApplet) {
+        nodes.push(tree);
+      }
+      
+      return nodes;
+    },
     parseAppletCartItem(appletTree, selection) {
       const cartItem = [];
 
@@ -336,42 +360,6 @@ export const AppletMixin = {
 
       const contributionsData = [];
 
-      // const itemModel = new Item();
-      // Object.entries(appletContributionOrigins).map(([itemId, itemContributionData]) => {
-      //   const itemIdentifier = Object.keys(contributionUpdatesData).find(identifier => identifier.split("/").pop() == itemId);
-      //   const activityId = itemIdentifier.split("/")[0];
-      //   const itemUpdate = contributionUpdatesData[itemIdentifier];
-
-      //   const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
-      //   const updated = this.formatTimeAgo(itemUpdate["updated"]);
-
-      //   const itemOriginData = itemContributionData["content"];
-      //   const itemCurrentData = appletContent["items"][itemIdentifier];
-
-      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemOriginData)));
-      //   const originItem = itemModel.getItemData();
-
-      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemCurrentData)));
-      //   const currentItem = itemModel.getItemData();
-
-      //   const changeInfo = Item.getChangeInfo(originItem, currentItem);
-
-      //   changeInfo.log.map(log => {
-      //     contributionsData.push({
-      //       creator: itemContributionData["baseItem"]["account"],
-      //       created: created,
-      //       appletName: itemContributionData["baseItem"]["applet"],
-      //       activityName: appletContent["activities"][activityId]["@id"],
-      //       itemName: itemContributionData["content"]["@id"],
-      //       itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
-      //       editor: itemUpdate["lastUpdatedBy"],
-      //       updated: updated,
-      //       changes: log.name,
-      //       version: itemContributionData["content"]["schema:version"][0]["@value"],
-      //     });
-      //   });
-      // });
-
       const generateLogs = (old, current) => {
         const changeInfo = Protocol.getChangeInfo(old, current);
         const changeLogs = [];
@@ -392,10 +380,11 @@ export const AppletMixin = {
 
       const currentApplet = await Protocol.parseApplet(appletContent);
       const currentProtocol = await Protocol.formattedProtocol(currentApplet);
+
       await Promise.all(Object.entries(contributionUpdatesData).reverse().map(async ([itemIdentifier, itemUpdate]) => {
         const activityId = itemIdentifier.split("/")[0];
         const itemId = itemIdentifier.split("/")[1];
-
+        
         if (appletContributionOrigins[itemId]) {
           const itemContributionData = appletContributionOrigins[itemId];
 

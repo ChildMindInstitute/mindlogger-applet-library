@@ -86,11 +86,10 @@
               <v-treeview
                 class="ds-tree-view"
                 v-model="cartSelections[applet.appletId]"
-                :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
-                @input="updateCart(applet)"
+                :items="appletsTree[applet.appletId] && appletsTree[applet.appletId]"
+                :open.sync="basketOpens[applet.appletId]"
                 selection-type="leaf"
-                selected-color="darkgrey"
-                open-on-click
+                selected-color="primary"
                 selectable
                 return-object
               >
@@ -230,6 +229,17 @@ export default {
         this.appletsTree,
         this.searchText
       );
+    },
+    basketOpens() {
+      const open = [];
+
+      for (const applet of this.filteredApplets) {
+        if (this.searchText) {
+          open[applet.appletId] = this.getOpenNodes(this.appletsTree[applet.appletId][0], this.searchText);
+        }
+      }
+
+      return open;
     }
   },
   async beforeMount() {
@@ -251,7 +261,7 @@ export default {
         this.cacheSelection = [...this.cartSelections[appletId]];
         await this.updateAppletBasket(
           appletId,
-          this.appletsTree[appletId],
+          this.appletsTree[appletId][0],
           this.cartSelections[appletId]
         );
         this.fetchBasketApplets();
