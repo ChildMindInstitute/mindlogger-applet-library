@@ -318,131 +318,84 @@ export const AppletMixin = {
         libraryId,
       })
 
-      const contributionsData = [];
+      const currentProtocol = await Protocol.formattedProtocol(
+        await Protocol.parseApplet(appletContent)
+      );
 
-      // const itemModel = new Item();
-      // Object.entries(appletContributionOrigins).map(([itemId, itemContributionData]) => {
-      //   const itemIdentifier = Object.keys(contributionUpdatesData).find(identifier => identifier.split("/").pop() == itemId);
-      //   const activityId = itemIdentifier.split("/")[0];
-      //   const itemUpdate = contributionUpdatesData[itemIdentifier];
+      const oldContent = {
+        ...appletContent,
+        items: {}
+      };
 
-      //   const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
-      //   const updated = this.formatTimeAgo(itemUpdate["updated"]);
+      for (const itemIRI in appletContent.items) {
+        const item = appletContent.items[itemIRI];
+        const itemID = item['_id'].split('/')[1];
 
-      //   const itemOriginData = itemContributionData["content"];
-      //   const itemCurrentData = appletContent["items"][itemIdentifier];
-
-      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemOriginData)));
-      //   const originItem = itemModel.getItemData();
-
-      //   itemModel.updateReferenceObject(itemModel.getItemBuilderData(Item.parseJSONLD(itemCurrentData)));
-      //   const currentItem = itemModel.getItemData();
-
-      //   const changeInfo = Item.getChangeInfo(originItem, currentItem);
-
-      //   changeInfo.log.map(log => {
-      //     contributionsData.push({
-      //       creator: itemContributionData["baseItem"]["account"],
-      //       created: created,
-      //       appletName: itemContributionData["baseItem"]["applet"],
-      //       activityName: appletContent["activities"][activityId]["@id"],
-      //       itemName: itemContributionData["content"]["@id"],
-      //       itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
-      //       editor: itemUpdate["lastUpdatedBy"],
-      //       updated: updated,
-      //       changes: log.name,
-      //       version: itemContributionData["content"]["schema:version"][0]["@value"],
-      //     });
-      //   });
-      // });
-
-      const generateLogs = (old, current) => {
-        const changeInfo = Protocol.getChangeInfo(old, current);
-        const changeLogs = [];
-
-        const extractLogs = (logs) => {
-          logs.map(log => {
-            if (log.children) {
-              extractLogs(log.children);
-            } else {
-              changeLogs.push(log.name);
-            }
-          })
+        if (itemID in appletContributionOrigins) {
+          oldContent.items[itemIRI] = {
+            ...appletContributionOrigins[itemID].content,
+            _id: appletContent.items[itemIRI]._id
+          };
+        } else {
+          oldContent.items[itemIRI] = {};
         }
-        extractLogs(changeInfo.log);
-
-        return changeLogs;
       }
 
-      const currentApplet = await Protocol.parseApplet(appletContent);
-      const currentProtocol = await Protocol.formattedProtocol(currentApplet);
-      await Promise.all(Object.entries(contributionUpdatesData).reverse().map(async ([itemIdentifier, itemUpdate]) => {
-        const activityId = itemIdentifier.split("/")[0];
-        const itemId = itemIdentifier.split("/")[1];
+      const oldProtocol = await Protocol.formattedProtocol(
+        await Protocol.parseApplet(oldContent)
+      );
 
-        if (appletContributionOrigins[itemId]) {
-          const itemContributionData = appletContributionOrigins[itemId];
+      const changeInfo = Protocol.getChangeInfo(oldProtocol, currentProtocol);
+      const itemLogs = [];
 
-          const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
-          const updated = this.formatTimeAgo(itemUpdate["updated"]);
+      const extractLogs = (logs, depth) => {
+        logs.map(log => {
+          if (depth == 3) {
+            if (log.itemId) {
+              itemLogs.push(log);
+            }
+          } else {
+            extractLogs(log.children, depth+1);
+          }
+        })
+      }
 
-          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
-          originAppletContent.items[itemIdentifier] = itemContributionData["content"];
+      extractLogs(changeInfo.log, 0);
 
-          const originalApplet = await Protocol.parseApplet(originAppletContent);
-          const originProtocol = await Protocol.formattedProtocol(originalApplet);
+      const itemID2Activity = {};
+      const itemID2IRI = {};
 
-          const logData = {
-            creator: itemContributionData["baseItem"]["account"],
-            created: created,
-            appletName: itemContributionData["baseItem"]["applet"],
-            activityName: appletContent["activities"][activityId]["@id"],
-            itemName: itemContributionData["content"]["@id"],
-            itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
-            editor: itemUpdate["lastUpdatedBy"],
-            updated: updated,
-            version: itemContributionData["content"]["schema:version"][0]["@value"],
-          };
+      Object.values(appletContent.activities).map(activity => {
+        const itemIRIs = _.get(activity, ['reprolib:terms/order', 0, '@list']);
+        for (const itemIRI of itemIRIs) {
+          const item = appletContent.items[itemIRI['@id']];
+          const itemID = item._id.split('/')[1];
 
-          const logs = generateLogs(originProtocol, currentProtocol);
-          logs.map(log => {
-            contributionsData.push({
-              ...logData,
-              changes: log
-            })
-          })
-        } else {
-          const updated = this.formatTimeAgo(itemUpdate["updated"]);
-          const created = updated;
-
-          const itemData = appletContent["items"][itemIdentifier];
-          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
-          delete originAppletContent.items[itemIdentifier];
-
-          const originalApplet = await Protocol.parseApplet(originAppletContent);
-          const originProtocol = await Protocol.formattedProtocol(originalApplet);
-
-          const logData = {
-            creator: itemUpdate["lastUpdatedBy"],
-            created: created,
-            appletName: appletContent["applet"]["displayName"],
-            activityName: appletContent["activities"][activityId]["@id"],
-            itemName: itemData["@id"],
-            itemQuestion: itemData["schema:question"][0]["@value"],
-            editor: itemUpdate["lastUpdatedBy"],
-            updated: updated,
-            version: itemData["schema:version"] ? itemData["schema:version"][0]["@value"] : "0.0.1",
-          };
-
-          const logs = generateLogs(originProtocol, currentProtocol);
-          logs.map(log => {
-            contributionsData.push({
-              ...logData,
-              changes: log
-            })
-          })
+          itemID2Activity[itemID] = activity;
+          itemID2IRI[itemID] = itemIRI['@id'];
         }
-      }));
+      });
+
+      const contributionsData = itemLogs.map(itemLog => {
+        const baseItem = (appletContributionOrigins[itemLog.itemId] || {}).baseItem || {};
+        const itemIRI = itemID2IRI[itemLog.itemId];
+        const item = appletContent.items[itemIRI];
+        const activity = itemID2Activity[itemLog.itemId];
+        const prefLabel = 'http://www.w3.org/2004/02/skos/core#prefLabel';
+
+        return {
+          creator: baseItem.account || '',
+          created: baseItem.itemDate || '',
+          appletName: baseItem.applet || '',
+          activityName: _.get(activity, [prefLabel, 0, '@value']),
+          itemName: _.get(item, [prefLabel, 0, '@value']),
+          itemQuestion: _.get(item, ['schema:question', 0, '@value']),
+          editor: _.get(contributionUpdatesData, [itemIRI, 'lastUpdatedBy']),
+          updated: _.get(contributionUpdatesData, [itemIRI, 'updated']),
+          changes: itemLog.children.map(log => log.name),
+          version: _.get(appletContent, ['applet', 'schema:version', 0, '@value']),
+        }
+      });
 
       return contributionsData;
     },
@@ -479,7 +432,10 @@ export const AppletMixin = {
           as: 'Version',
           key: 'version',
         }],
-        data: contributionsData,
+        data: contributionsData.map(d => ({
+          ...d,
+          changes: d.changes.join('\r\n')
+        })),
       });
 
       const anchor = document.createElement('a');
