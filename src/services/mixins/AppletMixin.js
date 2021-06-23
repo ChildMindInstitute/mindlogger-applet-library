@@ -200,76 +200,56 @@ export const AppletMixin = {
 
       treeIndex += 1;
 
-      const parseItemData = ({ itemData, index, itemId }) => {
-        const itemTitle = itemData["schema:question"]
-          ? itemData["schema:question"][0]["@value"]
-          : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-        const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-          : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-            : itemTitle.split("250x250)");
-        const item = {
-          id: index,
-          itemId: itemId,
-          inputType: itemData["reprolib:terms/inputType"][0]["@value"],
-          selected: false,
-          title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
-        };
-
-        if (item.inputType === "radio") {
-          const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-          const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
-
-          item.options = options.map((option) => ({
-            name: option["schema:name"][0]["@value"],
-            image: option["schema:image"],
-          }));
-          if (multiple) {
-            item.inputType = "checkbox";
-          }
-        } else if (item.inputType == "markdown-message") {
-          item.inputType = "markdownMessage";
-        }
-
-        return item;
-      }
-
-      for (const activityId in activities) {
+      for (const activityKey in activities) {
+        const activityData = activities[activityKey];
+        const activityId = activityData["_id"].split("/").pop();
+        const activityIdentifier = activityKey.includes("https://raw.githubusercontent.com") ? activityKey.split("/").slice(0, -1).join("/") : activityId;
         const activityItem = {
           id: treeIndex,
           activityId,
-          title: activities[activityId]["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
+          title: activityData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
           children: [],
           vnode: null
         };
 
         treeIndex += 1;
-        for (const itemId in items) {
-          if (itemId.includes("https://raw.githubusercontent.com")) {
-            const values = activityId.split("/");
+        for (const itemKey in items) {
+          const itemData = items[itemKey];
+          const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
+          if (itemActivityIdentifier === activityIdentifier) {
+            const itemId = itemData["_id"].split("/").pop()
 
-            if (itemId.includes(values[values.length - 2])) {
-              const item = parseItemData({
-                itemData: items[itemId],
-                index: treeIndex,
-                itemId: items[itemId]["_id"].split("/")[1]
-              });
+            const itemTitle = itemData["schema:question"]
+              ? itemData["schema:question"][0]["@value"]
+              : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                : itemTitle.split("250x250)");
+            const item = {
+              id: treeIndex,
+              itemId,
+              inputType: itemData["reprolib:terms/inputType"][0]["@value"],
+              selected: false,
+              title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
+            };
 
-              treeIndex += 1;
-              activityItem.children.push(item);
+            if (item.inputType === "radio") {
+              const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+              const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+              item.options = options.map((option) => ({
+                name: option["schema:name"][0]["@value"],
+                image: option["schema:image"],
+              }));
+              if (multiple) {
+                item.inputType = "checkbox";
+              }
+            } else if (item.inputType == "markdown-message") {
+              item.inputType = "markdownMessage";
             }
-          } else {
-            const values = itemId.split("/");
 
-            if (activityId === values[0]) {
-              const item = parseItemData({
-                itemData: items[itemId],
-                index: treeIndex,
-                itemId: values[1]
-              });
-
-              treeIndex += 1;
-              activityItem.children.push(item);
-            }
+            treeIndex += 1;
+            activityItem.children.push(item);
           }
         }
 
@@ -348,106 +328,98 @@ export const AppletMixin = {
       return values[values.length - 1];
     },
     async getAppletContributions(libraryId, appletContent) {
-      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
-        apiHost: this.apiHost,
-        libraryId,
-      })
-
       const { data: appletContributionOrigins } = await api.getAppletContributionOrigin({
         apiHost: this.apiHost,
         libraryId,
       })
 
-      const contributionsData = [];
-
-      const generateLogs = (old, current) => {
-        const changeInfo = Protocol.getChangeInfo(old, current);
-        const changeLogs = [];
-
-        const extractLogs = (logs) => {
-          logs.map(log => {
-            if (log.children) {
-              extractLogs(log.children);
-            } else {
-              changeLogs.push(log.name);
-            }
-          })
-        }
-        extractLogs(changeInfo.log);
-
-        return changeLogs;
+      if (Object.keys(appletContributionOrigins).length === 0) {
+        return [];
       }
 
-      const currentApplet = await Protocol.parseApplet(appletContent);
-      const currentProtocol = await Protocol.formattedProtocol(currentApplet);
+      const { data: contributionUpdatesData } = await api.getAppletContributionUpdates({
+        apiHost: this.apiHost,
+        libraryId,
+      })
 
-      await Promise.all(Object.entries(contributionUpdatesData).reverse().map(async ([itemIdentifier, itemUpdate]) => {
-        const activityId = itemIdentifier.split("/")[0];
-        const itemId = itemIdentifier.split("/")[1];
-        
-        if (appletContributionOrigins[itemId]) {
-          const itemContributionData = appletContributionOrigins[itemId];
+      const currentProtocol = await Protocol.formattedProtocol(
+        await Protocol.parseApplet(appletContent)
+      );
 
-          const created = this.formatTimeAgo(itemContributionData["baseItem"]["itemDate"]);
-          const updated = this.formatTimeAgo(itemUpdate["updated"]);
+      const oldContent = {
+        ...appletContent,
+        items: {}
+      };
 
-          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
-          originAppletContent.items[itemIdentifier] = itemContributionData["content"];
+      for (const itemIRI in appletContent.items) {
+        const item = appletContent.items[itemIRI];
+        const itemID = item['_id'].split('/')[1];
 
-          const originalApplet = await Protocol.parseApplet(originAppletContent);
-          const originProtocol = await Protocol.formattedProtocol(originalApplet);
-
-          const logData = {
-            creator: itemContributionData["baseItem"]["account"],
-            created: created,
-            appletName: itemContributionData["baseItem"]["applet"],
-            activityName: appletContent["activities"][activityId]["@id"],
-            itemName: itemContributionData["content"]["@id"],
-            itemQuestion: itemContributionData["content"]["schema:question"][0]["@value"],
-            editor: itemUpdate["lastUpdatedBy"],
-            updated: updated,
-            version: itemContributionData["content"]["schema:version"][0]["@value"],
+        if (itemID in appletContributionOrigins) {
+          oldContent.items[itemIRI] = {
+            ...appletContributionOrigins[itemID].content,
+            _id: appletContent.items[itemIRI]._id
           };
-
-          const logs = generateLogs(originProtocol, currentProtocol);
-          logs.map(log => {
-            contributionsData.push({
-              ...logData,
-              changes: log
-            })
-          })
         } else {
-          const updated = this.formatTimeAgo(itemUpdate["updated"]);
-          const created = updated;
-
-          const itemData = appletContent["items"][itemIdentifier];
-          const originAppletContent = JSON.parse(JSON.stringify(appletContent));
-          delete originAppletContent.items[itemIdentifier];
-
-          const originalApplet = await Protocol.parseApplet(originAppletContent);
-          const originProtocol = await Protocol.formattedProtocol(originalApplet);
-
-          const logData = {
-            creator: itemUpdate["lastUpdatedBy"],
-            created: created,
-            appletName: appletContent["applet"]["displayName"],
-            activityName: appletContent["activities"][activityId]["@id"],
-            itemName: itemData["@id"],
-            itemQuestion: itemData["schema:question"][0]["@value"],
-            editor: itemUpdate["lastUpdatedBy"],
-            updated: updated,
-            version: itemData["schema:version"] ? itemData["schema:version"][0]["@value"] : "0.0.1",
-          };
-
-          const logs = generateLogs(originProtocol, currentProtocol);
-          logs.map(log => {
-            contributionsData.push({
-              ...logData,
-              changes: log
-            })
-          })
+          oldContent.items[itemIRI] = {};
         }
-      }));
+      }
+
+      const oldProtocol = await Protocol.formattedProtocol(
+        await Protocol.parseApplet(oldContent)
+      );
+
+      const changeInfo = Protocol.getChangeInfo(oldProtocol, currentProtocol);
+      const itemLogs = [];
+
+      const extractLogs = (logs, depth) => {
+        logs.map(log => {
+          if (depth == 3) {
+            if (log.itemId) {
+              itemLogs.push(log);
+            }
+          } else {
+            extractLogs(log.children, depth+1);
+          }
+        })
+      }
+
+      extractLogs(changeInfo.log, 0);
+
+      const itemID2Activity = {};
+      const itemID2IRI = {};
+
+      Object.values(appletContent.activities).map(activity => {
+        const itemIRIs = _.get(activity, ['reprolib:terms/order', 0, '@list']);
+        for (const itemIRI of itemIRIs) {
+          const item = appletContent.items[itemIRI['@id']];
+          const itemID = item._id.split('/')[1];
+
+          itemID2Activity[itemID] = activity;
+          itemID2IRI[itemID] = itemIRI['@id'];
+        }
+      });
+
+      const contributionsData = itemLogs.map(itemLog => {
+        const baseItem = (appletContributionOrigins[itemLog.itemId] || {}).baseItem || {};
+        const itemIRI = itemID2IRI[itemLog.itemId];
+        const item = appletContent.items[itemIRI];
+        const activity = itemID2Activity[itemLog.itemId];
+        const prefLabel = 'http://www.w3.org/2004/02/skos/core#prefLabel';
+
+        return {
+          creator: baseItem.account || '',
+          created: baseItem.itemDate || '',
+          appletName: baseItem.applet || '',
+          activityName: _.get(activity, [prefLabel, 0, '@value']),
+          itemName: _.get(item, [prefLabel, 0, '@value']),
+          itemQuestion: _.get(item, ['schema:question', 0, '@value']),
+          editor: _.get(contributionUpdatesData, [itemIRI, 'lastUpdatedBy']),
+          updated: _.get(contributionUpdatesData, [itemIRI, 'updated']),
+          changes: itemLog.children.map(log => log.name),
+          version: _.get(appletContent, ['applet', 'schema:version', 0, '@value']),
+        }
+      });
 
       return contributionsData;
     },
@@ -456,35 +428,38 @@ export const AppletMixin = {
         keys: [{
           as: 'Original Owner',
           key: 'creator',
-        },{
+        }, {
           as: 'Date Created',
           key: 'created',
-        },{
+        }, {
           as: 'Applet Name',
           key: 'appletName',
-        },{
+        }, {
           as: 'Activity Name',
           key: 'activityName',
-        },{
+        }, {
           as: 'Item Name',
           key: 'itemName',
-        },{
+        }, {
           as: 'Item Question',
           key: 'itemQuestion',
-        },{
+        }, {
           as: 'Edited by',
           key: 'editor',
-        },{
+        }, {
           as: 'Edit Date',
           key: 'updated',
-        },{
+        }, {
           as: 'Changes',
           key: 'changes',
-        },{
+        }, {
           as: 'Version',
           key: 'version',
         }],
-        data: contributionsData,
+        data: contributionsData.map(d => ({
+          ...d,
+          changes: d.changes.join('\r\n')
+        })),
       });
 
       const anchor = document.createElement('a');
@@ -504,7 +479,7 @@ export const AppletMixin = {
         return -1;
       } else if (A.name < B.name) {
         return 1;
-      } else if (A.name > B.name) { 
+      } else if (A.name > B.name) {
         return -1;
       } else {
         return 0;
