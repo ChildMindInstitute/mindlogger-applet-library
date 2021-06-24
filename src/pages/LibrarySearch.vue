@@ -97,14 +97,12 @@
               <v-treeview
                 class="ds-tree-view"
                 v-model="appletSelections[applet.appletId]"
-                :items="appletsTree[applet.appletId] && [appletsTree[applet.appletId]]"
-                :open-all="isOpenAll[applet.appletId]"
-                item-key="id"
+                :items="appletsTree[applet.appletId] && appletsTree[applet.appletId]"
+                :open.sync="initialOpen[applet.appletId]"
                 selection-type="leaf"
-                selected-color="darkgrey"
-                open-on-click
-                selectable
+                selected-color="primary"
                 return-object
+                selectable
               >
                 <template v-slot:prepend="{ item }">
                   <v-icon
@@ -262,7 +260,16 @@
   margin-top: 0 !important;
 }
 
-.ds-tree-view,
+.ds-tree-view {
+  width: 100%;
+}
+
+.v-treeview-node__children,
+.v-treeview-node__root,
+.v-treeview-node__append {
+  width: 100%;
+}
+
 .ds-tree-layout {
   width: calc(100% - 300px);
 }
@@ -292,7 +299,7 @@ export default {
       recordsPerPage: 5,
       searchText: '',
       isLoading: true,
-      isOpenAll: [],
+      initialOpen: [],
       appletCount: 0,
       searchTextChanged: false,
       options: [
@@ -355,18 +362,16 @@ export default {
           vnode: null
         };
 
+        await this.fetchAppletContent(applet.id, applet.appletId);
+
         if (this.appletContents[applet.appletId]) {
           tree = this.buildAppletTree(this.appletContents[applet.appletId])
         }
 
         if (this.searchText) {
-          // this.getOpenItems(publishedApplets, tree, this.searchText);
+          this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText);
         }
         
-        // publishedApplets.forEach(applet => {
-        //   this.isOpenAll[applet.appletId] = true;
-        // })
-
         this.$store.commit("setAppletTree", {
           tree,
           appletId: applet.appletId
@@ -405,7 +410,7 @@ export default {
         // add to basket
         await this.updateAppletBasket(
           appletId,
-          this.appletsTree[appletId],
+          this.appletsTree[appletId][0],
           this.appletSelections[appletId]
         );
         this.fetchBasketApplets();
@@ -459,14 +464,15 @@ export default {
 
       this.onEntriesDebounced();
     },
-    async publishedApplets() {
-      this.isLoading = true;
+    // async publishedApplets() {
+    //   console.log('55555555555555')
+    //   this.isLoading = true;
 
-      for (const applet of this.publishedApplets) {
-        await this.fetchAppletContent(applet.id, applet.appletId);
-      }
-      this.isLoading = false;
-    }
+    //   for (const applet of this.publishedApplets) {
+    //     await this.fetchAppletContent(applet.id, applet.appletId);
+    //   }
+    //   this.isLoading = false;
+    // }
   }
 };
 </script>
