@@ -149,7 +149,7 @@ const mutations = {
     state.appletContents[appletId] = appletContent;
   },
   setAppletTree(state, { tree, appletId }) {
-    state.appletsTree[appletId] = tree;
+    state.appletsTree[appletId] = [tree];
   },
   addTreeNodes(state, { children, appletId }) {
     for (const child of children) {
