@@ -97,7 +97,7 @@
               <v-treeview
                 class="ds-tree-view"
                 v-model="appletSelections[applet.appletId]"
-                :items="appletsTree[applet.appletId] && appletsTree[applet.appletId]"
+                :items="appletsTree[applet.appletId]"
                 :open.sync="initialOpen[applet.appletId]"
                 selection-type="leaf"
                 selected-color="primary"
