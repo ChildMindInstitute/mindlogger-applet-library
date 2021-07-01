@@ -400,14 +400,12 @@ export const AppletMixin = {
         }
       });
 
-      const referenced = itemLogs.map(itemLog => itemLog.itemId);
       Object.keys(appletContributionOrigins).forEach(itemId => {
-        if (referenced.indexOf(itemId) < 0) {
-          itemLogs.push({
-            children: [],
-            itemId
-          });
-        }
+        itemLogs.push({
+          children: [],
+          itemId,
+          origin: true
+        });
       })
 
       const contributionsData = itemLogs.map(itemLog => {
@@ -419,15 +417,15 @@ export const AppletMixin = {
 
         return {
           creator: baseItem.account || '',
-          created: baseItem.itemDate || '',
+          created: baseItem.updated || '',
           appletName: baseItem.applet || '',
           activityName: _.get(activity, [prefLabel, 0, '@value']),
           itemName: _.get(item, [prefLabel, 0, '@value']),
           itemQuestion: _.get(item, ['schema:question', 0, '@value']),
-          editor: _.get(contributionUpdatesData, [itemIRI, 'lastUpdatedBy']),
-          updated: _.get(contributionUpdatesData, [itemIRI, 'updated']),
+          editor: !itemLog.origin ? _.get(contributionUpdatesData, [itemIRI, 'lastUpdatedBy']) : baseItem.account,
+          updated: !itemLog.origin ? _.get(contributionUpdatesData, [itemIRI, 'updated']) : baseItem.updated,
           changes: itemLog.children.map(log => log.name),
-          version: _.get(appletContent, ['applet', 'schema:version', 0, '@value']),
+          version: !itemLog.origin ? _.get(contributionUpdatesData, [itemIRI, 'version']) : baseItem.version,
         }
       });
 
