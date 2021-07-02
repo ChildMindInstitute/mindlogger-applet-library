@@ -285,7 +285,7 @@ export const AppletMixin = {
       if (openApplet) {
         nodes.push(tree);
       }
-      
+
       return nodes;
     },
     parseAppletCartItem(appletTree, selection) {
@@ -399,6 +399,16 @@ export const AppletMixin = {
           itemID2IRI[itemID] = itemIRI['@id'];
         }
       });
+
+      const referenced = itemLogs.map(itemLog => itemLog.itemId);
+      Object.keys(appletContributionOrigins).forEach(itemId => {
+        if (referenced.indexOf(itemId) < 0) {
+          itemLogs.push({
+            children: [],
+            itemId
+          });
+        }
+      })
 
       const contributionsData = itemLogs.map(itemLog => {
         const baseItem = (appletContributionOrigins[itemLog.itemId] || {}).baseItem || {};
