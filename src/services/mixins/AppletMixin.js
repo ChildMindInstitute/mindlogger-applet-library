@@ -154,7 +154,7 @@ export const AppletMixin = {
       const formData = {};
 
       Object.entries(this.cartSelections).map(([appletId, cartSelection]) => {
-        formData[appletId] = this.parseAppletCartItem(this.$store.state.appletsTree[appletId], cartSelection);
+        formData[appletId] = this.parseAppletCartItem(this.$store.state.appletsTree[appletId][0], cartSelection);
       })
 
       form.set("basket", JSON.stringify(formData));
