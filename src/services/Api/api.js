@@ -162,6 +162,17 @@ const getAppletContent = ({ apiHost, libraryId, nextActivity }) => {
   })
 }
 
+const getLibraryApplet = ({ apiHost, libraryId }) => {
+  let url = `${apiHost}/library/applet/?libraryId=${libraryId}`;
+  console.log(url);
+  return axios({
+    method: "get",
+    url,
+  }).then(resp => {
+    return resp.data;
+  })
+}
+
 const getBasketApplets = ({ apiHost, token }) =>
   axios({
     method: "put",
@@ -222,4 +233,5 @@ export default {
   createToken,
   getAppletContributionOrigin,
   getAppletContributionUpdates,
+  getLibraryApplet
 }
