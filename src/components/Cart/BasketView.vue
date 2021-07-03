@@ -86,7 +86,7 @@
               <v-treeview
                 class="ds-tree-view"
                 v-model="cartSelections[applet.appletId]"
-                :items="appletsTree[applet.appletId] && appletsTree[applet.appletId]"
+                :items="appletsTree[applet.appletId]"
                 :open.sync="basketOpens[applet.appletId]"
                 selection-type="leaf"
                 selected-color="primary"
