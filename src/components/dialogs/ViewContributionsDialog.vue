@@ -15,7 +15,7 @@
           :headers="headers"
           :items="contributions"
           :search="search"
-          class="elevation-1"
+          class="elevation-1 data-table"
         ></v-data-table>
       </v-card-text>
     </v-card>
@@ -24,6 +24,13 @@
 </template>
 
 <style scoped>
+.data-table /deep/ th > i {
+  display: none;
+}
+
+.data-table /deep/ th:hover > i {
+  display: inline;
+}
 </style>
 
 <script>
