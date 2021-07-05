@@ -369,7 +369,18 @@ export default {
         }
 
         if (this.searchText) {
-          this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText);
+          this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText); 
+
+          tree.children.forEach((activity) => {
+            activity.children.forEach((item) => {
+              item.selected = false;
+              item.options && item.options.forEach((option) => {
+                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                  item.selected = true;
+                }
+              });
+            });
+          });
         }
         
         this.$store.commit("setAppletTree", {
@@ -464,15 +475,6 @@ export default {
 
       this.onEntriesDebounced();
     },
-    // async publishedApplets() {
-    //   console.log('55555555555555')
-    //   this.isLoading = true;
-
-    //   for (const applet of this.publishedApplets) {
-    //     await this.fetchAppletContent(applet.id, applet.appletId);
-    //   }
-    //   this.isLoading = false;
-    // }
   }
 };
 </script>

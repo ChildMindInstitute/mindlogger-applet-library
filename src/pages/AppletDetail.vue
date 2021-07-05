@@ -357,15 +357,10 @@ export default {
 
       this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
-
-      console.log('0000000000', appletContent);
       this.contributionsData = await this.getAppletContributions(
         appletId,
         appletContent
       );
-
-      console.log('1111111111', this.contributionsData);
-
       this.isLoading = false;
     } catch (error) {
       console.log(error);

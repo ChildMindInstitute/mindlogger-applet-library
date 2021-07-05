@@ -86,7 +86,7 @@
               <v-treeview
                 class="ds-tree-view"
                 v-model="cartSelections[applet.appletId]"
-                :items="appletsTree[applet.appletId]"
+                :items="applets[applet.appletId]"
                 :open.sync="basketOpens[applet.appletId]"
                 selection-type="leaf"
                 selected-color="primary"
@@ -133,7 +133,7 @@
                             max-width="27px"
                             height="27px"
                           />
-                          {{ option.name }}
+                          <span v-html="highlight(option.name)" />
                         </div>
                       </div>
                       <div v-else class="d-flex align-center pt-2">
@@ -212,7 +212,8 @@ export default {
       deleteBasketItemDialog: false,
       isLoading: true,
       deleteApplet: null,
-      cachedSelection: []
+      cachedSelection: [],
+      applets: {},
     };
   },
   computed: {
@@ -224,11 +225,32 @@ export default {
       "cartSelections"
     ]),
     filteredApplets() {
-      return this.getFilteredApplets(
+      const filteredApplets = this.getFilteredApplets(
         this.cartApplets,
         this.appletsTree,
         this.searchText
       );
+
+      if (this.searchText) {
+        for (const applet of filteredApplets) {
+          const appletData = this.appletsTree[applet.appletId][0];
+
+          appletData.children.forEach((activity) => {
+            activity.children.forEach((item) => {
+              item.selected = false;
+              item.options && item.options.forEach((option) => {
+                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                  item.selected = true;
+                }
+              });
+            });
+          });
+
+          this.applets[applet.appletId] = [appletData];
+        }
+      }
+
+      return filteredApplets;
     },
     basketOpens() {
       const open = [];
@@ -240,7 +262,7 @@ export default {
       }
 
       return open;
-    }
+    },
   },
   async beforeMount() {
     try {
@@ -266,6 +288,24 @@ export default {
         );
         this.fetchBasketApplets();
       }
+    },
+    getTreeApplet(applet) {
+      const appletData = applet[0];
+
+      if (this.searchText) {
+        appletData.children.forEach((activity) => {
+          activity.children.forEach((item) => {
+            item.selected = false;
+            item.options && item.options.forEach((option) => {
+              if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                item.selected = true;
+              }
+            });
+          });
+        });
+      }
+
+      return [appletData];
     },
     onDeleteApplet(applet) {
       this.deleteApplet = applet;
