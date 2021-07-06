@@ -346,14 +346,21 @@ export default {
   },
   async beforeMount() {
     const appletId = this.$route.params.id;
-
     try {
-      this.applet = this.publishedApplets.find(({ id }) => id === appletId);
+      this.applet = await api.getLibraryApplet({
+        apiHost: this.$store.state.backend,
+        libraryId: appletId
+      });
 
       const { data: appletContent } = await api.getAppletContent({
         apiHost: this.$store.state.backend,
         libraryId: appletId
       });
+
+      if (!this.applet) {
+        this.applet = appletContent.applet
+        this.applet["appletId"] = appletId
+      }
 
       this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
@@ -361,6 +368,7 @@ export default {
         appletId,
         appletContent
       );
+
       this.isLoading = false;
     } catch (error) {
       console.log(error);
