@@ -91,6 +91,7 @@
               v-model="cartSelections[applet.appletId]"
               :items="applets[applet.appletId]"
               :open.sync="cardOpens[applet.appletId]"
+              @input="updateCart(applet)"
               selection-type="leaf"
               selected-color="primary"
               selectable
@@ -228,6 +229,7 @@ export default {
   },
   async beforeMount() {
     this.applets = this.appletsTree;
+    console.log('cartApplets', this.cartApplets)
   },
   computed: {
     ...mapState([
@@ -261,6 +263,8 @@ export default {
 
           this.applets[applet.appletId] = [appletData];
         }
+      } else {
+        this.applets = this.appletsTree;
       }
 
       return filteredApplets;
@@ -280,6 +284,7 @@ export default {
   methods: {
     updateCart(applet) {
       const { appletId } = applet;
+      console.log('---------->', this.cartSelections[appletId])
       if (!this.cartSelections[appletId].length) {
         this.onDeleteApplet(applet);
       } else {

@@ -88,6 +88,7 @@
                 v-model="cartSelections[applet.appletId]"
                 :items="applets[applet.appletId]"
                 :open.sync="basketOpens[applet.appletId]"
+                @input="updateCart(applet)"
                 selection-type="leaf"
                 selected-color="primary"
                 selectable
@@ -248,6 +249,8 @@ export default {
 
           this.applets[applet.appletId] = [appletData];
         }
+      } else {
+        this.applets = this.appletsTree;
       }
 
       return filteredApplets;
