@@ -89,8 +89,9 @@
             <v-treeview
               class="ds-tree-view"
               v-model="cartSelections[applet.appletId]"
-              :items="appletsTree[applet.appletId]"
+              :items="applets[applet.appletId]"
               :open.sync="cardOpens[applet.appletId]"
+              @input="updateCart(applet)"
               selection-type="leaf"
               selected-color="primary"
               selectable
@@ -136,7 +137,7 @@
                           max-width="27px"
                           height="27px"
                         />
-                        {{ option.name }}
+                        <span v-html="highlight(option.name)" />
                       </div>
                     </div>
                     <div v-else class="d-flex align-center pt-2">
@@ -223,7 +224,12 @@ export default {
       deleteCartItemDialog: false,
       deleteApplet: null,
       cacheSelection: [],
+      applets: {},
     };
+  },
+  async beforeMount() {
+    this.applets = this.appletsTree;
+    console.log('cartApplets', this.cartApplets)
   },
   computed: {
     ...mapState([
@@ -234,11 +240,34 @@ export default {
       "cartSelections"
     ]),
     filteredApplets() {
-      return this.getFilteredApplets(
+      const filteredApplets = this.getFilteredApplets(
         this.cartApplets,
         this.appletsTree,
         this.searchText
       );
+
+      if (this.searchText) {
+        for (const applet of filteredApplets) {
+          const appletData = this.appletsTree[applet.appletId][0];
+
+          appletData.children.forEach((activity) => {
+            activity.children.forEach((item) => {
+              item.selected = false;
+              item.options && item.options.forEach((option) => {
+                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                  item.selected = true;
+                }
+              });
+            });
+          });
+
+          this.applets[applet.appletId] = [appletData];
+        }
+      } else {
+        this.applets = this.appletsTree;
+      }
+
+      return filteredApplets;
     },
     cardOpens() {
       const open = [];
@@ -255,6 +284,7 @@ export default {
   methods: {
     updateCart(applet) {
       const { appletId } = applet;
+      console.log('---------->', this.cartSelections[appletId])
       if (!this.cartSelections[appletId].length) {
         this.onDeleteApplet(applet);
       } else {

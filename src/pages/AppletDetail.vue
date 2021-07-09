@@ -364,7 +364,6 @@ export default {
 
       this.appletTree = this.buildAppletTree(appletContent).children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
-
       this.contributionsData = await this.getAppletContributions(
         appletId,
         appletContent
