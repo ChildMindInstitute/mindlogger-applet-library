@@ -179,6 +179,7 @@ const stateCopy = (({
   // Excluded properties.
   currentLanguage,
   appletContents,
+  fromBuilder,
   ...o
 }) => o)(state);
 const stateToPersist = Object.keys(stateCopy);
