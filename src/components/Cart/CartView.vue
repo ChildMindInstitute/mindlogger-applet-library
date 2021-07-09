@@ -284,7 +284,7 @@ export default {
   methods: {
     updateCart(applet) {
       const { appletId } = applet;
-      console.log('---------->', this.cartSelections[appletId])
+
       if (!this.cartSelections[appletId].length) {
         this.onDeleteApplet(applet);
       } else {

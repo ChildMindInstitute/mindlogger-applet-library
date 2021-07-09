@@ -1,5 +1,8 @@
 <template>
-  <div v-if="isLoading" class="ds-progress-bar">
+  <div v-if="isError" class="mt-2 text-center">
+    <h3>The applet was removed from the Library or the applet detail page link is invalid</h3>
+  </div>
+  <div v-else-if="isLoading" class="ds-progress-bar">
     <v-progress-circular
       :size="50"
       color="primary"
@@ -310,6 +313,7 @@ export default {
   data() {
     return {
       applet: {},
+      isError: false,
       isLoading: true,
       selectedActs: {},
       appletTree: [],
@@ -371,6 +375,7 @@ export default {
 
       this.isLoading = false;
     } catch (error) {
+      this.isError = true;
       console.log(error);
     }
   },
