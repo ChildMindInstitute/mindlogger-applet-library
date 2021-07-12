@@ -13,6 +13,12 @@
       </template>
     </div>
 
+    <Information
+      v-model="informationDialog"
+      :dialogText="informationText"
+      :title="informationTitle"
+    />
+
     <template v-if="step == 'LOGIN'">
       <v-container
         id="login-wrapper"
@@ -81,6 +87,7 @@ import CartView from '../components/Cart/CartView';
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import SelectAccountDialog from "../components/dialogs/SelectAccountDialog";
 import SelectAppletDialog from "../components/dialogs/SelectAppletDialog";
+import Information from "../components/dialogs/InformationDialog";
 
 export default {
   name: 'Cart',
@@ -91,6 +98,7 @@ export default {
     LoginForm,
     SelectAccountDialog,
     SelectAppletDialog,
+    Information,
   },
   data() {
     return {
@@ -99,6 +107,9 @@ export default {
       selectedAccount: null,
       showSelectAppletDialog: false,
       selectedApplet: null,
+      informationTitle: '',
+      informationText: '',
+      informationDialog: false,
     };
   },
   computed: {
@@ -107,6 +118,7 @@ export default {
       'allAccounts',
       'ownerAccount',
       'currentApplets',
+      'cartApplets'
     ]),
     ...mapGetters([
       'isLoggedIn'
@@ -117,6 +129,14 @@ export default {
   },
   methods: {
     onAddToBuilder() {
+      if (!this.cartApplets.length) {
+        this.informationDialog = true;
+        this.informationText = 'You have not added anything to your basket yet';
+        this.informationTitle = 'Basket Status';
+
+        return ;
+      }
+
       if (this.fromBuilder) {
         this.onBackToBuilder(true);
       } else {
