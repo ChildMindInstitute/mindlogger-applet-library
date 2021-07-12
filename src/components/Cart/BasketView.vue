@@ -289,7 +289,6 @@ export default {
           this.appletsTree[appletId][0],
           this.cartSelections[appletId]
         );
-        this.fetchBasketApplets();
       }
     },
     getTreeApplet(applet) {
