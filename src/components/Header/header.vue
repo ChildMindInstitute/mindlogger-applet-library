@@ -108,7 +108,8 @@ export default {
       this.$router.push("/cart").catch(err => {});
     },
     onLibrarySearch() {
-      this.$router.push("/").catch(err => {});
+      window.location.href = '/';
+      // this.$router.push("/").catch(err => {});
     },
     onLogout() {
       this.$store.commit("resetState");
