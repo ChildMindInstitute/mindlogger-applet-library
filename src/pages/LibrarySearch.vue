@@ -123,7 +123,7 @@
                   </v-icon>
                 </template>
                 <template v-slot:append="{ item, leaf }">
-                  <span v-html="highlight(getItemtitle(item.title))" />
+                  <vue-markdown class="markdown">{{ highlight(getItemtitle(item.title), true) }}</vue-markdown>
                   <template v-if="leaf">
                     <div v-show="item.selected">
                       <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
@@ -281,6 +281,11 @@
 .ds-cursor {
   cursor: pointer;
 }
+
+.markdown img {
+  max-width: 80%;
+  margin: auto;
+}
 </style>
 
 <script>
@@ -288,9 +293,13 @@ import api from "../services/Api/api";
 import { mapState, mapGetters } from "vuex";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { AccountMixin } from "../services/mixins/AccountMixin";
+import VueMarkdown from "vue-markdown";
 
 export default {
   name: "LibrarySearch",
+  components: {
+    VueMarkdown,
+  },
   mixins: [AccountMixin, AppletMixin],
   data() {
     return {
@@ -343,7 +352,7 @@ export default {
   },
   methods: {
     async getPublishedApplets() {
-      this.isLoading = true;  
+      this.isLoading = true;
 
       const { data: resp } = await api.getPublishedApplets({
         apiHost: this.apiHost,
@@ -369,7 +378,7 @@ export default {
         }
 
         if (this.searchText) {
-          this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText); 
+          this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText);
 
           tree.children.forEach((activity) => {
             activity.children.forEach((item) => {
@@ -382,7 +391,7 @@ export default {
             });
           });
         }
-        
+
         this.$store.commit("setAppletTree", {
           tree,
           appletId: applet.appletId

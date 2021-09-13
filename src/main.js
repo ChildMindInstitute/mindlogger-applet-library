@@ -9,6 +9,7 @@ import router from "./router";
 import App from "./App";
 import vuetify from "./plugins/vuetify";
 import i18n from "./plugins/language";
+import VueMarkdown from "vue-markdown";
 
 import store from './state';
 
@@ -32,6 +33,7 @@ if (environment !== "development" && environment !== "local") {
 }
 
 Vue.use({ store });
+Vue.use(VueMarkdown);
 
 Vue.use(DaySpanVuetify, {
   data: {
