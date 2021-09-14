@@ -493,9 +493,13 @@ export const AppletMixin = {
         return 0;
       }
     },
-    highlight(rawString) {
+    highlight(rawString, isMarkdown=false) {
       if (this.searchText) {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
+
+        if (isMarkdown) {
+          return rawString.replace(searchRegex, "**$1**")
+        }
 
         return rawString
           .replace(searchRegex, "<b>$1</b>")
