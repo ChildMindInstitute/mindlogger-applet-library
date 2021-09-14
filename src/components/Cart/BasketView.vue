@@ -113,7 +113,7 @@
                   </v-icon>
                 </template>
                 <template v-slot:append="{ item, leaf }">
-                  <vue-markdown class="markdown">{{ highlight(getItemtitle(item.title), true) }}</vue-markdown>
+                  <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
                   <template v-if="leaf">
                     <div v-show="item.selected">
                       <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
@@ -199,21 +199,17 @@
   cursor: pointer;
 }
 
-.markdown img {
-  max-width: 80%;
-  margin: auto;
-}
 </style>
 
 <script>
 import { mapState } from "vuex";
 import { AppletMixin } from "../../services/mixins/AppletMixin";
-import VueMarkdown from "vue-markdown";
+import Markdown from "../Markdown";
 
 export default {
   name: "BasketView",
   components: {
-    VueMarkdown,
+    Markdown,
   },
   mixins: [AppletMixin],
   data() {

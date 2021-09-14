@@ -181,7 +181,7 @@
               </v-icon>
             </template>
             <template v-slot:append="{ item }">
-              <vue-markdown class="markdown">{{ highlight(getItemtitle(item.title), true) }}</vue-markdown>
+              <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
               <div v-if="item.selected === true">
                 <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
                   <div
@@ -296,11 +296,6 @@
   top: 135px;
   right: 0px;
 }
-
-.markdown img {
-  max-width: 80%;
-  margin: auto;
-}
 </style>
 
 <script>
@@ -308,14 +303,14 @@ import api from "../services/Api/api";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { mapGetters, mapState } from "vuex";
 import ViewContributionsDialog from "../components/dialogs/ViewContributionsDialog";
-import VueMarkdown from "vue-markdown";
+import Markdown from "../components/Markdown";
 
 export default {
   name: "AppletDetail",
   mixins: [AppletMixin],
   components: {
     ViewContributionsDialog,
-    VueMarkdown,
+    Markdown,
   },
   data() {
     return {

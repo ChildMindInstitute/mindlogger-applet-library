@@ -123,7 +123,7 @@
                   </v-icon>
                 </template>
                 <template v-slot:append="{ item, leaf }">
-                  <vue-markdown class="markdown">{{ highlight(getItemtitle(item.title), true) }}</vue-markdown>
+                  <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
                   <template v-if="leaf">
                     <div v-show="item.selected">
                       <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
@@ -281,11 +281,6 @@
 .ds-cursor {
   cursor: pointer;
 }
-
-.markdown img {
-  max-width: 80%;
-  margin: auto;
-}
 </style>
 
 <script>
@@ -293,12 +288,12 @@ import api from "../services/Api/api";
 import { mapState, mapGetters } from "vuex";
 import { AppletMixin } from "../services/mixins/AppletMixin";
 import { AccountMixin } from "../services/mixins/AccountMixin";
-import VueMarkdown from "vue-markdown";
+import Markdown from "../components/Markdown";
 
 export default {
   name: "LibrarySearch",
   components: {
-    VueMarkdown,
+    Markdown,
   },
   mixins: [AccountMixin, AppletMixin],
   data() {
