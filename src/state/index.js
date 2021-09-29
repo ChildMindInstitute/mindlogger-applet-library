@@ -116,9 +116,6 @@ const getters = {
   },
   numberOfCartItems(state) {
     return state.cartApplets.length.toString();
-  },
-  appletsTree(state) {
-    return state.appletsTree;
   }
 };
 

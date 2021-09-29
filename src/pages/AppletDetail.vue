@@ -358,22 +358,25 @@ export default {
         libraryId: appletId
       });
 
-      const { data: appletContent } = await api.getAppletContent({
-        apiHost: this.$store.state.backend,
-        libraryId: appletId
-      });
+      const appletContent = await this.fetchAppletContent(appletId, this.applet.appletId);
 
       if (!this.applet) {
         this.applet = appletContent.applet
         this.applet["appletId"] = appletId
       }
 
-      this.appletTree = this.buildAppletTree(appletContent).children;
+      const tree = this.buildAppletTree(appletContent)
+      this.appletTree = tree.children;
       this.applet.version = appletContent.applet["schema:version"][0]["@value"];
       this.contributionsData = await this.getAppletContributions(
         appletId,
         appletContent
       );
+
+      this.$store.commit("setAppletTree", {
+        tree,
+        appletId: this.applet.appletId
+      });
 
       this.isLoading = false;
     } catch (error) {
