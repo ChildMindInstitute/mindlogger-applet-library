@@ -358,19 +358,9 @@ export default {
       let publishedApplets = resp.data;
 
       for (const applet of publishedApplets) {
-        let tree = {
-          id: 1,
-          appletId: applet.appletId,
-          title: applet.name,
-          children: [],
-          vnode: null
-        };
+        const appletContent = await this.fetchAppletContent(applet.id, applet.appletId);
 
-        await this.fetchAppletContent(applet.id, applet.appletId);
-
-        if (this.appletContents[applet.appletId]) {
-          tree = this.buildAppletTree(this.appletContents[applet.appletId])
-        }
+        const tree = this.buildAppletTree(appletContent)
 
         if (this.searchText) {
           this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText);

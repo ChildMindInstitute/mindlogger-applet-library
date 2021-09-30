@@ -78,13 +78,7 @@ export const AppletMixin = {
         appletId
       });
 
-      const tree = this.buildAppletTree(appletContent);
-
-      this.$store.commit("setAppletTree", {
-        tree,
-        appletId
-      });
-
+      return appletContent
     },
     getOpenItems(applets, appletData, searchText) {
       applets.forEach((applet) => {
@@ -379,7 +373,7 @@ export const AppletMixin = {
               itemLogs.push(log);
             }
           } else {
-            extractLogs(log.children, depth+1);
+            extractLogs(log.children, depth + 1);
           }
         })
       }
@@ -493,7 +487,7 @@ export const AppletMixin = {
         return 0;
       }
     },
-    highlight(rawString, isMarkdown=false) {
+    highlight(rawString, isMarkdown = false) {
       if (this.searchText) {
         const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
 
