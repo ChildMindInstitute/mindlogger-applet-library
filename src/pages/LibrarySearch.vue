@@ -353,7 +353,7 @@ export default {
         apiHost: this.apiHost,
         recordsPerPage: this.recordsPerPage,
         pageIndex: this.page - 1,
-        searchText: this.searchText
+        searchText: this.formattedSearchText(this.searchText)
       });
       let publishedApplets = resp.data;
 
