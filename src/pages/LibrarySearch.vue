@@ -420,6 +420,9 @@ export default {
         );
         this.fetchBasketApplets();
       } else {
+        if (this.cartApplets.find(item => item.id === applet.id)) {
+          return;
+        }
         // add to cart
         this.$store.commit("setCartApplets", [
           ...this.cartApplets,
