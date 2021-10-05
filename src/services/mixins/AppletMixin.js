@@ -82,7 +82,7 @@ export const AppletMixin = {
     },
     getOpenItems(applets, appletData, searchText) {
       applets.forEach((applet) => {
-        const regex = new RegExp(searchText, "ig");
+        const regex = new RegExp(this.formattedSearchText(searchText), "ig");
 
         this.isOpenAll[applet.appletId] = true;
         for (const activityData of appletData.children) {
@@ -102,7 +102,7 @@ export const AppletMixin = {
         return applets.filter((applet) => applet).sort(this.alphaSort);
       }
       return applets.filter((applet) => {
-        const regex = new RegExp(searchText, "ig");
+        const regex = new RegExp(this.formattedSearchText(searchText), "ig");
         const appletData = appletsTree[applet.appletId][0];
         let hasSearchText = false;
 
@@ -489,7 +489,7 @@ export const AppletMixin = {
     },
     highlight(rawString, isMarkdown = false) {
       if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.searchText + ")", "ig");
+        const searchRegex = new RegExp("(" + this.formattedSearchText(this.searchText) + ")", "ig");
 
         if (isMarkdown) {
           return rawString.replace(searchRegex, "**$1**")
@@ -501,6 +501,9 @@ export const AppletMixin = {
       } else {
         return rawString;
       }
+    },
+    formattedSearchText(searchText) {
+      return searchText.trim().replace(/\s+/g, '|')
     }
   }
 }
