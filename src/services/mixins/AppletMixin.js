@@ -35,7 +35,13 @@ export const AppletMixin = {
       this.$store.commit("setCartApplets", basketApplets);
 
       for (const applet of basketApplets) {
-        await this.fetchAppletContent(applet.id, applet.appletId);
+        const appletContent = await this.fetchAppletContent(applet.id, applet.appletId);
+
+        const tree = this.buildAppletTree(appletContent);
+        this.$store.commit("setAppletTree", {
+          tree,
+          appletId: applet.appletId
+        });
       }
 
       const { data: basketSelections } = await api.getBasket({
