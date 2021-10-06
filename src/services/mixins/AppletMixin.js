@@ -498,7 +498,7 @@ export const AppletMixin = {
         const searchRegex = new RegExp("(" + this.formattedSearchText(this.searchText) + ")", "ig");
 
         if (isMarkdown) {
-          return rawString.replace(searchRegex, "**$1**")
+          return rawString.replace(searchRegex, "$1")
         }
 
         return rawString
@@ -509,7 +509,7 @@ export const AppletMixin = {
       }
     },
     formattedSearchText(searchText) {
-      return searchText.trim().replace(/\s+/g, '|')
+      return searchText.trim().replace(/, /g, '|')
     }
   }
 }
