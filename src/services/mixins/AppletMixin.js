@@ -108,7 +108,7 @@ export const AppletMixin = {
         return applets.filter((applet) => applet).sort(this.alphaSort);
       }
 
-      const words = searchText.split(',').map(word => word.trim()).filter(word => word.length);
+      const words = searchText.split(',').map(word => word.trim());
 
       return applets.filter((applet) => {
         const regex = new RegExp(searchText, "ig");
@@ -122,7 +122,25 @@ export const AppletMixin = {
           return true;
         }
 
-        if (words.every(word => applet.keywords.some(keyword => keyword.includes(word)))) {
+        let match = true;
+        for (const word of words) {
+          let included = false;
+          const regex = new RegExp(word, 'ig');
+
+          for (const keyword of applet.keywords) {
+            if (keyword.match(regex)) {
+              included = true;
+              break;
+            }
+          }
+
+          if (!included) {
+            match = false;
+            break;
+          }
+        }
+
+        if (match) {
           return true;
         }
 

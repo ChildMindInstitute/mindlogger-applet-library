@@ -3,6 +3,7 @@
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
+        @change="updateFilter"
         light
         solo
         prepend-inner-icon="search"
@@ -227,11 +228,12 @@ export default {
       deleteApplet: null,
       cacheSelection: [],
       applets: {},
+      filteredApplets: []
     };
   },
   async beforeMount() {
     this.applets = this.appletsTree;
-    console.log('cartApplets', this.cartApplets)
+    this.updateFilter();
   },
   computed: {
     ...mapState([
@@ -241,7 +243,7 @@ export default {
       "cartApplets",
       "cartSelections"
     ]),
-    filteredApplets() {
+    updateFilter() {
       const filteredApplets = this.getFilteredApplets(
         this.cartApplets,
         this.appletsTree,
@@ -269,7 +271,7 @@ export default {
         this.applets = this.appletsTree;
       }
 
-      return filteredApplets;
+      this.filteredApplets = filteredApplets;
     },
     cardOpens() {
       const open = [];
