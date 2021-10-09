@@ -88,7 +88,7 @@ export const AppletMixin = {
     },
     getOpenItems(applets, appletData, searchText) {
       applets.forEach((applet) => {
-        const regex = new RegExp(this.formattedSearchText(searchText), "ig");
+        const regex = new RegExp(searchText, "ig");
 
         this.isOpenAll[applet.appletId] = true;
         for (const activityData of appletData.children) {
@@ -107,23 +107,23 @@ export const AppletMixin = {
       if (!searchText) {
         return applets.filter((applet) => applet).sort(this.alphaSort);
       }
+
+      const words = searchText.split(',').map(word => word.trim()).filter(word => word.length);
+
       return applets.filter((applet) => {
-        const regex = new RegExp(this.formattedSearchText(searchText), "ig");
+        const regex = new RegExp(searchText, "ig");
         const appletData = appletsTree[applet.appletId][0];
-        let hasSearchText = false;
 
         if (
           applet.name.match(regex) ||
           (applet.description && applet.description.match(regex)) ||
           appletData.title.match(regex)
         ) {
-          hasSearchText = true;
+          return true;
         }
 
-        for (const keyword of applet.keywords) {
-          if (keyword.match(regex)) {
-            return true;
-          }
+        if (words.every(word => applet.keywords.some(keyword => keyword.includes(word)))) {
+          return true;
         }
 
         for (const activityData of appletData.children) {
@@ -146,7 +146,7 @@ export const AppletMixin = {
           }
         }
 
-        return hasSearchText;
+        return false;
       }).sort(this.alphaSort);
     },
     async addCartItemsToBasket() {
@@ -495,10 +495,10 @@ export const AppletMixin = {
     },
     highlight(rawString, isMarkdown = false) {
       if (this.searchText) {
-        const searchRegex = new RegExp("(" + this.formattedSearchText(this.searchText) + ")", "ig");
+        const searchRegex = new RegExp("(" + this.searchText.trim().replace(/, /g, '|') + ")", "ig");
 
         if (isMarkdown) {
-          return rawString.replace(searchRegex, "$1")
+          return rawString.replace(searchRegex, "**$1**")
         }
 
         return rawString
@@ -508,8 +508,5 @@ export const AppletMixin = {
         return rawString;
       }
     },
-    formattedSearchText(searchText) {
-      return searchText.trim().replace(/, /g, '|')
-    }
   }
 }
