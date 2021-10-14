@@ -386,8 +386,6 @@ export default {
       }
       this.appletCount = resp.totalCount;
       this.$store.commit("setPublishedApplets", publishedApplets);
-      console.log('publishedApplets-v----', publishedApplets);
-      // this.publishedApplets = publishedApplets;
       this.isLoading = false;
     },
     async onPageChange() {
