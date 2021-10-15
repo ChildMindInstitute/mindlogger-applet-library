@@ -5,6 +5,7 @@
         v-model="searchText"
         light
         solo
+        clearable
         prepend-inner-icon="search"
         placeholder="Type keyword..."
         @keydown="onKeywordChange()"

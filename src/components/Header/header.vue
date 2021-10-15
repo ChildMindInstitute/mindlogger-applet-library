@@ -108,6 +108,8 @@ export default {
       this.$router.push("/cart").catch(err => {});
     },
     onLibrarySearch() {
+      if (document.querySelector(".v-input__icon--clear button"))
+        document.querySelector(".v-input__icon--clear button").click();
       this.$router.push("/").catch(err => {});
     },
     onLogout() {
