@@ -106,18 +106,18 @@
               >
                 <template v-slot:prepend="{ item }">
                   <v-icon
-                    v-if="item.selected === true"
+                    v-show="item.selected === true"
                     class="mr-1"
                     color="dark-grey"
-                    @click="item.selected = !item.selected"
+                    @click="item.selected = false; onUpdateItem(item)"
                   >
                     mdi-menu-down
                   </v-icon>
                   <v-icon
-                    v-else-if="item.selected === false"
+                    v-show="item.selected === false"
                     class="mr-1"
                     color="dark-grey"
-                    @click="item.selected = !item.selected"
+                    @click="item.selected = true; onUpdateItem(item)"
                   >
                     mdi-menu-right
                   </v-icon>
@@ -133,6 +133,7 @@
                           class="d-flex align-center pt-2"
                         >
                           <img
+                            v-if="itemTypes.find(({ text }) => text === item.inputType)"
                             class="mr-2"
                             width="15"
                             :src="itemTypes.find(({ text }) => text === item.inputType).icon"
@@ -152,6 +153,7 @@
                         class="d-flex align-center pt-2"
                       >
                         <img
+                          v-if="itemTypes.find(({ text }) => text === item.inputType)"
                           class="mr-2"
                           width="15"
                           :src="itemTypes.find(({ text }) => text === item.inputType).icon"
@@ -430,6 +432,9 @@ export default {
           [appletId]: this.appletSelections[appletId]
         });
       }
+    },
+    onUpdateItem(item) {
+      this.$forceUpdate();
     },
     onAppletDetail(applet) {
       this.$router.push({
