@@ -3,7 +3,7 @@
     <div class="d-flex justify-center align-content-ceneter">
       <v-text-field
         v-model="searchText"
-        @change="updateFilter"
+        @input="updateFilter"
         light
         solo
         prepend-inner-icon="search"
@@ -117,7 +117,9 @@
                 </v-icon>
               </template>
               <template v-slot:append="{ item, leaf }">
-                <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
+                <markdown
+                  :source="highlight(getItemtitle(item.title), true) + (item.activityId && item.selectedCount ? ` ( ${item.selectedCount} entries found ) ` : '')"
+                />
                 <template v-if="leaf">
                   <div v-show="item.selected">
                     <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
@@ -243,36 +245,6 @@ export default {
       "cartApplets",
       "cartSelections"
     ]),
-    updateFilter() {
-      const filteredApplets = this.getFilteredApplets(
-        this.cartApplets,
-        this.appletsTree,
-        this.searchText
-      );
-
-      if (this.searchText) {
-        for (const applet of filteredApplets) {
-          const appletData = this.appletsTree[applet.appletId][0];
-
-          appletData.children.forEach((activity) => {
-            activity.children.forEach((item) => {
-              item.selected = false;
-              item.options && item.options.forEach((option) => {
-                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
-                  item.selected = true;
-                }
-              });
-            });
-          });
-
-          this.applets[applet.appletId] = [appletData];
-        }
-      } else {
-        this.applets = this.appletsTree;
-      }
-
-      this.filteredApplets = filteredApplets;
-    },
     cardOpens() {
       const open = [];
 
@@ -286,6 +258,40 @@ export default {
     }
   },
   methods: {
+    updateFilter() {
+      const filteredApplets = this.getFilteredApplets(
+        this.cartApplets,
+        this.appletsTree,
+        this.searchText
+      );
+
+      for (const applet of filteredApplets) {
+        const appletData = this.appletsTree[applet.appletId][0];
+
+        appletData.children.forEach((activity) => {
+          let count = 0;
+
+          if (this.searchText) {
+            activity.children.forEach((item) => {
+              item.selected = false;
+              item.options && item.options.forEach((option) => {
+                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                  item.selected = true;
+                }
+              });
+
+              if (item.selected) {
+                count++;
+              }
+            });
+          }
+
+          this.$set(activity, 'selectedCount', count);
+        });
+      }
+
+      this.filteredApplets = filteredApplets;
+    },
     updateCart(applet) {
       const { appletId } = applet;
 

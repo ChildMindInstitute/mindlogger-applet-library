@@ -282,18 +282,12 @@ export const AppletMixin = {
       let openApplet = false;
 
       tree.children.forEach((activity) => {
-        let openActivity = false;
 
         activity.children.forEach((item) => {
           if (item.title.toLowerCase().includes(searchText)) {
-            openActivity = true;
             openApplet = true;
           }
         })
-
-        if (openActivity) {
-          nodes.push(activity);
-        }
 
         if (activity.title.toLowerCase().includes(searchText)) {
           openApplet = true;
