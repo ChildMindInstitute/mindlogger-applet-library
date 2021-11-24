@@ -2091,10 +2091,10 @@
     "normalize-path" "^3.0.0"
     "picomatch" "^2.0.4"
 
-"applet-schema-builder@^0.9.2":
-  "integrity" "sha512-b4GQHpvRVWhOMJ4H56IUxuRYaVpwcGvZxRCI8kgXnUq4U2CGA/uQvP49kp5HiJUqRkswT0ublblSPCQRgP1DvQ=="
-  "resolved" "https://registry.npmjs.org/applet-schema-builder/-/applet-schema-builder-0.9.2.tgz"
-  "version" "0.9.2"
+"applet-schema-builder@^0.11.0":
+  "integrity" "sha512-NGh5ujqyqT2bMyLstO+v0eU/IS1uxU8d0imUMv19NIGxRCFCeg2f47LstiDVsbvlkvmS9EEl8grAUAvOKC5ipg=="
+  "resolved" "https://registry.npmjs.org/applet-schema-builder/-/applet-schema-builder-0.11.0.tgz"
+  "version" "0.11.0"
   dependencies:
     "@sentry/browser" "^5.26.0"
     "@sentry/integrations" "^5.26.0"
