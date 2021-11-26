@@ -262,6 +262,12 @@ export const AppletMixin = {
               if (multiple) {
                 item.inputType = "checkbox";
               }
+            } else if (item.inputType === 'stackedRadio') {
+              const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+              if (multiple) {
+                item.inputType = 'stackedCheckbox';
+              }
             } else if (item.inputType == "markdown-message") {
               item.inputType = "markdownMessage";
             }
