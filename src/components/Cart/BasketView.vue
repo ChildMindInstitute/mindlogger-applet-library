@@ -113,7 +113,10 @@
                   </v-icon>
                 </template>
                 <template v-slot:append="{ item, leaf }">
-                  <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
+                  <markdown
+                    :source="highlight(getItemtitle(item.title), true) + (item.activityId && item.selectedCount ? ` ( ${item.selectedCount} entries found ) ` : '')"
+                  />
+
                   <template v-if="leaf">
                     <div v-show="item.selected">
                       <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
@@ -237,11 +240,14 @@ export default {
         this.searchText
       );
 
-      if (this.searchText) {
-        for (const applet of filteredApplets) {
-          const appletData = this.appletsTree[applet.appletId][0];
 
-          appletData.children.forEach((activity) => {
+      for (const applet of filteredApplets) {
+        const appletData = this.appletsTree[applet.appletId][0];
+
+        appletData.children.forEach((activity) => {
+          let count = 0;
+
+          if (this.searchText) {
             activity.children.forEach((item) => {
               item.selected = false;
               item.options && item.options.forEach((option) => {
@@ -249,14 +255,18 @@ export default {
                   item.selected = true;
                 }
               });
-            });
-          });
 
-          this.applets[applet.appletId] = [appletData];
-        }
-      } else {
-        this.applets = this.appletsTree;
+              if (item.selected) {
+                count++;
+              }
+            });
+          }
+
+          this.$set(activity, 'selectedCount', count);
+        });
       }
+
+      this.applets = this.appletsTree;
 
       return filteredApplets;
     },
