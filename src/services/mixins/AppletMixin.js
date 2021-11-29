@@ -506,7 +506,7 @@ export const AppletMixin = {
       }
     },
     highlight(rawString, isMarkdown = false) {
-      if (this.searchText) {
+      if (this.searchText.trim().length) {
         const searchRegex = new RegExp("(" + this.searchText.trim().replace(/, /g, '|') + ")", "ig");
 
         if (isMarkdown) {
