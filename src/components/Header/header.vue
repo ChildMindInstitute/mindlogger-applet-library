@@ -10,6 +10,9 @@
     <v-btn color="primary" class="toolbar-btn" @click="onLibrarySearch">
       {{ $t("mindloggerLibrary") }}
     </v-btn>
+
+    <small v-if="version" style="margin-left:10">v{{ version }}</small>
+
     <v-spacer />
     <v-btn
       v-if="isLoggedIn"
@@ -69,12 +72,14 @@
 
 <script>
 import { mapGetters } from "vuex";
+import { getVersion } from "../../utils";
 
 export default {
   name: "Header",
 
   data() {
     return {
+      version: process.env.NODE_ENV !== 'production' ? getVersion() : undefined,
       windowWidth: window.innerWidth,
       currentRoute: ""
     };
