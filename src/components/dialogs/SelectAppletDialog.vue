@@ -5,6 +5,9 @@
     @input="$emit('input', $event)"
   >
     <v-card>
+      <v-card-title class="headline">
+        {{ $t('selectAccountToAddBasket') }}
+      </v-card-title>
       <v-card-text>
         <v-radio-group v-model="type">
           <v-radio
