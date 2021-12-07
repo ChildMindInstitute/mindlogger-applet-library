@@ -79,7 +79,7 @@ export default {
 
   data() {
     return {
-      version: process.env.NODE_ENV !== 'production' ? getVersion() : undefined,
+      version: process.env.VUE_APP_NODE_ENV !== 'production' ? getVersion() : undefined,
       windowWidth: window.innerWidth,
       currentRoute: ""
     };
