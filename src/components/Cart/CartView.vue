@@ -323,6 +323,8 @@ export default {
       this.$store.commit("setCartApplets", newCartApplets);
       delete this.cartSelections[appletId]
       this.$store.commit("setCartSelections", this.cartSelections);
+
+      this.updateFilter();
     }
   }
 };
