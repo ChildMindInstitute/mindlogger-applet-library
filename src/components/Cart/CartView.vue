@@ -89,10 +89,11 @@
           <div class="ds-tree-layout ml-2">
             <v-treeview
               class="ds-tree-view"
-              v-model="cartSelections[applet.appletId]"
+              :key="treeKeys[applet.appletId] || 0"
+              :value="cartSelections[applet.appletId]"
               :items="applets[applet.appletId]"
               :open.sync="cardOpens[applet.appletId]"
-              @input="updateCart(applet)"
+              @input="updateCart($event, applet)"
               selection-type="leaf"
               selected-color="primary"
               selectable
@@ -228,8 +229,8 @@ export default {
       searchText: "",
       deleteCartItemDialog: false,
       deleteApplet: null,
-      cacheSelection: [],
       applets: {},
+      treeKeys: {},
       filteredApplets: []
     };
   },
@@ -292,13 +293,14 @@ export default {
 
       this.filteredApplets = filteredApplets;
     },
-    updateCart(applet) {
-      const { appletId } = applet;
-
-      if (!this.cartSelections[appletId].length) {
+    updateCart(selections, applet) {
+      if (!selections.length) {
         this.onDeleteApplet(applet);
       } else {
-        this.cacheSelection = [...this.cartSelections[appletId]];
+        this.$store.commit("setCartSelections", {
+          ...this.cartSelections,
+          [applet.appletId]: [...selections]
+        });
       }
     },
     onDeleteApplet(applet) {
@@ -309,10 +311,9 @@ export default {
       this.deleteCartItemDialog = false;
 
       if (this.deleteApplet) {
-        this.$store.commit("setCartSelections", {
-          ...this.cartSelections,
-          [this.deleteApplet.appletId]: [...this.cacheSelection]
-        });
+        const appletId = this.deleteApplet.appletId;
+
+        this.$set(this.treeKeys, appletId, (this.treeKeys[appletId] || 0) + 1);
         this.deleteApplet = null;
       }
     },
