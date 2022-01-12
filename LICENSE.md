@@ -120,4 +120,4 @@ Attribution phrase: **Child Mind Institute product intended for building applica
 
 Attribution URL: **https://matter.childmind.org**
 
-Graphic image: <img width="200" src="https://github.com/ChildMindInstitute/mindlogger-applet-builder/blob/master/CMI_logo.jpg" class="img-responsive img-centered" alt="CMI logo">
+Graphic image: <img width="200" src="https://github.com/ChildMindInstitute/mindlogger-applet-library/blob/master/CMI_logo.jpg" class="img-responsive img-centered" alt="CMI logo">
