@@ -292,7 +292,7 @@ export default {
       }
 
       this.filteredApplets = filteredApplets;
-    },
+    },
     updateCart(selections, applet) {
       if (!selections.length) {
         this.onDeleteApplet(applet);
