@@ -183,7 +183,7 @@
             <template v-slot:append="{ item }">
               <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
               <div v-if="item.selected === true">
-                <template v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                <template v-if="item.inputType == 'radio' || item.inputType == 'checkbox' || item.inputType == 'pastBehaviorTracker' || item.inputType == 'futureBehaviorTracker'">
                   <div
                     v-for="option in item.options"
                     :key="option.name"
