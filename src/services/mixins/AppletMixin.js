@@ -270,6 +270,17 @@ export const AppletMixin = {
               }
             } else if (item.inputType == "markdown-message") {
               item.inputType = "markdownMessage";
+            } else if (item.inputType == "pastBehaviorTracker" || item.inputType == "futureBehaviorTracker") {
+              let positiveBehaviors =
+                _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/positiveBehaviors'], []);
+
+              let negativeBehaviors =
+                _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/negativeBehaviors'], []);
+
+              item.options = positiveBehaviors.concat(negativeBehaviors).map(behavior => ({
+                name: _.get(behavior, ['schema:name', 0, '@value'], ''),
+                image: _.get(behavior, ['schema:image'], ''),
+              }))
             }
 
             treeIndex += 1;
