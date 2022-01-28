@@ -127,7 +127,7 @@
                   <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
                   <template v-if="leaf">
                     <div v-show="item.selected">
-                      <div v-if="item.inputType === 'radio' || item.inputType === 'checkbox'">
+                      <div v-if="item.inputType == 'radio' || item.inputType == 'checkbox' || item.inputType == 'pastBehaviorTracker' || item.inputType == 'futureBehaviorTracker'">
                         <div
                           v-for="option in item.options"
                           :key="option.name"
