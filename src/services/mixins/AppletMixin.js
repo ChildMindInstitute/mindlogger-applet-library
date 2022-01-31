@@ -246,6 +246,7 @@ export const AppletMixin = {
             const item = {
               id: treeIndex,
               itemId,
+              activityId,
               inputType: itemData["reprolib:terms/inputType"][0]["@value"],
               selected: false,
               title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")

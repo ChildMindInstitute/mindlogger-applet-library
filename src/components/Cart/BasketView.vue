@@ -16,7 +16,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="$emit('addToBuilder')"
+        @click="$emit('addToBuilder', cartSelections)"
       >
         <div class="py-2">
           Add to
