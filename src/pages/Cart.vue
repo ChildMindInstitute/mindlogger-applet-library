@@ -128,15 +128,7 @@ export default {
     }
   },
   methods: {
-    onAddToBuilder(cartSelections) {
-      if (!this.cartApplets.length) {
-        this.informationDialog = true;
-        this.informationText = 'You have not added anything to your basket yet';
-        this.informationTitle = 'Basket Status';
-
-        return ;
-      }
-
+    checkCartSelections(cartSelections) {
       const allItems = Object.values(cartSelections).reduce((prev, items) => {
         return prev.concat(items);
       },[]);
@@ -148,6 +140,22 @@ export default {
         this.informationDialog = true;
         this.informationText = 'Past/future behavior items can\'t be copied from library to applet builder without token summary screen.';
         this.informationTitle = 'Basket Alert';
+        return false;
+      }
+
+      return true;
+    },
+
+    onAddToBuilder(cartSelections) {
+      if (!this.cartApplets.length) {
+        this.informationDialog = true;
+        this.informationText = 'You have not added anything to your basket yet';
+        this.informationTitle = 'Basket Status';
+
+        return ;
+      }
+
+      if (!this.checkCartSelections(cartSelections)) {
         return ;
       }
 
@@ -162,8 +170,10 @@ export default {
         }
       }
     },
-    onAddToBasket() {
-      this.onLogin();
+    onAddToBasket(cartSelections) {
+      if (this.checkCartSelections(cartSelections)) {
+        this.onLogin();
+      }
     },
 
     onLogin() {
