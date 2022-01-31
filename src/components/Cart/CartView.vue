@@ -17,7 +17,7 @@
         class="ml-2"
         height="50"
         dark
-        @click="$emit('addToBasket')"
+        @click="$emit('addToBasket', cartSelections)"
         :disabled="this.cartApplets.length == 0"
       >
         <div class="py-2">
