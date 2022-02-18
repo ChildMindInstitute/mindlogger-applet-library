@@ -72,4 +72,8 @@ div.ag-root .ag-cell-focus {
   -ms-user-select: text;
   user-select: text;
 }
+
+.item-type-icon {
+  opacity: 0.5;
+}
 </style>

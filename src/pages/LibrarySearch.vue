@@ -135,7 +135,7 @@
                         >
                           <img
                             v-if="itemTypes.find(({ text }) => text === item.inputType)"
-                            class="mr-2"
+                            class="mr-2 item-type-icon"
                             width="15"
                             :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                           />
@@ -155,7 +155,7 @@
                       >
                         <img
                           v-if="itemTypes.find(({ text }) => text === item.inputType)"
-                          class="mr-2"
+                          class="mr-2 item-type-icon"
                           width="15"
                           :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                         />
