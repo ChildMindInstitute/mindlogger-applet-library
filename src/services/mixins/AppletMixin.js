@@ -61,7 +61,11 @@ export const AppletMixin = {
               if (items) {
                 cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children.filter(item => items.includes(item.itemId)));
               } else {
-                cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children);
+                if (activityTree.children) {
+                  cartSelections[appletId] = cartSelections[appletId].concat(activityTree.children);
+                } else {
+                  cartSelections[appletId].push(activityTree);
+                }
               }
             }
           })
@@ -241,9 +245,12 @@ export const AppletMixin = {
 
         const activityId = activityData["_id"].split("/").pop();
         const activityIdentifier = activityKey.includes("https://raw.githubusercontent.com") ? activityKey.split("/").slice(0, -1).join("/") : activityId;
+        const activityType = _.get(activityData, ['@type', 0]).split('/').pop();
+
         const activityItem = {
           id: treeIndex,
           activityId,
+          activityType,
           title: activityData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"],
           children: [],
           vnode: null
@@ -251,62 +258,67 @@ export const AppletMixin = {
 
         treeIndex += 1;
 
-        for (const itemKey of _.get(activityData, ['reprolib:terms/order', 0, '@list'], []).map(item => item['@id'])) {
-          const itemData = items[itemKey];
-          const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
-          if (itemActivityIdentifier === activityIdentifier) {
-            const itemId = itemData["_id"].split("/").pop()
+        if (activityType == 'Activity') {
+          for (const itemKey in items) {
+            const itemData = items[itemKey];
+            const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
+            if (itemActivityIdentifier === activityIdentifier) {
+              const itemId = itemData["_id"].split("/").pop()
 
-            const itemTitle = itemData["schema:question"]
-              ? itemData["schema:question"][0]["@value"]
-              : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
-            const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
-              : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
-                : itemTitle.split("250x250)");
-            const item = {
-              id: treeIndex,
-              itemId,
-              activityId,
-              inputType: itemData["reprolib:terms/inputType"][0]["@value"],
-              selected: false,
-              title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
-            };
+              const itemTitle = itemData["schema:question"]
+                ? itemData["schema:question"][0]["@value"]
+                : itemData["http://www.w3.org/2004/02/skos/core#prefLabel"][0]["@value"];
+              const nodes = itemTitle.includes("150x150)") ? itemTitle.split("150x150)")
+                : itemTitle.includes("200x200)") ? itemTitle.split("200x200)")
+                  : itemTitle.split("250x250)");
+              const item = {
+                id: treeIndex,
+                itemId,
+                activityId,
+                inputType: itemData["reprolib:terms/inputType"][0]["@value"],
+                selected: false,
+                title: (nodes.pop() || itemData["@id"]).replaceAll("**", "")
+              };
 
-            if (item.inputType === "radio") {
-              const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
-              const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+              if (item.inputType === "radio") {
+                const options = itemData["reprolib:terms/responseOptions"][0]["schema:itemListElement"];
+                const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
-              item.options = options.map((option) => ({
-                name: option["schema:name"][0]["@value"],
-                image: option["schema:image"],
-              }));
-              if (multiple) {
-                item.inputType = "checkbox";
+                item.options = options.map((option) => ({
+                  name: option["schema:name"][0]["@value"],
+                  image: option["schema:image"],
+                }));
+                if (multiple) {
+                  item.inputType = "checkbox";
+                }
+              } else if (item.inputType === 'stackedRadio') {
+                const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
+
+                if (multiple) {
+                  item.inputType = 'stackedCheckbox';
+                }
+              } else if (item.inputType == "markdown-message") {
+                item.inputType = "markdownMessage";
+              } else if (item.inputType == "pastBehaviorTracker" || item.inputType == "futureBehaviorTracker") {
+                let positiveBehaviors =
+                  _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/positiveBehaviors'], []);
+
+                let negativeBehaviors =
+                  _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/negativeBehaviors'], []);
+
+                item.options = positiveBehaviors.concat(negativeBehaviors).map(behavior => ({
+                  name: _.get(behavior, ['schema:name', 0, '@value'], ''),
+                  image: _.get(behavior, ['schema:image'], ''),
+                }))
               }
-            } else if (item.inputType === 'stackedRadio') {
-              const multiple = _.get(itemData["reprolib:terms/responseOptions"][0]["reprolib:terms/multipleChoice"], [0, "@value"], false);
 
-              if (multiple) {
-                item.inputType = 'stackedCheckbox';
-              }
-            } else if (item.inputType == "markdown-message") {
-              item.inputType = "markdownMessage";
-            } else if (item.inputType == "pastBehaviorTracker" || item.inputType == "futureBehaviorTracker") {
-              let positiveBehaviors =
-                _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/positiveBehaviors'], []);
-
-              let negativeBehaviors =
-                _.get(itemData, ['reprolib:terms/responseOptions', 0, 'reprolib:terms/negativeBehaviors'], []);
-
-              item.options = positiveBehaviors.concat(negativeBehaviors).map(behavior => ({
-                name: _.get(behavior, ['schema:name', 0, '@value'], ''),
-                image: _.get(behavior, ['schema:image'], ''),
-              }))
+              treeIndex += 1;
+              activityItem.children.push(item);
             }
-
-            treeIndex += 1;
-            activityItem.children.push(item);
           }
+        } else {
+          delete activityItem['children'];
+          activityItem.selected = false;
         }
 
         treeItem.children.push(activityItem);
@@ -320,12 +332,13 @@ export const AppletMixin = {
       let openApplet = false;
 
       tree.children.forEach((activity) => {
-
-        activity.children.forEach((item) => {
-          if (item.title.toLowerCase().includes(searchText)) {
-            openApplet = true;
-          }
-        })
+        if (activity.children) {
+          activity.children.forEach((item) => {
+            if (item.title.toLowerCase().includes(searchText)) {
+              openApplet = true;
+            }
+          })
+        }
 
         if (activity.title.toLowerCase().includes(searchText)) {
           openApplet = true;
@@ -343,7 +356,15 @@ export const AppletMixin = {
 
       selection.forEach(({ id }) => {
         appletTree.children.forEach(activity => {
-          const selectedItem = activity.children.find(item => item.id === id);
+          if (id == activity.id) {
+            cartItem.push({
+              activityId: activity.activityId,
+              items: null
+            })
+            return ;
+          }
+
+          const selectedItem = activity.children && activity.children.find(item => item.id === id);
 
           if (selectedItem) {
             const actIndex = cartItem.findIndex(({ activityId }) => activityId === activity.activityId);
@@ -548,10 +569,10 @@ export const AppletMixin = {
         const searchRegex = new RegExp("(" + this.searchText.trim().replace(/, /g, '|') + ")", "ig");
 
         if (isMarkdown) {
-          return rawString.replace(searchRegex, "**$1**")
+          return (rawString || '').replace(searchRegex, "**$1**")
         }
 
-        return rawString
+        return (rawString || '')
           .replace(searchRegex, "<b>$1</b>")
           .replaceAll(" ", "&nbsp;");
       } else {

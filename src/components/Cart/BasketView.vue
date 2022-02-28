@@ -95,29 +95,33 @@
                 return-object
               >
                 <template v-slot:prepend="{ item }">
-                  <v-icon
-                    v-if="item.selected === true"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
+                  <template
+                    v-if="item.inputType"
                   >
-                    mdi-menu-down
-                  </v-icon>
-                  <v-icon
-                    v-else-if="item.selected === false"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = !item.selected"
-                  >
-                    mdi-menu-right
-                  </v-icon>
+                    <v-icon
+                      v-if="item.selected === true"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = !item.selected"
+                    >
+                      mdi-menu-down
+                    </v-icon>
+                    <v-icon
+                      v-else-if="item.selected === false"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = !item.selected"
+                    >
+                      mdi-menu-right
+                    </v-icon>
+                  </template>
                 </template>
                 <template v-slot:append="{ item, leaf }">
                   <markdown
                     :source="highlight(getItemtitle(item.title), true) + (item.activityId && item.selectedCount ? ` ( ${item.selectedCount} entries found ) ` : '')"
                   />
 
-                  <template v-if="leaf">
+                  <template v-if="leaf && item.inputType">
                     <div v-show="item.selected">
                       <div v-if="item.inputType == 'radio' || item.inputType == 'checkbox' || item.inputType == 'pastBehaviorTracker' || item.inputType == 'futureBehaviorTracker'">
                         <div

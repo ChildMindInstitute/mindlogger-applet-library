@@ -106,22 +106,26 @@
                 selectable
               >
                 <template v-slot:prepend="{ item }">
-                  <v-icon
-                    v-show="item.selected === true"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = false; onUpdateItem(item)"
+                  <template
+                    v-if="item.inputType"
                   >
-                    mdi-menu-down
-                  </v-icon>
-                  <v-icon
-                    v-show="item.selected === false"
-                    class="mr-1"
-                    color="dark-grey"
-                    @click="item.selected = true; onUpdateItem(item)"
-                  >
-                    mdi-menu-right
-                  </v-icon>
+                    <v-icon
+                      v-show="item.selected === true"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = false; onUpdateItem(item)"
+                    >
+                      mdi-menu-down
+                    </v-icon>
+                    <v-icon
+                      v-show="item.selected === false"
+                      class="mr-1"
+                      color="dark-grey"
+                      @click="item.selected = true; onUpdateItem(item)"
+                    >
+                      mdi-menu-right
+                    </v-icon>
+                  </template>
                 </template>
                 <template v-slot:append="{ item, leaf }">
                   <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
@@ -369,14 +373,18 @@ export default {
           this.initialOpen[applet.appletId] = this.getOpenNodes(tree, this.searchText);
 
           tree.children.forEach((activity) => {
-            activity.children.forEach((item) => {
-              item.selected = false;
-              item.options && item.options.forEach((option) => {
-                if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
-                  item.selected = true;
-                }
+            if (activity.children) {
+              activity.children.forEach((item) => {
+                item.selected = false;
+                item.options && item.options.forEach((option) => {
+                  if (option.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+                    item.selected = true;
+                  }
+                });
               });
-            });
+            } else if (activity.title.toLowerCase().includes(this.searchText.toLowerCase())) {
+              activity.selected = true;
+            }
           });
         }
 

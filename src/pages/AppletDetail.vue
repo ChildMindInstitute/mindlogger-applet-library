@@ -163,22 +163,26 @@
             return-object
           >
             <template v-slot:prepend="{ item }">
-              <v-icon
-                v-if="item.selected === true"
-                class="mr-1"
-                color="dark-grey"
-                @click="item.selected = !item.selected"
+              <template
+                v-if="item.inputType"
               >
-                mdi-menu-down
-              </v-icon>
-              <v-icon
-                v-else-if="item.selected === false"
-                class="mr-1"
-                color="dark-grey"
-                @click="item.selected = !item.selected"
-              >
-                mdi-menu-right
-              </v-icon>
+                <v-icon
+                  v-if="item.selected === true"
+                  class="mr-1"
+                  color="dark-grey"
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-down
+                </v-icon>
+                <v-icon
+                  v-else-if="item.selected === false"
+                  class="mr-1"
+                  color="dark-grey"
+                  @click="item.selected = !item.selected"
+                >
+                  mdi-menu-right
+                </v-icon>
+              </template>
             </template>
             <template v-slot:append="{ item }">
               <markdown :source="highlight(getItemtitle(item.title), true)"></markdown>
@@ -389,7 +393,11 @@ export default {
       this.selection = [];
 
       for (const activity of this.appletTree) {
-        this.selection.push(...activity.children);
+        if (activity.children) {
+          this.selection.push(...activity.children);
+        } else {
+          this.selection.push(activity);
+        }
       }
     },
     onClearTree() {
