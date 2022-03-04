@@ -177,7 +177,8 @@ export const AppletMixin = {
       return applets.filter(applet => searchLevels[applet.id]).sort((a, b) => {
         if (searchLevels[a.id] < searchLevels[b.id]) return -1;
         if (searchLevels[a.id] > searchLevels[b.id]) return 1;
-        return 0;
+
+        return this.alphaSort(a, b);
       })
     },
     async addCartItemsToBasket() {
