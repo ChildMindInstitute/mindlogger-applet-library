@@ -245,7 +245,7 @@ export const AppletMixin = {
 
         const activityId = activityData["_id"].split("/").pop();
         const activityIdentifier = activityKey.includes("https://raw.githubusercontent.com") ? activityKey.split("/").slice(0, -1).join("/") : activityId;
-        const activityType = _.get(activityData, ['@type', 0]).split('/').pop();
+        const activityType = _.get(activityData, ['reprolib:terms/activityType', 0, '@value'], 'NORMAL');
 
         const activityItem = {
           id: treeIndex,
@@ -258,7 +258,7 @@ export const AppletMixin = {
 
         treeIndex += 1;
 
-        if (activityType == 'Activity') {
+        if (activityType == 'NORMAL') {
           for (const itemKey in items) {
             const itemData = items[itemKey];
             const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
