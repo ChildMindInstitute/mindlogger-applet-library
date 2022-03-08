@@ -110,7 +110,8 @@ export const AppletMixin = {
 
       const words = searchText.split(',').map(word => word.trim());
 
-      return applets.filter((applet) => {
+      let searchLevels = {};
+      applets.forEach((applet) => {
         const regex = new RegExp(searchText, "ig");
         const appletData = appletsTree[applet.appletId][0];
 
@@ -119,6 +120,7 @@ export const AppletMixin = {
           (applet.description && applet.description.match(regex)) ||
           appletData.title.match(regex)
         ) {
+          searchLevels[applet.id] = 1;
           return true;
         }
 
@@ -141,31 +143,43 @@ export const AppletMixin = {
         }
 
         if (match) {
+          searchLevels[applet.id] = 2;
           return true;
         }
 
         for (const activityData of appletData.children) {
           if (activityData.title.match(regex)) {
+            searchLevels[applet.id] = 3;
             return true;
           }
           for (const itemData of activityData.children) {
             if (itemData.title.match(regex)) {
+              searchLevels[applet.id] = 4;
               return true;
             }
             if (itemData.inputType === "radio" || itemData.inputType === "checkbox") {
               for (const optionData of itemData.options) {
                 if (optionData.name.match(regex)) {
+                  searchLevels[applet.id] = 5;
                   return true;
                 }
               }
             } else if (itemData.inputType.match(regex)) {
+              searchLevels[applet.id] = 5;
               return true;
             }
           }
         }
 
         return false;
-      }).sort(this.alphaSort);
+      });
+
+      return applets.filter(applet => searchLevels[applet.id]).sort((a, b) => {
+        if (searchLevels[a.id] < searchLevels[b.id]) return -1;
+        if (searchLevels[a.id] > searchLevels[b.id]) return 1;
+
+        return this.alphaSort(a, b);
+      })
     },
     async addCartItemsToBasket() {
       const form = new FormData();
