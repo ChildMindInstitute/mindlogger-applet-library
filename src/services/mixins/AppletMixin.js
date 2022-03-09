@@ -234,6 +234,11 @@ export const AppletMixin = {
 
       for (const activityKey of _.get(applet, ['reprolib:terms/order', 0, '@list'], []).map(item => item['@id'])) {
         const activityData = activities[activityKey];
+
+        if (!activityData) {
+          continue ;
+        }
+
         const activityId = activityData["_id"].split("/").pop();
         const activityIdentifier = activityKey.includes("https://raw.githubusercontent.com") ? activityKey.split("/").slice(0, -1).join("/") : activityId;
         const activityItem = {
