@@ -126,7 +126,7 @@
                           class="d-flex align-center pt-2"
                         >
                           <img
-                            class="mr-2"
+                            class="mr-2 item-type-icon"
                             width="15"
                             :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                           />
@@ -142,7 +142,7 @@
                       </div>
                       <div v-else class="d-flex align-center pt-2">
                         <img
-                          class="mr-2"
+                          class="mr-2 item-type-icon"
                           width="15"
                           :src="itemTypes.find(({ text }) => text === item.inputType).icon"
                         />
