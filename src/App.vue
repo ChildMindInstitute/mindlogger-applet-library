@@ -7,14 +7,15 @@
         <router-view />
       </v-container>
     </v-content>
+    <Footer />
   </v-app>
 </template>
 
 <script>
 import store from './state';
 import Header from './components/Header/header';
+import Footer from './components/Footer/footer';
 import ContentBar from './components/ContentBar';
-import _ from 'lodash';
 
 
 export default {
@@ -22,6 +23,7 @@ export default {
   store,
   components: {
     Header,
+    Footer,
     ContentBar,
   },
 
