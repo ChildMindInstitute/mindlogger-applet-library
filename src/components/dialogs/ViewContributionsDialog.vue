@@ -16,7 +16,22 @@
           :items="contributions"
           :search="search"
           class="elevation-1 data-table"
-        ></v-data-table>
+        >
+          <template v-slot:body="props">
+            <tr
+              v-for="item in props.items"
+              :key="item.id"
+            >
+              <td
+                v-for="header in headers"
+                :key="header.value"
+                :class="`cell ${header.value}`"
+              >
+                {{ item[header.value] }}
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -30,6 +45,27 @@
 
 .data-table /deep/ th:hover > i {
   display: inline;
+}
+
+.creator, .created {
+  width: 100px;
+  max-width: 100px;
+}
+.appletName, .activityName, .itemName {
+  width: 110px;
+  max-width: 110px;
+}
+.itemQuestion {
+  width: 200px;
+  max-width: 200px;
+}
+.editor, .updated {
+  width: 80px;
+  max-width: 80px;
+}
+.version {
+  width: 75px;
+  max-width: 75px;
 }
 </style>
 
