@@ -47,7 +47,12 @@
   display: inline;
 }
 
-.creator, .created {
+.data-table /deep/ td {
+  vertical-align: text-top;
+  padding-top: 5px;
+}
+
+.creator, .created, .editor {
   width: 100px;
   max-width: 100px;
 }
@@ -59,7 +64,8 @@
   width: 200px;
   max-width: 200px;
 }
-.editor, .updated {
+
+.updated {
   width: 80px;
   max-width: 80px;
 }
