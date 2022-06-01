@@ -259,7 +259,7 @@ export const AppletMixin = {
         treeIndex += 1;
 
         if (activityType == 'NORMAL') {
-          for (const itemKey in items) {
+          for (const itemKey of _.get(activityData, ['reprolib:terms/order', 0, '@list'], []).map(item => item['@id'])) {
             const itemData = items[itemKey];
             const itemActivityIdentifier = itemKey.includes("https://raw.githubusercontent.com") ? itemKey.split("/").slice(0, -2).join("/") : itemKey.split("/")[0]
             if (itemActivityIdentifier === activityIdentifier) {
