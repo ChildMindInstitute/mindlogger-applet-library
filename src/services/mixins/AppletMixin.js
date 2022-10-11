@@ -52,7 +52,7 @@ export const AppletMixin = {
       const cartSelections = {};
       Object.entries(basketSelections).map(([appletId, basketSelection]) => {
         const appletTree = this.$store.state.appletsTree[appletId][0];
-        if (appletTree) {
+        if (appletTree && basketSelection) {
           cartSelections[appletId] = [];
           basketSelection.map(activitySelection => {
             const { activityId, items } = activitySelection;
