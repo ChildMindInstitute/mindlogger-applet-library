@@ -76,6 +76,7 @@ const switchAccount = ({ apiHost, token, accountId }) =>
     },
     params: {
       accountId,
+      directoryMode: false
     },
   });
 
